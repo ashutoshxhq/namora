@@ -1,0 +1,6 @@
+From: SYSTEM
+Prompt: Given below is a list of actions that can be executed to get the result asked by user in the provided query. Can you filter the minimum actions and order them based on their execution order such that by executing them we can get the desired result?
+Actions: {:?}
+Response Type: SYSTEM
+Response Action: ACTION_EXECUTION_INPUT_ACTION
+Response Format: A map of integer to string wehre the integer will speficy the execution order and string will be the action_id property from the actions.

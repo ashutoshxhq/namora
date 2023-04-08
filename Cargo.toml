@@ -1,0 +1,6 @@
+[workspace]
+
+members = [
+    "apps/engine-service",
+    "apps/chat-service",
+]
