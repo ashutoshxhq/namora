@@ -1,6 +1,6 @@
 use crate::{error::Error, state::DbPool};
 
-use super::dto::{ConverationContext, MessageWithConversationContext, Msg};
+use super::dto::MessageWithConversationContext;
 use diesel::{
     r2d2::{ConnectionManager, PooledConnection},
     PgConnection,

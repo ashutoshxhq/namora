@@ -1,4 +1,4 @@
-use crate::state::CodeGraphState;
+use crate::state::MetaLoopState;
 
 use super::dto::{
     ClientMsg, ConverationContext, ConverationHistory, MessageWithConversationContext, Msg,
@@ -11,13 +11,13 @@ use serde_json::json;
 use std::sync::mpsc::channel;
 
 pub async fn generic_agent(
-    Extension(app): Extension<CodeGraphState>,
+    Extension(app): Extension<MetaLoopState>,
     ws: WebSocketUpgrade<ServerMsg, ClientMsg>,
 ) -> impl IntoResponse {
     ws.on_upgrade(move |socket| generic_agent_socket(socket, app))
 }
 
-async fn generic_agent_socket(socket: WebSocket<ServerMsg, ClientMsg>, app: CodeGraphState) {
+async fn generic_agent_socket(socket: WebSocket<ServerMsg, ClientMsg>, app: MetaLoopState) {
     let (mut sender, mut receiver) = socket.split();
     sender
         .send(Message::Item(ServerMsg::Data(json!([ { "response_to": "USER", "response": { "message": "Hi there, How can I help you today ?" } } ]))))

@@ -3,16 +3,16 @@ use diesel::{
     PgConnection,
 };
 
-use crate::modules::service::CodeGraphService;
+use crate::modules::service::MetaLoopService;
 
 pub type DbPool = Pool<ConnectionManager<PgConnection>>;
 
 #[derive(Clone)]
-pub struct CodeGraphState {
-    pub services: CodeGraphService,
+pub struct MetaLoopState {
+    pub services: MetaLoopService,
 }
 
-impl CodeGraphState {
+impl MetaLoopState {
     pub fn new() -> Self {
         let manager = ConnectionManager::<PgConnection>::new(
             std::env::var("DATABASE_URL").expect("Unable to get database url"),
@@ -25,7 +25,7 @@ impl CodeGraphState {
             .unwrap();
 
         Self {
-            services: CodeGraphService::new(pool)
+            services: MetaLoopService::new(pool)
         }
     }
 }

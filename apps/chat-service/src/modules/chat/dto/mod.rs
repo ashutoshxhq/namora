@@ -1,4 +1,3 @@
-use async_openai::types::Role;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use uuid::Uuid;
