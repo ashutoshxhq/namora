@@ -1,16 +1,14 @@
-use crate::state::DbPool;
-
 use super::chat::service::ChatService;
 
 #[derive(Clone)]
-pub struct MetaLoopService {
+pub struct ExecuteAIService {
     pub chat: ChatService,
 }
 
-impl MetaLoopService {
-    pub fn new(pool: DbPool) -> Self {
+impl ExecuteAIService {
+    pub fn new() -> Self {
         Self {
-            chat: ChatService::new(pool.clone()),
+            chat: ChatService::new(),
         }
     }
 }

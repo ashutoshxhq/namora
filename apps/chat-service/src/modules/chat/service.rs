@@ -1,23 +1,14 @@
-use crate::{error::Error, state::DbPool};
+use crate::{error::Error};
 
 use super::dto::MessageWithConversationContext;
-use diesel::{
-    r2d2::{ConnectionManager, PooledConnection},
-    PgConnection,
-};
 
 #[derive(Clone)]
 pub struct ChatService {
-    pub pool: DbPool,
 }
 
 impl ChatService {
-    pub fn new(pool: DbPool) -> Self {
-        Self { pool }
-    }
-
-    pub fn _get_conn(&self) -> Result<PooledConnection<ConnectionManager<PgConnection>>, Error> {
-        Ok(self.pool.get()?)
+    pub fn new() -> Self {
+        Self {}
     }
 
     pub async fn chat_openai(
