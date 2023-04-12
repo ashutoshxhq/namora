@@ -4,7 +4,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="styles.css">
     <title>CadenceIQ Chat Playground</title>
     <style>
         body {
@@ -85,7 +84,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 12px; 
+            border-radius: 12px;
             background-color: #e5e5ea;
             animation: pulse 1.2s infinite;
             padding: 8px 12px;
@@ -122,7 +121,7 @@
     </div>
     <script>
         // Replace 'your-websocket-url' with the WebSocket server URL
-        const socket = new WebSocket('ws://localhost:8000/sales');
+        const socket = new WebSocket('ws://localhost:8000/');
 
         socket.addEventListener('open', (event) => {
             console.log('WebSocket connection established:', event);
@@ -161,11 +160,10 @@
             messageWrapper.classList.add('message-wrapper', 'received');
             const message = document.createElement('div');
             message.classList.add('message');
-            console.log(messageData.Data)
-            let data = JSON.parse(messageData.Data.message)
-            let user_data = data.filter((message)=> message?.response_type === "USER_RESPONSE")
+            console.log(messageData)
+            let user_data = messageData.Data.filter((message) => message?.message_to === "USER")
 
-            message.innerHTML = user_data[0]?.data?.message.replaceAll("\n", `<br/>`);
+            message.innerHTML = user_data[0]?.message.replaceAll("\n", `<br/>`);
             messageWrapper.appendChild(message);
             chatWindow.appendChild(messageWrapper);
             chatWindow.scrollTop = chatWindow.scrollHeight;
@@ -190,7 +188,13 @@
             const messageData = textarea.value;
             if (messageData.trim() !== '') {
 
-                let data = JSON.stringify({ "Data": { "message": messageData } })
+                let data = JSON.stringify({
+                    Data: {
+                        "message_from": "USER",
+                        "message_to": "AI",
+                        "message": messageData,
+                    }
+                })
 
                 const encoder = new TextEncoder();
                 const binaryData = encoder.encode(data);

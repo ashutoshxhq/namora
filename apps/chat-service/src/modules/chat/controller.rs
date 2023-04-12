@@ -1,4 +1,4 @@
-use crate::state::ExecuteAIState;
+use crate::{modules::chat::dto, state::ExecuteAIState};
 
 use super::dto::{
     ClientMsg, ConverationContext, ConverationHistory, MessageWithConversationContext, ServerMsg,
@@ -7,7 +7,7 @@ use axum::{response::IntoResponse, Extension};
 use axum_typed_websockets::{Message, WebSocket, WebSocketUpgrade};
 use futures::{sink::SinkExt, stream::StreamExt};
 use serde_json::json;
-use std::sync::mpsc::channel;
+use std::{fs, sync::mpsc::channel};
 
 pub async fn generic_agent(
     Extension(app): Extension<ExecuteAIState>,
@@ -19,7 +19,14 @@ pub async fn generic_agent(
 async fn generic_agent_socket(socket: WebSocket<ServerMsg, ClientMsg>, app: ExecuteAIState) {
     let (mut sender, mut receiver) = socket.split();
     sender
-        .send(Message::Item(ServerMsg::Data(json!([ { "response_to": "USER", "response": { "message": "Hi there, How can I help you today ?" } } ]))))
+        .send(Message::Item(ServerMsg::Data(json!([{
+            "message_from": "AI",
+            "message_to": "USER",
+            "next_message_to": "SYSTEM",
+            "message": "Hi there, How can I help you today?",
+            "additional_data": {},
+            "created_at": ""
+        }]))))
         .await
         .ok();
 
@@ -35,80 +42,99 @@ async fn generic_agent_socket(socket: WebSocket<ServerMsg, ClientMsg>, app: Exec
             let message_self_tx = self_tx.clone();
             let message_user_tx = user_tx.clone();
             tracing::info!("Creating a tokio task to handle the message");
-            tokio::spawn(async move {
+            let message_worker = tokio::spawn(async move {
                 match recv_data {
                     Ok(recv_data) => {
-                        tracing::info!(
-                            "Recieved message is from {}, to {}",
-                            recv_data.message.message_from,
-                            recv_data.message.message_to
-                        );
-                        if recv_data.message.message_to == "SYSTEM" {
-                            tracing::info!("Sending message to SYSTEM message handler");
+                        let recv_data = recv_data.clone();
+                        for message in &recv_data.messages {
+                            tracing::info!(
+                                "Recieved message is from {}, to {}",
+                                message.message_from,
+                                message.message_to
+                            );
+                            if message.message_to == "SYSTEM" {
+                                tracing::info!("Sending message to SYSTEM message handler");
 
-                            let response_message = chat_service.chat_system(recv_data).await;
-                            match response_message {
-                                Ok(res) => match message_self_tx.send(res) {
-                                    Ok(_send_res) => {}
+                                let response_message =
+                                    chat_service.system_message_handler(recv_data.clone()).await;
+                                match response_message {
+                                    Ok(res) => match message_self_tx.send(res) {
+                                        Ok(_send_res) => {}
+                                        Err(_err) => {}
+                                    },
                                     Err(_err) => {}
-                                },
-                                Err(_err) => {}
-                            }
-                        } else if recv_data.message.message_to == "USER" {
-                            tracing::info!("Sending message to USER message handler");
+                                }
+                            } else if message.message_to == "USER" {
+                                tracing::info!("Sending message to USER message handler");
 
-                            let res = message_user_tx.send(recv_data);
-                            match res {
-                                Ok(_res) => {}
-                                Err(_err) => {}
-                            }
-                        } else if recv_data.message.message_to == "AI" {
-                            tracing::info!("Sending message to AI message handler");
-
-                            let response_message = chat_service.chat_ai(recv_data).await;
-                            match response_message {
-                                Ok(res) => match message_self_tx.send(res) {
-                                    Ok(_send_res) => {}
+                                let res = message_user_tx.send(recv_data.clone());
+                                match res {
+                                    Ok(_res) => {}
                                     Err(_err) => {}
-                                },
-                                Err(_err) => {}
+                                }
+                            } else if message.message_to == "AI" {
+                                tracing::info!("Sending message to AI message handler");
+
+                                let response_message =
+                                    chat_service.ai_message_handler(recv_data.clone()).await;
+                                match response_message {
+                                    Ok(res) => match message_self_tx.send(res) {
+                                        Ok(_send_res) => {}
+                                        Err(_err) => {}
+                                    },
+                                    Err(_err) => {
+                                        tracing::error!("Error from ai message handler in conversation event loop {:?}", _err)
+                                    }
+                                }
                             }
                         }
                     }
-                    Err(_err) => {}
+                    Err(_err) => {
+                        tracing::error!(
+                            "Error while reciving message in conversation event loop {:?}",
+                            _err
+                        )
+                    }
                 }
             });
+            message_worker.await.unwrap();
         }
     });
 
     tracing::info!("Starting user worker to handle sending messages to user");
     let mut user_worker = tokio::spawn(async move {
-        let recv_data = user_rx.recv();
-        match recv_data {
-            Ok(recv_data) => {
-                let res = sender
-                    .send(Message::Item(ServerMsg::Data(
-                        serde_json::to_value(recv_data).unwrap(),
-                    )))
-                    .await;
-                match res {
-                    Ok(_res) => {}
-                    Err(_err) => {}
+        loop {
+            let recv_data = user_rx.recv();
+            match recv_data {
+                Ok(recv_data) => {
+                    let res = sender
+                        .send(Message::Item(ServerMsg::Data(
+                            serde_json::to_value(recv_data.messages).unwrap(),
+                        )))
+                        .await;
+                    match res {
+                        Ok(_res) => {}
+                        Err(_err) => {}
+                    }
                 }
+                Err(_err) => {}
             }
-            Err(_err) => {}
         }
     });
 
     tracing::info!("Starting a socket worker to handle message recieved from user");
     let mut socket_worker = tokio::spawn(async move {
         while let Some(Ok(msg)) = receiver.next().await {
+            tracing::info!("Recieved a message in socket_worker");
             match msg {
                 Message::Item(ClientMsg::Data(data)) => {
+                    println!("{:?}", data);
+                    let message: dto::Message = serde_json::from_value(data).unwrap();
+                    let system_prompt = fs::read_to_string("./prompts/system.txt").unwrap();
                     conversation_tx
                         .send(MessageWithConversationContext {
-                            message: serde_json::from_value(data).unwrap(),
-                            ai_system_prompt: None,
+                            messages: vec![message],
+                            ai_system_prompt: Some(system_prompt),
                             context: ConverationContext {
                                 thread_id: None,
                                 user_id: None,

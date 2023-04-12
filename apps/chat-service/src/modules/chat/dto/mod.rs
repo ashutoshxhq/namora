@@ -28,7 +28,7 @@ pub struct Message {
     pub next_message_to: Option<String>,
     pub message: String,
     pub additional_data: Option<Value>,
-    pub created_at: NaiveDateTime,
+    pub created_at: Option<NaiveDateTime>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -55,7 +55,7 @@ pub struct ConverationContext {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct MessageWithConversationContext {
-    pub message: Message,
+    pub messages: Vec<Message>,
     pub ai_system_prompt: Option<String>,
     pub context: ConverationContext,
 }
