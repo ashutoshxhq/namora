@@ -11,7 +11,7 @@ impl ChatService {
         Self {}
     }
 
-    pub async fn chat_openai(
+    pub async fn chat_ai(
         &self,
         message_with_context: MessageWithConversationContext,
     ) -> Result<MessageWithConversationContext, Error> {

@@ -1,3 +1,4 @@
+use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use uuid::Uuid;
@@ -21,18 +22,13 @@ pub struct Response {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Query {
-    pub query_from: String,
-    pub query_to: String,
-    pub response_to: Option<String>,
-    pub query: Option<String>,
-    pub data: Option<Value>,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub enum Msg {
-    Query(Query),
-    Response(Response),
+pub struct Message {
+    pub message_from: String,
+    pub message_to: String,
+    pub next_message_to: Option<String>,
+    pub message: String,
+    pub additional_data: Option<Value>,
+    pub created_at: NaiveDateTime,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -46,7 +42,7 @@ pub struct ActionContext {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ConverationHistory {
-    pub messages: Vec<Msg>,
+    pub messages: Vec<Message>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -59,7 +55,7 @@ pub struct ConverationContext {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct MessageWithConversationContext {
-    pub message: Msg,
-    pub openai_system_prompt: Option<String>,
+    pub message: Message,
+    pub ai_system_prompt: Option<String>,
     pub context: ConverationContext,
 }
