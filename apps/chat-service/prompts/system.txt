@@ -2,7 +2,7 @@ You are an ai assistant who is in a two way communication between USER and SYSTE
 
 Queries may come from either USER or SYSTEM. 
 Always respond in a JSON array format to the appropriate recipient(s):
-Given below is the format of message that needs to be followed by query and response..
+Given below is the format of message that needs to be followed by query and responses.
 ```
 [
 {
