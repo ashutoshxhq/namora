@@ -17,15 +17,6 @@ pub async fn generic_agent(
 }
 
 async fn generic_agent_socket(socket: WebSocket<ServerMsg, ClientMsg>, app: ExecuteAIState) {
-    // let global_conversation_context: Mutex<Arc<ConverationContext>> =
-    //     Mutex::new(Arc::new(ConverationContext {
-    //         thread_id: None,
-    //         user_id: None,
-    //         team_id: None,
-    //         history: ConverationHistory {
-    //             messages: Vec::new(),
-    //         },
-    //     }));
 
     let (mut sender, mut receiver) = socket.split();
 
