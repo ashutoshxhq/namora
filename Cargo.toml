@@ -2,5 +2,7 @@
 
 members = [
     "apps/engine-service",
-    "apps/chat-service",
+    "apps/chat-user-worker",
+    "apps/chat-ai-worker",
+    "apps/chat-system-worker",
 ]
