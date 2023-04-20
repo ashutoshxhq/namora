@@ -1,11 +1,11 @@
 use super::chat::service::ChatService;
 
 #[derive(Clone)]
-pub struct ExecuteAIService {
+pub struct NamorAIService {
     pub chat: ChatService,
 }
 
-impl ExecuteAIService {
+impl NamorAIService {
     pub fn new() -> Self {
         Self {
             chat: ChatService::new(),

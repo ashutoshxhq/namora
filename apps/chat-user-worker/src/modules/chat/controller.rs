@@ -1,4 +1,4 @@
-use crate::{modules::chat::dto, state::ExecuteAIState};
+use crate::{modules::chat::dto, state::NamorAIState};
 
 use super::dto::{
     ClientMsg, ConverationContext, ConverationHistory, MessageWithConversationContext, ServerMsg,
@@ -10,13 +10,13 @@ use serde_json::json;
 use std::{fs, sync::mpsc::channel};
 
 pub async fn generic_agent(
-    Extension(app): Extension<ExecuteAIState>,
+    Extension(app): Extension<NamorAIState>,
     ws: WebSocketUpgrade<ServerMsg, ClientMsg>,
 ) -> impl IntoResponse {
     ws.on_upgrade(move |socket| generic_agent_socket(socket, app))
 }
 
-async fn generic_agent_socket(socket: WebSocket<ServerMsg, ClientMsg>, app: ExecuteAIState) {
+async fn generic_agent_socket(socket: WebSocket<ServerMsg, ClientMsg>, app: NamorAIState) {
 
     let (mut sender, mut receiver) = socket.split();
 

@@ -8,7 +8,7 @@ use axum::{error_handling::HandleErrorLayer, http::StatusCode, BoxError, Extensi
 use dotenvy::dotenv;
 use hyper::{Response, Uri, Request, Body};
 use modules::*;
-use state::ExecuteAIState;
+use state::NamorAIState;
 use std::{env, net::SocketAddr, time::Duration};
 use tower::ServiceBuilder;
 use tower::ServiceExt;
@@ -71,7 +71,7 @@ async fn main() {
                 }))
                 .timeout(Duration::from_secs(10))
                 .layer(TraceLayer::new_for_http())
-                .layer(Extension(ExecuteAIState::new()))
+                .layer(Extension(NamorAIState::new()))
                 .layer(
                     CorsLayer::new()
                         .allow_origin(Any)

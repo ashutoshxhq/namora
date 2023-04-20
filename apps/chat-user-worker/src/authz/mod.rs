@@ -34,7 +34,7 @@ pub async fn auth<B>(req: Request<B>, next: Next<B>) -> Response {
         let auth_token = auth_header.split(" ").last();
         if let Some(auth_token) = auth_token {
             let mut validation = Validation::new(Algorithm::HS256);
-            validation.set_issuer(&["https://api.executeai.app"]);
+            validation.set_issuer(&["https://api.NamorAI.app"]);
             let token_data =
                 match decode::<Claims>(
                     auth_token,

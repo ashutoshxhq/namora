@@ -1,16 +1,16 @@
 
-use crate::modules::service::ExecuteAIService;
+use crate::modules::service::NamorAIService;
 
 #[derive(Clone)]
-pub struct ExecuteAIState {
-    pub services: ExecuteAIService,
+pub struct NamorAIState {
+    pub services: NamorAIService,
 }
 
-impl ExecuteAIState {
+impl NamorAIState {
     pub fn new() -> Self {
 
         Self {
-            services: ExecuteAIService::new()
+            services: NamorAIService::new()
         }
     }
 }
