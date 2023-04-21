@@ -112,7 +112,7 @@ pub async fn find_actions(
 
         let mut response_context = ctx.context;
         response_context.history.messages.push(ai_message.clone());
-        response_context.unfiltered_actions = Some(actions);
+        response_context.current_query_context.unfiltered_actions = Some(actions);
 
         let response_with_context = MessageWithConversationContext {
             messages: vec![ai_message],
@@ -139,7 +139,7 @@ pub async fn execute_action_plan(
         let mut filtered_actions: Vec<Action> = Vec::new();
 
         for action_id in action_plan.action_ids {
-            if let Some(unfiltered_actions) = &ctx.context.unfiltered_actions {
+            if let Some(unfiltered_actions) = &ctx.context.current_query_context.unfiltered_actions {
                 for unfiltered_action in unfiltered_actions {
                     if unfiltered_action.action_id == action_id {
                         filtered_actions.push(unfiltered_action.clone());
@@ -159,7 +159,7 @@ pub async fn execute_action_plan(
 
         let mut response_context = ctx.context;
         response_context.history.messages.push(ai_message.clone());
-        response_context.filtered_actions = Some(filtered_actions.clone());
+        response_context.current_query_context.filtered_actions = Some(filtered_actions.clone());
 
         let response_with_context = MessageWithConversationContext {
             messages: vec![ai_message],
@@ -202,7 +202,7 @@ pub async fn execute_action(
         let execute_action_additional_data: ExecuteActionAdditionalData =
             serde_json::from_value(data)?;
         let mut action_to_execute: Option<Action> = None;
-        if let Some(filtered_actions) = &ctx.context.filtered_actions {
+        if let Some(filtered_actions) = &ctx.context.current_query_context.filtered_actions {
             for action in filtered_actions {
                 if action.action_id == execute_action_additional_data.action_id {
                     action_to_execute = Some(action.clone());
