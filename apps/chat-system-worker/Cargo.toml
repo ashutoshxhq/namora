@@ -15,9 +15,6 @@ uuid = { version = "1.0.0", features = ["v4", "serde"] }
 dotenvy = "0.15"
 reqwest = { version = "0.11", features = ["blocking", "json"] }
 chrono = { version = "0.4.22", features = ["serde"]}
-aws-config = "0.54.1"
-aws-sdk-sqs = "0.24.0"
-aws-types = "0.54.1"
-aws-credential-types = "0.54.1"
 async-openai = "0.8.0"
-diesel = { version = "2.0.0", features = ["postgres"] }
+diesel = { version = "2.0.0", features = ["postgres", "r2d2", "uuid", "serde_json", "chrono"] }
+amqprs = "1.2.1"

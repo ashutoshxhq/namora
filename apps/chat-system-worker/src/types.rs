@@ -66,6 +66,16 @@ pub struct ConverationHistory {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct QueryContext {
+    pub thread_id: Option<Uuid>,
+    pub user_id: Option<Uuid>,
+    pub query: String,
+    pub unfiltered_actions: Option<Vec<Action>>,
+    pub filtered_actions: Option<Vec<Action>>,
+    pub history: ConverationHistory,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ConverationContext {
     pub thread_id: Option<Uuid>,
     pub user_id: Option<Uuid>,

@@ -1,8 +1,15 @@
-mod handler;
-mod types;
 mod actions;
+mod handler;
 mod jobs;
-use aws_config::meta::region::RegionProviderChain;
+mod types;
+pub mod schema;
+pub mod db;
+use amqprs::{
+    callbacks::{DefaultChannelCallback, DefaultConnectionCallback},
+    channel::{BasicConsumeArguments, QueueBindArguments, QueueDeclareArguments},
+    connection::{Connection, OpenConnectionArguments}
+};
+use db::{create_pool, DbPool};
 use dotenvy::dotenv;
 use tracing::Level;
 use tracing_subscriber::FmtSubscriber;
@@ -21,13 +28,9 @@ async fn main() {
         .finish();
 
     tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
-    let region_provider =
-        RegionProviderChain::first_try(aws_types::region::Region::new("us-west-2"));
-    let shared_config = aws_config::from_env().region(region_provider).load().await;
-    let client = aws_sdk_sqs::Client::new(&shared_config);
-    let queue_url = std::env::var("CHAT_SYSTEM_SQS_URL").expect("CHAT_SYSTEM_SQS_URL must be set");
+    let pool = create_pool();
 
-    let worker_result = worker(client, queue_url).await;
+    let worker_result = worker(pool).await;
 
     match worker_result {
         Ok(_) => {}
@@ -35,49 +38,60 @@ async fn main() {
     }
 }
 
-async fn worker(client: aws_sdk_sqs::Client, queue_url: String) -> Result<(), Error> {
-    loop {
-        let sqs_client = client.clone();
-        let sqs_queue_url = queue_url.clone();
+async fn worker(pool: DbPool) -> Result<(), Error> {
+    let connection = Connection::open(&OpenConnectionArguments::new(
+        "b-5553e2ff-0789-4470-ba17-de738cdbf3c3.mq.us-west-2.amazonaws.com",
+        5672,
+        "nemor",
+        "Aqbfjotld9Smvemjsun8",
+    ))
+    .await?;
 
-        let rcv_message_output = sqs_client
-            .clone()
-            .receive_message()
-            .set_wait_time_seconds(Some(10))
-            .max_number_of_messages(1)
-            .queue_url(sqs_queue_url.clone())
-            .send()
-            .await?;
+    connection
+        .register_callback(DefaultConnectionCallback)
+        .await?;
 
-        if let Some(messages) = rcv_message_output.messages {
-            for message in messages {
-                let sqs_client = client.clone();
-                let sqs_queue_url = queue_url.clone();
-                tokio::spawn(async move {
-                    let message_handler_res = handler::message_handler(message.clone()).await;
-                    match message_handler_res {
-                        Ok(_) => {}
-                        Err(_err) => {}
-                    };
-                    if let Some(receipt_handler) = message.receipt_handle {
-                        let delete_message_output_res = sqs_client
-                            .delete_message()
-                            .queue_url(sqs_queue_url.clone())
-                            .receipt_handle(receipt_handler)
-                            .send()
-                            .await;
-                        match delete_message_output_res {
-                            Ok(_) => {}
-                            Err(_err) => {}
-                        };
-                    } else{
-                        tracing::info!("No receipt handler to delete the message")
-                    }
-                });
-            }
-        } else {
-            tracing::info!("No Messages found in request");
-            continue;
-        }
+    // open a channel on the connection
+    let channel = connection.open_channel(None).await.unwrap();
+    channel.register_callback(DefaultChannelCallback).await?;
+
+    // declare a queue
+    let (queue_name, _, _) = channel
+        .queue_declare(QueueDeclareArguments::default())
+        .await?
+        .unwrap();
+
+    // bind the queue to exchange
+    let rounting_key = "amqprs.workers.system";
+    let exchange_name = "amq.topic";
+    channel
+        .queue_bind(QueueBindArguments::new(
+            &queue_name,
+            exchange_name,
+            rounting_key,
+        ))
+        .await?;
+
+    let args = BasicConsumeArguments::new(&queue_name, "system_worker");
+    let (_ctag, mut messages_rx) = channel.basic_consume_rx(args).await.unwrap();
+
+    while let Some(msg) = messages_rx.recv().await {
+        let message_bytes = msg.content.unwrap();
+        let message_str = String::from_utf8(message_bytes.clone())?;
+        let db_pool = pool.clone();
+        
+        println!("Message: {:?}", message_str );
+        tokio::spawn(async move {
+            let message_handler_res = handler::message_handler(db_pool, message_str).await;
+            match message_handler_res {
+                Ok(_) => {
+                    tracing::info!("Message handled successfully")
+                }
+                Err(_err) => {
+                    tracing::error!("Error while handling the message")
+                }
+            };
+        });
     }
+    Ok(())
 }

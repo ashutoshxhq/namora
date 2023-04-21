@@ -1,64 +1,64 @@
 use std::{env, fs};
 
 use crate::{
-    actions::{crm::{get_object_record_from_crm_with_filter, create_object_record_in_crm, update_object_record_in_crm_by_id}, linkedin::get_linkedin_profile},
+    actions::{
+        crm::{
+            create_object_record_in_crm, get_object_record_from_crm_with_filter,
+            update_object_record_in_crm_by_id,
+        },
+        linkedin::get_linkedin_profile,
+    },
     types::{
         Action, AdditionalData, Error, ExecuteActionAdditionalData,
         ExecuteActionPlanAdditionalData, FindActionsAdditionalData, Message,
         MessageWithConversationContext, PineconeQueryResponse,
-    },
+    }, db::DbPool, jobs::{model::NewJob, service::create_job},
 };
 use async_openai::{types::CreateEmbeddingRequestArgs, Client};
-use aws_config::meta::region::RegionProviderChain;
-use aws_sdk_sqs::model::Message as SQSMessage;
 use serde_json::{json, Value};
 
-pub async fn message_handler(sqs_message: SQSMessage) -> Result<(), Error> {
-    if let Some(sqs_message) = sqs_message.body() {
-        let message_with_context: MessageWithConversationContext =
-            serde_json::from_str(sqs_message)?;
-        let mut message: Option<Message> = None;
+pub async fn message_handler(pool: DbPool, msg: String) -> Result<(), Error> {
+    let message_with_context: MessageWithConversationContext = serde_json::from_str(&msg)?;
+    let mut message: Option<Message> = None;
 
-        for msg in &message_with_context.messages {
-            if msg.message_to == "SYSTEM" {
-                message = Some(msg.clone())
-            }
+    for msg in &message_with_context.messages {
+        if msg.message_to == "SYSTEM" {
+            message = Some(msg.clone())
         }
-
-        if let Some(message) = message {
-            if let Some(additional_data) = message.additional_data {
-                let additional_data: AdditionalData = serde_json::from_value(additional_data)?;
-                match additional_data.action.as_str() {
-                    "extract_context_from_artifact_store" => {
-                        extract_context_from_artifact_store(
-                            message_with_context,
-                            additional_data.action_data,
-                        )
-                        .await?
-                    }
-                    "find_actions" => {
-                        find_actions(message_with_context, additional_data.action_data).await?
-                    }
-                    "execute_action_plan" => {
-                        execute_action_plan(message_with_context, additional_data.action_data)
-                            .await?
-                    }
-                    "execute_action" => {
-                        execute_action(message_with_context, additional_data.action_data).await?
-                    }
-                    _ => {}
-                };
-            }
-        }
-    } else {
-        tracing::info!("No message body found");
     }
-    tracing::info!("Recieved Message: {:?}", sqs_message);
+
+    if let Some(message) = message {
+        if let Some(additional_data) = message.additional_data {
+            let additional_data: AdditionalData = serde_json::from_value(additional_data)?;
+            match additional_data.action.as_str() {
+                "extract_context_from_artifact_store" => {
+                    extract_context_from_artifact_store(
+                        message_with_context,
+                        pool.clone(),
+                        additional_data.action_data,
+                    )
+                    .await?
+                }
+                "find_actions" => {
+                    find_actions(message_with_context, pool.clone(), additional_data.action_data).await?
+                }
+                "execute_action_plan" => {
+                    execute_action_plan(message_with_context, pool.clone(), additional_data.action_data).await?
+                }
+                "execute_action" => {
+                    execute_action(message_with_context, pool.clone(), additional_data.action_data).await?
+                }
+                _ => {}
+            };
+        }
+    }
+    tracing::info!("Recieved Message: {:?}", msg);
     Ok(())
 }
 
 pub async fn find_actions(
     ctx: MessageWithConversationContext,
+    db_pool: DbPool,
     data: Option<Value>,
 ) -> Result<(), Error> {
     if let Some(data) = data {
@@ -129,6 +129,7 @@ pub async fn find_actions(
 
 pub async fn execute_action_plan(
     ctx: MessageWithConversationContext,
+    db_pool: DbPool,
     data: Option<Value>,
 ) -> Result<(), Error> {
     if let Some(data) = data {
@@ -166,10 +167,19 @@ pub async fn execute_action_plan(
             context: response_context,
         };
         send_message_to_user(serde_json::to_value(response_with_context.clone())?).await?;
-        // TODO: CREATE A JOB IN DATABASE
+
+        let _res = create_job(db_pool.clone(), NewJob{
+            name: "".to_string(),
+            plan: json!({}),
+            status: "".to_string(),
+            trigger: json!({}),
+            user_id: response_with_context.context.user_id.unwrap(),
+            team_id: response_with_context.context.team_id.unwrap()
+        }).await?;
 
         execute_action(
             response_with_context,
+            db_pool.clone(),
             Some(json!({
                 "action_id": filtered_actions[0].action_id,
                 "action_input": action_plan.first_action_input
@@ -184,6 +194,7 @@ pub async fn execute_action_plan(
 
 pub async fn execute_action(
     ctx: MessageWithConversationContext,
+    db_pool: DbPool,
     data: Option<Value>,
 ) -> Result<(), Error> {
     // TODO: MATCH ACTION & TRIGGER HANDLER
@@ -301,45 +312,52 @@ pub async fn execute_action(
 
 pub async fn extract_context_from_artifact_store(
     ctx: MessageWithConversationContext,
+    db_pool: DbPool,
     data: Option<Value>,
 ) -> Result<(), Error> {
     Ok(())
 }
 
 pub async fn send_message_to_user(data: Value) -> Result<(), Error> {
-    let region_provider =
-        RegionProviderChain::first_try(aws_types::region::Region::new("us-west-2"));
-    let shared_config = aws_config::from_env().region(region_provider).load().await;
-    let client = aws_sdk_sqs::Client::new(&shared_config);
-    let queue_url = std::env::var("CHAT_USER_SQS_URL").expect("CHAT_USER_SQS_URL must be set");
+    // let region_provider =
+    //     RegionProviderChain::first_try(aws_types::region::Region::new("us-west-2"));
+    // let shared_config = aws_config::from_env().region(region_provider).load().await;
 
-    let rsp = client
-        .send_message()
-        .queue_url(queue_url)
-        .message_body(&data.to_string())
-        .send()
-        .await?;
+    // let client = aws_sdk_sns::Client::new(&shared_config);
+    // client.subscribe().set_attributes(Some(
 
-    tracing::info!("Sent message to user, Response: {:?}", rsp);
+    // ))
+
+    // let client = aws_sdk_sqs::Client::new(&shared_config);
+    // let queue_url = std::env::var("CHAT_USER_SQS_URL").expect("CHAT_USER_SQS_URL must be set");
+
+    // let rsp = client
+    //     .send_message()
+    //     .queue_url(queue_url)
+    //     .message_body(&data.to_string())
+    //     .send()
+    //     .await?;
+
+    tracing::info!("Sent message to user, Response:");
 
     Ok(())
 }
 
 pub async fn send_message_to_ai(data: Value) -> Result<(), Error> {
-    let region_provider =
-        RegionProviderChain::first_try(aws_types::region::Region::new("us-west-2"));
-    let shared_config = aws_config::from_env().region(region_provider).load().await;
-    let client = aws_sdk_sqs::Client::new(&shared_config);
-    let queue_url = std::env::var("CHAT_AI_SQS_URL").expect("CHAT_AI_SQS_URL must be set");
+    // let region_provider =
+    //     RegionProviderChain::first_try(aws_types::region::Region::new("us-west-2"));
+    // let shared_config = aws_config::from_env().region(region_provider).load().await;
+    // let client = aws_sdk_sqs::Client::new(&shared_config);
+    // let queue_url = std::env::var("CHAT_AI_SQS_URL").expect("CHAT_AI_SQS_URL must be set");
 
-    let rsp = client
-        .send_message()
-        .queue_url(queue_url)
-        .message_body(&data.to_string())
-        .send()
-        .await?;
+    // let rsp = client
+    //     .send_message()
+    //     .queue_url(queue_url)
+    //     .message_body(&data.to_string())
+    //     .send()
+    //     .await?;
 
-    tracing::info!("Sent message to user, Response: {:?}", rsp);
+    tracing::info!("Sent message to user, Response:");
 
     Ok(())
 }
