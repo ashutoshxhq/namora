@@ -2,6 +2,7 @@ mod authz;
 pub mod error;
 mod modules;
 mod state;
+mod schema;
 use axum::body::{boxed, BoxBody};
 use axum::routing::get;
 use axum::{error_handling::HandleErrorLayer, http::StatusCode, BoxError, Extension, Router};

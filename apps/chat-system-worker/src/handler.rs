@@ -9,15 +9,22 @@ use crate::{
         linkedin::get_linkedin_profile,
     },
     types::{
-        Action, AdditionalData, Error, ExecuteActionAdditionalData,
-        ExecuteActionPlanAdditionalData, FindActionsAdditionalData, Message,
-        MessageWithConversationContext, PineconeQueryResponse,
-    }, db::DbPool, jobs::{model::NewJob, service::create_job},
+        context::{Action, WorkerContext},
+        error::Error,
+        message::{
+            AdditionalData, ExecuteActionAdditionalData, ExecuteActionPlanAdditionalData,
+            FindActionsAdditionalData, Message, MessageWithConversationContext,
+        },
+        pinecone::PineconeQueryResponse,
+    },
 };
+use agent_db_repository::modules::jobs::{model::NewJob, repository::JobRepository};
+use amqprs::{channel::BasicPublishArguments, BasicProperties};
 use async_openai::{types::CreateEmbeddingRequestArgs, Client};
 use serde_json::{json, Value};
+use uuid::Uuid;
 
-pub async fn message_handler(pool: DbPool, msg: String) -> Result<(), Error> {
+pub async fn message_handler(worker_context: WorkerContext, msg: String) -> Result<(), Error> {
     let message_with_context: MessageWithConversationContext = serde_json::from_str(&msg)?;
     let mut message: Option<Message> = None;
 
@@ -33,20 +40,35 @@ pub async fn message_handler(pool: DbPool, msg: String) -> Result<(), Error> {
             match additional_data.action.as_str() {
                 "extract_context_from_artifact_store" => {
                     extract_context_from_artifact_store(
+                        worker_context.clone(),
                         message_with_context,
-                        pool.clone(),
                         additional_data.action_data,
                     )
                     .await?
                 }
                 "find_actions" => {
-                    find_actions(message_with_context, pool.clone(), additional_data.action_data).await?
+                    find_actions(
+                        worker_context.clone(),
+                        message_with_context,
+                        additional_data.action_data,
+                    )
+                    .await?
                 }
                 "execute_action_plan" => {
-                    execute_action_plan(message_with_context, pool.clone(), additional_data.action_data).await?
+                    execute_action_plan(
+                        worker_context.clone(),
+                        message_with_context,
+                        additional_data.action_data,
+                    )
+                    .await?
                 }
                 "execute_action" => {
-                    execute_action(message_with_context, pool.clone(), additional_data.action_data).await?
+                    execute_action(
+                        worker_context.clone(),
+                        message_with_context,
+                        additional_data.action_data,
+                    )
+                    .await?
                 }
                 _ => {}
             };
@@ -57,8 +79,8 @@ pub async fn message_handler(pool: DbPool, msg: String) -> Result<(), Error> {
 }
 
 pub async fn find_actions(
-    ctx: MessageWithConversationContext,
-    db_pool: DbPool,
+    worker_context: WorkerContext,
+    message_context: MessageWithConversationContext,
     data: Option<Value>,
 ) -> Result<(), Error> {
     if let Some(data) = data {
@@ -110,8 +132,11 @@ pub async fn find_actions(
             additional_data: Some(serde_json::to_value(response_data.matches)?),
         };
 
-        let mut response_context = ctx.context;
-        response_context.history.messages.push(ai_message.clone());
+        let mut response_context = message_context.context;
+        response_context
+            .current_query_context
+            .messages
+            .push(ai_message.clone());
         response_context.current_query_context.unfiltered_actions = Some(actions);
 
         let response_with_context = MessageWithConversationContext {
@@ -119,7 +144,11 @@ pub async fn find_actions(
             ai_system_prompt: Some(system_prompt),
             context: response_context,
         };
-        send_message_to_ai(serde_json::to_value(response_with_context)?).await?;
+        send_message_to_ai(
+            worker_context.clone(),
+            serde_json::to_value(response_with_context)?,
+        )
+        .await?;
     } else {
         tracing::error!("No plan found to search actions from")
     }
@@ -128,8 +157,8 @@ pub async fn find_actions(
 }
 
 pub async fn execute_action_plan(
-    ctx: MessageWithConversationContext,
-    db_pool: DbPool,
+    worker_context: WorkerContext,
+    message_context: MessageWithConversationContext,
     data: Option<Value>,
 ) -> Result<(), Error> {
     if let Some(data) = data {
@@ -139,7 +168,11 @@ pub async fn execute_action_plan(
         let mut filtered_actions: Vec<Action> = Vec::new();
 
         for action_id in action_plan.action_ids {
-            if let Some(unfiltered_actions) = &ctx.context.current_query_context.unfiltered_actions {
+            if let Some(unfiltered_actions) = &message_context
+                .context
+                .current_query_context
+                .unfiltered_actions
+            {
                 for unfiltered_action in unfiltered_actions {
                     if unfiltered_action.action_id == action_id {
                         filtered_actions.push(unfiltered_action.clone());
@@ -157,8 +190,11 @@ pub async fn execute_action_plan(
             additional_data: None,
         };
 
-        let mut response_context = ctx.context;
-        response_context.history.messages.push(ai_message.clone());
+        let mut response_context = message_context.context;
+        response_context
+            .current_query_context
+            .messages
+            .push(ai_message.clone());
         response_context.current_query_context.filtered_actions = Some(filtered_actions.clone());
 
         let response_with_context = MessageWithConversationContext {
@@ -166,20 +202,26 @@ pub async fn execute_action_plan(
             ai_system_prompt: None,
             context: response_context,
         };
-        send_message_to_user(serde_json::to_value(response_with_context.clone())?).await?;
+        send_message_to_user(
+            worker_context.clone(),
+            response_with_context.context.user_id.unwrap(),
+            serde_json::to_value(response_with_context.clone())?,
+        )
+        .await?;
 
-        let _res = create_job(db_pool.clone(), NewJob{
+        let jobs_repo = JobRepository::new(worker_context.pool.clone());
+        let _res = jobs_repo.create_job(NewJob {
             name: "".to_string(),
             plan: json!({}),
             status: "".to_string(),
             trigger: json!({}),
             user_id: response_with_context.context.user_id.unwrap(),
-            team_id: response_with_context.context.team_id.unwrap()
-        }).await?;
+            team_id: response_with_context.context.team_id.unwrap(),
+        });
 
         execute_action(
+            worker_context.clone(),
             response_with_context,
-            db_pool.clone(),
             Some(json!({
                 "action_id": filtered_actions[0].action_id,
                 "action_input": action_plan.first_action_input
@@ -193,16 +235,19 @@ pub async fn execute_action_plan(
 }
 
 pub async fn execute_action(
-    ctx: MessageWithConversationContext,
-    db_pool: DbPool,
+    _: WorkerContext,
+    message_context: MessageWithConversationContext,
     data: Option<Value>,
 ) -> Result<(), Error> {
-    // TODO: MATCH ACTION & TRIGGER HANDLER
     if let Some(data) = data {
         let execute_action_additional_data: ExecuteActionAdditionalData =
             serde_json::from_value(data)?;
         let mut action_to_execute: Option<Action> = None;
-        if let Some(filtered_actions) = &ctx.context.current_query_context.filtered_actions {
+        if let Some(filtered_actions) = &message_context
+            .context
+            .current_query_context
+            .filtered_actions
+        {
             for action in filtered_actions {
                 if action.action_id == execute_action_additional_data.action_id {
                     action_to_execute = Some(action.clone());
@@ -211,7 +256,7 @@ pub async fn execute_action(
         }
 
         if let Some(action_to_execute) = action_to_execute {
-            let action_result = match action_to_execute.action_id.as_str() {
+            let _action_result = match action_to_execute.action_id.as_str() {
                 "get_linkedin_profile" => {
                     get_linkedin_profile(execute_action_additional_data.action_input).await?
                 }
@@ -306,58 +351,45 @@ pub async fn execute_action(
         }
     }
     // TODO: EXTRACT RELEVENT DATA FROM OUTPUTS SO FAR
+
     // TODO: IF MORE ACTION, ASK AI TO GENERATE NEXT ACTION INPUT ELSE GENERATE SUMMARY/ ANSWER FOR USER
     Ok(())
 }
 
 pub async fn extract_context_from_artifact_store(
-    ctx: MessageWithConversationContext,
-    db_pool: DbPool,
-    data: Option<Value>,
+    _worker_context: WorkerContext,
+    _message_context: MessageWithConversationContext,
+    _data: Option<Value>,
 ) -> Result<(), Error> {
     Ok(())
 }
 
-pub async fn send_message_to_user(data: Value) -> Result<(), Error> {
-    // let region_provider =
-    //     RegionProviderChain::first_try(aws_types::region::Region::new("us-west-2"));
-    // let shared_config = aws_config::from_env().region(region_provider).load().await;
+pub async fn send_message_to_user(worker_context: WorkerContext, user_id: Uuid, data: Value) -> Result<(), Error> {
+    let content = data.to_string().into_bytes();
+    
+    let args = BasicPublishArguments::new("amq.topic", &format!("amqprs.workers.user.{}", user_id.to_string()));
+    worker_context
+        .channel
+        .basic_publish(BasicProperties::default(), content, args)
+        .await
+        .unwrap();
 
-    // let client = aws_sdk_sns::Client::new(&shared_config);
-    // client.subscribe().set_attributes(Some(
-
-    // ))
-
-    // let client = aws_sdk_sqs::Client::new(&shared_config);
-    // let queue_url = std::env::var("CHAT_USER_SQS_URL").expect("CHAT_USER_SQS_URL must be set");
-
-    // let rsp = client
-    //     .send_message()
-    //     .queue_url(queue_url)
-    //     .message_body(&data.to_string())
-    //     .send()
-    //     .await?;
-
-    tracing::info!("Sent message to user, Response:");
+    tracing::info!("Sent message to user");
 
     Ok(())
 }
 
-pub async fn send_message_to_ai(data: Value) -> Result<(), Error> {
-    // let region_provider =
-    //     RegionProviderChain::first_try(aws_types::region::Region::new("us-west-2"));
-    // let shared_config = aws_config::from_env().region(region_provider).load().await;
-    // let client = aws_sdk_sqs::Client::new(&shared_config);
-    // let queue_url = std::env::var("CHAT_AI_SQS_URL").expect("CHAT_AI_SQS_URL must be set");
+pub async fn send_message_to_ai(worker_context: WorkerContext, data: Value) -> Result<(), Error> {
+    let content = data.to_string().into_bytes();
 
-    // let rsp = client
-    //     .send_message()
-    //     .queue_url(queue_url)
-    //     .message_body(&data.to_string())
-    //     .send()
-    //     .await?;
+    let args = BasicPublishArguments::new("amq.topic", "amqprs.workers.ai");
+    worker_context
+        .channel
+        .basic_publish(BasicProperties::default(), content, args)
+        .await
+        .unwrap();
 
-    tracing::info!("Sent message to user, Response:");
+    tracing::info!("Sent message to ai");
 
     Ok(())
 }

@@ -1,19 +1,17 @@
 mod actions;
-mod handler;
-mod jobs;
-mod types;
-pub mod schema;
 pub mod db;
+mod handler;
+mod types;
 use amqprs::{
     callbacks::{DefaultChannelCallback, DefaultConnectionCallback},
     channel::{BasicConsumeArguments, QueueBindArguments, QueueDeclareArguments},
-    connection::{Connection, OpenConnectionArguments}
+    connection::{Connection, OpenConnectionArguments},
 };
-use db::{create_pool, DbPool};
+use db::create_pool;
 use dotenvy::dotenv;
 use tracing::Level;
 use tracing_subscriber::FmtSubscriber;
-use types::Error;
+use types::{context::WorkerContext, error::Error};
 
 #[tokio::main]
 async fn main() {
@@ -28,9 +26,8 @@ async fn main() {
         .finish();
 
     tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
-    let pool = create_pool();
 
-    let worker_result = worker(pool).await;
+    let worker_result = worker().await;
 
     match worker_result {
         Ok(_) => {}
@@ -38,7 +35,8 @@ async fn main() {
     }
 }
 
-async fn worker(pool: DbPool) -> Result<(), Error> {
+async fn worker() -> Result<(), Error> {
+    let pool = create_pool();
     let connection = Connection::open(&OpenConnectionArguments::new(
         "b-5553e2ff-0789-4470-ba17-de738cdbf3c3.mq.us-west-2.amazonaws.com",
         5672,
@@ -54,6 +52,11 @@ async fn worker(pool: DbPool) -> Result<(), Error> {
     // open a channel on the connection
     let channel = connection.open_channel(None).await.unwrap();
     channel.register_callback(DefaultChannelCallback).await?;
+
+    let worker_context = WorkerContext {
+        pool: pool.clone(),
+        channel: channel.clone(),
+    };
 
     // declare a queue
     let (queue_name, _, _) = channel
@@ -78,11 +81,11 @@ async fn worker(pool: DbPool) -> Result<(), Error> {
     while let Some(msg) = messages_rx.recv().await {
         let message_bytes = msg.content.unwrap();
         let message_str = String::from_utf8(message_bytes.clone())?;
-        let db_pool = pool.clone();
-        
-        println!("Message: {:?}", message_str );
+        let worker_ctx = worker_context.clone();
+
+        println!("Message: {:?}", message_str);
         tokio::spawn(async move {
-            let message_handler_res = handler::message_handler(db_pool, message_str).await;
+            let message_handler_res = handler::message_handler(worker_ctx, message_str).await;
             match message_handler_res {
                 Ok(_) => {
                     tracing::info!("Message handled successfully")

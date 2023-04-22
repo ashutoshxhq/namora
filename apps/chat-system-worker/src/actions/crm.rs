@@ -1,5 +1,6 @@
 use serde_json::{Value, json};
-use crate::types::Error;
+
+use crate::types::error::Error;
 
 pub async fn get_object_record_from_crm_with_filter(object:String, data: Value) -> Result<Value, Error> {
     Ok(json!({}))

@@ -5,4 +5,6 @@ members = [
     "apps/chat-user-worker",
     "apps/chat-ai-worker",
     "apps/chat-system-worker",
+    "libs/agent_db_repository",
+    "libs/engine_db_repository",
 ]

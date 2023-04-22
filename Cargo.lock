@@ -21,6 +21,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "agent_db_repository"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "diesel",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+ "uuid",
+]
+
+[[package]]
 name = "aho-corasick"
 version = "0.7.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -821,6 +835,7 @@ dependencies = [
 name = "chat-system-worker"
 version = "0.1.0"
 dependencies = [
+ "agent_db_repository",
  "amqprs",
  "async-openai",
  "chrono",
@@ -848,6 +863,7 @@ dependencies = [
  "axum-typed-websockets",
  "bcrypt",
  "chrono",
+ "diesel",
  "dotenvy",
  "futures",
  "futures-util",
@@ -1237,6 +1253,10 @@ dependencies = [
 
 [[package]]
 name = "engine-service"
+version = "0.1.0"
+
+[[package]]
+name = "engine_db_repository"
 version = "0.1.0"
 
 [[package]]
