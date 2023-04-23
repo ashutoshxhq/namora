@@ -1,26 +1,20 @@
 use std::{env, fs};
 
 use crate::{
-    actions::{
-        crm::{
-            create_object_record_in_crm, get_object_record_from_crm_with_filter,
-            update_object_record_in_crm_by_id,
-        },
-        linkedin::get_linkedin_profile,
-    },
     types::{
         context::{Action, WorkerContext},
-        error::Error,
+        error::{Error, ErrorBuilder},
         message::{
             AdditionalData, ExecuteActionAdditionalData, ExecuteActionPlanAdditionalData,
             FindActionsAdditionalData, Message, MessageWithConversationContext,
         },
         pinecone::PineconeQueryResponse,
-    },
+    }, actions,
 };
 use agent_db_repository::modules::jobs::{model::NewJob, repository::JobRepository};
 use amqprs::{channel::BasicPublishArguments, BasicProperties};
 use async_openai::{types::CreateEmbeddingRequestArgs, Client};
+use handlebars::Handlebars;
 use serde_json::{json, Value};
 use uuid::Uuid;
 
@@ -120,8 +114,8 @@ pub async fn find_actions(
             actions.push(action);
         }
 
-        let system_prompt = fs::read_to_string("./src/prompts/create_plan_system.txt")?;
-        let query_prompt = fs::read_to_string("./src/prompts/create_plan_query.txt")?;
+        let system_prompt = fs::read_to_string("./src/prompts/system/create_plan_system.txt")?;
+        let query_prompt = fs::read_to_string("./src/prompts/query/create_plan_query.txt")?;
 
         let ai_message = Message {
             message_from: "SYSTEM".to_string(),
@@ -137,7 +131,7 @@ pub async fn find_actions(
             .current_query_context
             .messages
             .push(ai_message.clone());
-        response_context.current_query_context.unfiltered_actions = Some(actions);
+        response_context.current_query_context.unfiltered_actions = actions;
 
         let response_with_context = MessageWithConversationContext {
             messages: vec![ai_message],
@@ -168,16 +162,14 @@ pub async fn execute_action_plan(
         let mut filtered_actions: Vec<Action> = Vec::new();
 
         for action_id in action_plan.action_ids {
-            if let Some(unfiltered_actions) = &message_context
+            for unfiltered_action in &message_context
                 .context
                 .current_query_context
                 .unfiltered_actions
             {
-                for unfiltered_action in unfiltered_actions {
-                    if unfiltered_action.action_id == action_id {
-                        filtered_actions.push(unfiltered_action.clone());
-                        user_response.push_str(&format!("{}\n", unfiltered_action.action_name));
-                    }
+                if unfiltered_action.action_id == action_id {
+                    filtered_actions.push(unfiltered_action.clone());
+                    user_response.push_str(&format!("{}\n", unfiltered_action.action_name));
                 }
             }
         }
@@ -195,7 +187,7 @@ pub async fn execute_action_plan(
             .current_query_context
             .messages
             .push(ai_message.clone());
-        response_context.current_query_context.filtered_actions = Some(filtered_actions.clone());
+        response_context.current_query_context.filtered_actions = filtered_actions.clone();
 
         let response_with_context = MessageWithConversationContext {
             messages: vec![ai_message],
@@ -235,7 +227,7 @@ pub async fn execute_action_plan(
 }
 
 pub async fn execute_action(
-    _: WorkerContext,
+    worker_context: WorkerContext,
     message_context: MessageWithConversationContext,
     data: Option<Value>,
 ) -> Result<(), Error> {
@@ -243,131 +235,134 @@ pub async fn execute_action(
         let execute_action_additional_data: ExecuteActionAdditionalData =
             serde_json::from_value(data)?;
         let mut action_to_execute: Option<Action> = None;
-        if let Some(filtered_actions) = &message_context
+
+        for (_index, action) in message_context
             .context
             .current_query_context
             .filtered_actions
+            .iter()
+            .enumerate()
         {
-            for action in filtered_actions {
-                if action.action_id == execute_action_additional_data.action_id {
-                    action_to_execute = Some(action.clone());
-                }
+            if action.action_id == execute_action_additional_data.action_id {
+                action_to_execute = Some(action.clone());
             }
         }
 
         if let Some(action_to_execute) = action_to_execute {
-            let _action_result = match action_to_execute.action_id.as_str() {
-                "get_linkedin_profile" => {
-                    get_linkedin_profile(execute_action_additional_data.action_input).await?
+            let action_result = actions::router::route(action_to_execute.action_id.clone(), execute_action_additional_data.action_input).await?;
+            let mut response_context = message_context.context;
+            let mut executed_action = action_to_execute.clone();
+            executed_action.acion_result = Some(serde_json::to_value(action_result)?);
+
+            response_context
+                .current_query_context
+                .executed_actions
+                .push(executed_action);
+
+            for (index, action) in response_context
+                .current_query_context
+                .filtered_actions
+                .clone()
+                .iter()
+                .enumerate()
+            {
+                if action.action_id == action_to_execute.action_id {
+                    response_context
+                        .current_query_context
+                        .filtered_actions
+                        .remove(index);
                 }
-                "get_lead_from_crm_with_filter" => {
-                    get_object_record_from_crm_with_filter(
-                        "lead".to_string(),
-                        execute_action_additional_data.action_input,
-                    )
-                    .await?
-                }
-                "create_lead_in_crm" => {
-                    create_object_record_in_crm(
-                        "lead".to_string(),
-                        execute_action_additional_data.action_input,
-                    )
-                    .await?
-                }
-                "update_lead_in_crm_by_id" => {
-                    update_object_record_in_crm_by_id(
-                        "lead".to_string(),
-                        execute_action_additional_data.action_input,
-                    )
-                    .await?
-                }
-                "get_account_from_crm_with_filter" => {
-                    get_object_record_from_crm_with_filter(
-                        "account".to_string(),
-                        execute_action_additional_data.action_input,
-                    )
-                    .await?
-                }
-                "create_account_in_crm" => {
-                    create_object_record_in_crm(
-                        "account".to_string(),
-                        execute_action_additional_data.action_input,
-                    )
-                    .await?
-                }
-                "update_account_in_crm_by_id" => {
-                    update_object_record_in_crm_by_id(
-                        "account".to_string(),
-                        execute_action_additional_data.action_input,
-                    )
-                    .await?
-                }
-                "get_deal_from_crm_with_filter" => {
-                    get_object_record_from_crm_with_filter(
-                        "deal".to_string(),
-                        execute_action_additional_data.action_input,
-                    )
-                    .await?
-                }
-                "create_deal_in_crm" => {
-                    create_object_record_in_crm(
-                        "deal".to_string(),
-                        execute_action_additional_data.action_input,
-                    )
-                    .await?
-                }
-                "update_deal_in_crm_by_id" => {
-                    update_object_record_in_crm_by_id(
-                        "deal".to_string(),
-                        execute_action_additional_data.action_input,
-                    )
-                    .await?
-                }
-                "get_contact_from_crm_with_filter" => {
-                    get_object_record_from_crm_with_filter(
-                        "contact".to_string(),
-                        execute_action_additional_data.action_input,
-                    )
-                    .await?
-                }
-                "create_contact_in_crm" => {
-                    create_object_record_in_crm(
-                        "contact".to_string(),
-                        execute_action_additional_data.action_input,
-                    )
-                    .await?
-                }
-                "update_contact_in_crm_by_id" => {
-                    update_object_record_in_crm_by_id(
-                        "contact".to_string(),
-                        execute_action_additional_data.action_input,
-                    )
-                    .await?
-                }
-                _ => {
-                    json!({})
-                }
+            }
+
+            // TODO: EXTRACT RELEVENT DATA FROM OUTPUTS SO FAR
+
+            let system_prompt =
+                fs::read_to_string("./src/prompts/system/extract_context_from_output_system.txt")?;
+            let query_prompt =
+                fs::read_to_string("./src/prompts/query/extract_context_from_output_query.txt")?;
+
+            let reg = Handlebars::new();
+            let query = reg.render_template(&query_prompt, &response_context)?;
+            let system = reg.render_template(&system_prompt, &response_context)?;
+
+            let ai_message = Message {
+                additional_data: None,
+                created_at: None,
+                message: query,
+                message_from: "SYSTEM".to_string(),
+                message_to: "AI".to_string(),
+                next_message_to: Some("SYSTEM".to_string()),
             };
+
+            response_context
+                .current_query_context
+                .messages
+                .push(ai_message.clone());
+
+            let response_with_context = MessageWithConversationContext {
+                messages: vec![ai_message],
+                ai_system_prompt: Some(system),
+                context: response_context,
+            };
+
+            send_message_to_ai(worker_context, serde_json::to_value(response_with_context)?)
+                .await?;
+            return Ok(());
         }
     }
-    // TODO: EXTRACT RELEVENT DATA FROM OUTPUTS SO FAR
-
-    // TODO: IF MORE ACTION, ASK AI TO GENERATE NEXT ACTION INPUT ELSE GENERATE SUMMARY/ ANSWER FOR USER
-    Ok(())
+    
+    Err(ErrorBuilder::new("BAD_REQUEST", "Something went wrong parsing the data"))
 }
 
 pub async fn extract_context_from_artifact_store(
-    _worker_context: WorkerContext,
-    _message_context: MessageWithConversationContext,
-    _data: Option<Value>,
+    worker_context: WorkerContext,
+    message_context: MessageWithConversationContext,
+    data: Option<Value>,
 ) -> Result<(), Error> {
+    // TODO: Extract context from artifact store
+
+    let system_prompt = fs::read_to_string("./src/prompts/system/initial_query_system.txt")?;
+    let query_prompt = fs::read_to_string("./src/prompts/query/initial_query.txt")?;
+
+    let data: Message = serde_json::from_value(data.unwrap())?;
+
+    let reg = Handlebars::new();
+    let query = reg.render_template(&query_prompt, &data)?;
+    let ai_message = Message {
+        additional_data: None,
+        created_at: None,
+        message: query,
+        message_from: "USER".to_string(),
+        message_to: "AI".to_string(),
+        next_message_to: Some("SYSTEM".to_string()),
+    };
+    let mut response_context = message_context.context;
+    response_context
+        .current_query_context
+        .messages
+        .push(ai_message.clone());
+
+    let response_with_context = MessageWithConversationContext {
+        messages: vec![ai_message],
+        ai_system_prompt: Some(system_prompt),
+        context: response_context,
+    };
+    send_message_to_ai(worker_context, serde_json::to_value(response_with_context)?).await?;
+
     Ok(())
 }
 
-pub async fn send_message_to_user(worker_context: WorkerContext, user_id: Uuid, data: Value) -> Result<(), Error> {
+pub async fn send_message_to_user(
+    worker_context: WorkerContext,
+    user_id: Uuid,
+    data: Value,
+) -> Result<(), Error> {
     let content = data.to_string().into_bytes();
-    
-    let args = BasicPublishArguments::new("amq.topic", &format!("amqprs.workers.user.{}", user_id.to_string()));
+
+    let args = BasicPublishArguments::new(
+        "amq.topic",
+        &format!("amqprs.workers.user.{}", user_id.to_string()),
+    );
     worker_context
         .channel
         .basic_publish(BasicProperties::default(), content, args)

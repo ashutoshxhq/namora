@@ -19,3 +19,4 @@ async-openai = "0.8.0"
 diesel = { version = "2.0.0", features = ["postgres", "r2d2", "uuid", "serde_json", "chrono"] }
 amqprs = "1.2.1"
 agent_db_repository = { path = "../../libs/agent_db_repository"}
+handlebars = "4.3.6"

@@ -35,8 +35,9 @@ impl std::ops::Deref for Action {
 pub struct QueryContext {
     pub query: String,
     pub plan: Option<String>,
-    pub unfiltered_actions: Option<Vec<Action>>,
-    pub filtered_actions: Option<Vec<Action>>,
+    pub unfiltered_actions: Vec<Action>,
+    pub filtered_actions: Vec<Action>,
+    pub executed_actions: Vec<Action>,
     pub messages: Vec<Message>,
 }
 
