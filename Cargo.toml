@@ -1,10 +1,10 @@
 [workspace]
 
 members = [
-    "apps/engine-service",
-    "apps/chat-user-worker",
-    "apps/chat-ai-worker",
-    "apps/chat-system-worker",
+    "apps/ai-worker.api.namora.ai",
+    "apps/engine.api.namora.ai",
+    "apps/system-worker.api.namora.ai",
+    "apps/user-worker.api.namora.ai",
     "libs/agent_db_repository",
     "libs/engine_db_repository",
 ]
