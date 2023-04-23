@@ -6,7 +6,7 @@ use async_openai::{
     Client,
 };
 use namora_core::{
-    connector::{send_message_to_user, send_message_to_ai},
+    connector::{send_message_to_user, send_message_to_ai, send_message_to_system},
     types::{
         error::Error,
         message::{Message, MessageWithConversationContext},
@@ -84,8 +84,7 @@ pub async fn message_handler(worker_context: WorkerContext, msg: String) -> Resu
                 context,
                 messages: vec![message.clone()],
             };
-
-            send_message_to_ai(
+            send_message_to_system(
                 worker_context,
                 serde_json::to_value(context_with_response_message)?,
             )

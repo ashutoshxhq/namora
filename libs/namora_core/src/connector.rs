@@ -14,7 +14,7 @@ pub async fn send_message_to_user(
 
     let args = BasicPublishArguments::new(
         "amq.topic",
-        &format!("amqprs.workers.user.{}", user_id.to_string()),
+        &format!("amqprs.worker.user.{}", user_id.to_string()),
     );
     worker_context
         .channel
@@ -26,7 +26,20 @@ pub async fn send_message_to_user(
 pub async fn send_message_to_ai(worker_context: WorkerContext, data: Value) -> Result<(), Error> {
     let content = data.to_string().into_bytes();
 
-    let args = BasicPublishArguments::new("amq.topic", "amqprs.workers.ai");
+    let args = BasicPublishArguments::new("amq.topic", "amqprs.worker.ai");
+    worker_context
+        .channel
+        .basic_publish(BasicProperties::default(), content, args)
+        .await?;
+
+    Ok(())
+}
+
+
+pub async fn send_message_to_system(worker_context: WorkerContext, data: Value) -> Result<(), Error> {
+    let content = data.to_string().into_bytes();
+
+    let args = BasicPublishArguments::new("amq.topic", "amqprs.worker.system");
     worker_context
         .channel
         .basic_publish(BasicProperties::default(), content, args)
