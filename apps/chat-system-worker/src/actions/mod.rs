@@ -1,3 +1,2 @@
-pub mod crm;
-pub mod linkedin;
+pub mod handlers;
 pub mod router;

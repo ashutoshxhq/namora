@@ -277,9 +277,9 @@ pub async fn execute_action(
             // TODO: EXTRACT RELEVENT DATA FROM OUTPUTS SO FAR
 
             let system_prompt =
-                fs::read_to_string("./src/prompts/system/extract_context_from_output_system.txt")?;
+                fs::read_to_string("./src/prompts/system/extract_action_input_from_context_system.txt")?;
             let query_prompt =
-                fs::read_to_string("./src/prompts/query/extract_context_from_output_query.txt")?;
+                fs::read_to_string("./src/prompts/query/extract_action_input_from_context_query.txt")?;
 
             let reg = Handlebars::new();
             let query = reg.render_template(&query_prompt, &response_context)?;
