@@ -1,9 +1,11 @@
-use amqprs::{channel::BasicPublishArguments, BasicProperties};
+use amqprs::{
+    channel::{BasicPublishArguments, Channel},
+    BasicProperties,
+};
 use serde_json::Value;
 use uuid::Uuid;
 
-use crate::types::{worker::WorkerContext, error::Error};
-
+use crate::types::{error::Error, worker::WorkerContext};
 
 pub async fn send_message_to_user(
     worker_context: WorkerContext,
@@ -23,25 +25,23 @@ pub async fn send_message_to_user(
     Ok(())
 }
 
-pub async fn send_message_to_ai(worker_context: WorkerContext, data: Value) -> Result<(), Error> {
+pub async fn send_message_to_ai(channel: Channel, data: Value) -> Result<(), Error> {
     let content = data.to_string().into_bytes();
 
     let args = BasicPublishArguments::new("amq.topic", "amqprs.worker.ai");
-    worker_context
-        .channel
+    channel
         .basic_publish(BasicProperties::default(), content, args)
         .await?;
 
     Ok(())
 }
 
-
-pub async fn send_message_to_system(worker_context: WorkerContext, data: Value) -> Result<(), Error> {
+pub async fn send_message_to_system(channel: Channel, data: Value) -> Result<(), Error> {
     let content = data.to_string().into_bytes();
 
     let args = BasicPublishArguments::new("amq.topic", "amqprs.worker.system");
-    worker_context
-        .channel
+
+    channel
         .basic_publish(BasicProperties::default(), content, args)
         .await?;
 

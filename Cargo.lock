@@ -322,6 +322,7 @@ dependencies = [
 name = "chat-user-worker"
 version = "0.1.0"
 dependencies = [
+ "amqprs",
  "async-openai",
  "axum",
  "axum-typed-websockets",

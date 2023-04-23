@@ -36,10 +36,10 @@ async fn main() {
 async fn worker() -> Result<(), Error> {
     let pool = create_pool();
     let connection = Connection::open(&OpenConnectionArguments::new(
-        "b-5553e2ff-0789-4470-ba17-de738cdbf3c3.mq.us-west-2.amazonaws.com",
-        5672,
-        "nemor",
-        "Aqbfjotld9Smvemjsun8",
+        &std::env::var("RABBITMQ_HOST")?,
+        std::env::var("RABBITMQ_PORT")?.parse::<u16>()?,
+        &std::env::var("RABBITMQ_USERNAME")?,
+        &std::env::var("RABBITMQ_PASSWORD")?,
     ))
     .await?;
 
@@ -63,13 +63,14 @@ async fn worker() -> Result<(), Error> {
         .unwrap();
 
     // bind the queue to exchange
-    let rounting_key = "amqprs.workers.system";
-    let exchange_name = "amq.topic";
+    let routing_key = std::env::var("RABBITMQ_SYSTEM_WORKER_ROUTING_KEY")?;
+    let exchange_name = std::env::var("RABBITMQ_EXCHANGE_NAME")?;
+
     channel
         .queue_bind(QueueBindArguments::new(
             &queue_name,
-            exchange_name,
-            rounting_key,
+            &exchange_name,
+            &routing_key,
         ))
         .await?;
 

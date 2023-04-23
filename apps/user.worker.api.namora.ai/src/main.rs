@@ -1,13 +1,15 @@
 mod authz;
 mod modules;
 mod state;
+use amqprs::callbacks::{DefaultConnectionCallback, DefaultChannelCallback};
+use amqprs::connection::{Connection, OpenConnectionArguments};
 use axum::body::{boxed, BoxBody};
 use axum::routing::get;
 use axum::{error_handling::HandleErrorLayer, http::StatusCode, BoxError, Extension, Router};
 use dotenvy::dotenv;
 use hyper::{Response, Uri, Request, Body};
 use modules::*;
-use state::NamorAIState;
+use state::NamoraAIState;
 use std::{env, net::SocketAddr, time::Duration};
 use tower::ServiceBuilder;
 use tower::ServiceExt;
@@ -52,6 +54,22 @@ async fn main() {
         .with_max_level(Level::DEBUG)
         .finish();
     tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
+    let connection = Connection::open(&OpenConnectionArguments::new(
+        &std::env::var("RABBITMQ_HOST").unwrap(),
+        std::env::var("RABBITMQ_PORT").unwrap().parse::<u16>().unwrap(),
+        &std::env::var("RABBITMQ_USERNAME").unwrap(),
+        &std::env::var("RABBITMQ_PASSWORD").unwrap(),
+    ))
+    .await.unwrap();
+
+    connection
+        .register_callback(DefaultConnectionCallback)
+        .await.unwrap();
+
+    // open a channel on the connection
+    let channel = connection.open_channel(None).await.unwrap();
+    channel.register_callback(DefaultChannelCallback).await.unwrap();
+    
 
     let app = Router::new()
         .nest("/playground", get(file_handler))
@@ -70,7 +88,7 @@ async fn main() {
                 }))
                 .timeout(Duration::from_secs(10))
                 .layer(TraceLayer::new_for_http())
-                .layer(Extension(NamorAIState::new()))
+                .layer(Extension(NamoraAIState::new(channel)))
                 .layer(
                     CorsLayer::new()
                         .allow_origin(Any)

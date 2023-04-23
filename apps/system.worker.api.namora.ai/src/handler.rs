@@ -135,7 +135,7 @@ pub async fn find_actions(
             context: response_context,
         };
         send_message_to_ai(
-            worker_context.clone(),
+            worker_context.clone().channel,
             serde_json::to_value(response_with_context)?,
         )
         .await?;
@@ -307,7 +307,7 @@ pub async fn execute_action(
                 context: response_context,
             };
 
-            send_message_to_ai(worker_context, serde_json::to_value(response_with_context)?)
+            send_message_to_ai(worker_context.channel, serde_json::to_value(response_with_context)?)
                 .await?;
             return Ok(());
         }
@@ -352,7 +352,7 @@ pub async fn extract_context_from_artifact_store(
         ai_system_prompt: Some(system_prompt),
         context: response_context,
     };
-    send_message_to_ai(worker_context, serde_json::to_value(response_with_context)?).await?;
+    send_message_to_ai(worker_context.channel, serde_json::to_value(response_with_context)?).await?;
 
     Ok(())
 }

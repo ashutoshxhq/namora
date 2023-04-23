@@ -1,16 +1,18 @@
+use amqprs::channel::Channel;
 
-use crate::modules::service::NamorAIService;
+use crate::modules::service::NamoraAIService;
 
 #[derive(Clone)]
-pub struct NamorAIState {
-    pub services: NamorAIService,
+pub struct NamoraAIState {
+    pub channel: Channel,
+    pub services: NamoraAIService,
 }
 
-impl NamorAIState {
-    pub fn new() -> Self {
-
+impl NamoraAIState {
+    pub fn new(channel: Channel) -> Self {
         Self {
-            services: NamorAIService::new()
+            services: NamoraAIService::new(),
+            channel,
         }
     }
 }

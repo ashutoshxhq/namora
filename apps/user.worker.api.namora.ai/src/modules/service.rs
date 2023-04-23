@@ -1,14 +1,8 @@
-use super::chat::service::ChatService;
-
 #[derive(Clone)]
-pub struct NamorAIService {
-    pub chat: ChatService,
-}
+pub struct NamoraAIService {}
 
-impl NamorAIService {
+impl NamoraAIService {
     pub fn new() -> Self {
-        Self {
-            chat: ChatService::new(),
-        }
+        Self {}
     }
 }
