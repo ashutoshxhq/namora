@@ -1,5 +1,4 @@
 mod actions;
-pub mod db;
 mod handler;
 mod types;
 use amqprs::{
@@ -7,11 +6,10 @@ use amqprs::{
     channel::{BasicConsumeArguments, QueueBindArguments, QueueDeclareArguments},
     connection::{Connection, OpenConnectionArguments},
 };
-use db::create_pool;
 use dotenvy::dotenv;
+use namora_core::{types::{error::Error, worker::WorkerContext}, db::create_pool};
 use tracing::Level;
 use tracing_subscriber::FmtSubscriber;
-use types::{context::WorkerContext, error::Error};
 
 #[tokio::main]
 async fn main() {

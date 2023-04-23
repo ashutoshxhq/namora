@@ -5,8 +5,7 @@ use async_openai::{
     },
     Client,
 };
-
-use crate::error::Error;
+use namora_core::types::error::Error;
 
 use super::dto::{Message, MessageWithConversationContext};
 

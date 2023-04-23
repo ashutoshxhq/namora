@@ -1,4 +1,4 @@
-use crate::types::error::Error;
+use namora_core::types::error::Error;
 use serde_json::{Value, json};
 
 use super::handlers::{linkedin::get_linkedin_profile, crm::{get_object_record_from_crm_with_filter, create_object_record_in_crm, update_object_record_in_crm_by_id}};

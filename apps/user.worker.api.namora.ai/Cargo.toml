@@ -20,17 +20,10 @@ serde = { version = "1.0", features = ["derive"]}
 serde_json = "1.0.68"
 uuid = { version = "1.0.0", features = ["v4", "serde"] }
 dotenvy = "0.15"
-jsonwebtoken = "8.1.1"
-bcrypt = "0.14.0"
 reqwest = { version = "0.11", features = ["blocking", "json"] }
 chrono = { version = "0.4.22", features = ["serde"]}
-aws-config = "0.54.1"
-aws-sdk-s3 = "0.24.0"
-aws-sdk-sns = "0.24.0"
-aws-credential-types = "0.54.1"
-zip = "0.6.2"
-walkdir = "2.3.2"
 async-openai = "0.8.0"
 axum-typed-websockets = { version = "0.4.0", features = ["json"]}
-scraper = "0.15.0"
 diesel = { version = "2.0.0", features = ["postgres", "r2d2", "uuid", "serde_json", "chrono"] }
+namora_core = { path = "../../libs/namora_core"}
+jsonwebtoken = "8.1.1"

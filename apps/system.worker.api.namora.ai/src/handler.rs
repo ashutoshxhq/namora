@@ -1,22 +1,18 @@
 use std::{env, fs};
 
-use crate::{
-    types::{
-        context::{Action, WorkerContext},
-        error::{Error, ErrorBuilder},
-        message::{
-            AdditionalData, ExecuteActionAdditionalData, ExecuteActionPlanAdditionalData,
-            FindActionsAdditionalData, Message, MessageWithConversationContext,
-        },
-        pinecone::PineconeQueryResponse,
-    }, actions,
-};
-use agent_db_repository::modules::jobs::{model::NewJob, repository::JobRepository};
-use amqprs::{channel::BasicPublishArguments, BasicProperties};
+use crate::{actions, types::pinecone::PineconeQueryResponse};
+use agent_db_repository::jobs::{model::NewJob, repository::JobRepository};
 use async_openai::{types::CreateEmbeddingRequestArgs, Client};
 use handlebars::Handlebars;
+use namora_core::{types::{
+    error::{Error, ErrorBuilder},
+    message::{
+        Action, AdditionalData, ExecuteActionAdditionalData, ExecuteActionPlanAdditionalData,
+        FindActionsAdditionalData, Message, MessageWithConversationContext,
+    },
+    worker::WorkerContext,
+}, connector::{send_message_to_ai, send_message_to_user}};
 use serde_json::{json, Value};
-use uuid::Uuid;
 
 pub async fn message_handler(worker_context: WorkerContext, msg: String) -> Result<(), Error> {
     let message_with_context: MessageWithConversationContext = serde_json::from_str(&msg)?;
@@ -249,7 +245,11 @@ pub async fn execute_action(
         }
 
         if let Some(action_to_execute) = action_to_execute {
-            let action_result = actions::router::route(action_to_execute.action_id.clone(), execute_action_additional_data.action_input).await?;
+            let action_result = actions::router::route(
+                action_to_execute.action_id.clone(),
+                execute_action_additional_data.action_input,
+            )
+            .await?;
             let mut response_context = message_context.context;
             let mut executed_action = action_to_execute.clone();
             executed_action.acion_result = Some(serde_json::to_value(action_result)?);
@@ -276,10 +276,12 @@ pub async fn execute_action(
 
             // TODO: EXTRACT RELEVENT DATA FROM OUTPUTS SO FAR
 
-            let system_prompt =
-                fs::read_to_string("./src/prompts/system/extract_action_input_from_context_system.txt")?;
-            let query_prompt =
-                fs::read_to_string("./src/prompts/query/extract_action_input_from_context_query.txt")?;
+            let system_prompt = fs::read_to_string(
+                "./src/prompts/system/extract_action_input_from_context_system.txt",
+            )?;
+            let query_prompt = fs::read_to_string(
+                "./src/prompts/query/extract_action_input_from_context_query.txt",
+            )?;
 
             let reg = Handlebars::new();
             let query = reg.render_template(&query_prompt, &response_context)?;
@@ -310,8 +312,11 @@ pub async fn execute_action(
             return Ok(());
         }
     }
-    
-    Err(ErrorBuilder::new("BAD_REQUEST", "Something went wrong parsing the data"))
+
+    Err(ErrorBuilder::new(
+        "BAD_REQUEST",
+        "Something went wrong parsing the data",
+    ))
 }
 
 pub async fn extract_context_from_artifact_store(
@@ -348,43 +353,6 @@ pub async fn extract_context_from_artifact_store(
         context: response_context,
     };
     send_message_to_ai(worker_context, serde_json::to_value(response_with_context)?).await?;
-
-    Ok(())
-}
-
-pub async fn send_message_to_user(
-    worker_context: WorkerContext,
-    user_id: Uuid,
-    data: Value,
-) -> Result<(), Error> {
-    let content = data.to_string().into_bytes();
-
-    let args = BasicPublishArguments::new(
-        "amq.topic",
-        &format!("amqprs.workers.user.{}", user_id.to_string()),
-    );
-    worker_context
-        .channel
-        .basic_publish(BasicProperties::default(), content, args)
-        .await
-        .unwrap();
-
-    tracing::info!("Sent message to user");
-
-    Ok(())
-}
-
-pub async fn send_message_to_ai(worker_context: WorkerContext, data: Value) -> Result<(), Error> {
-    let content = data.to_string().into_bytes();
-
-    let args = BasicPublishArguments::new("amq.topic", "amqprs.workers.ai");
-    worker_context
-        .channel
-        .basic_publish(BasicProperties::default(), content, args)
-        .await
-        .unwrap();
-
-    tracing::info!("Sent message to ai");
 
     Ok(())
 }

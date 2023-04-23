@@ -1,7 +1,8 @@
 use diesel::{r2d2::{Pool, ConnectionManager}, PgConnection};
+use namora_core::types::error::Error;
 use uuid::Uuid;
 
-use crate::{types::error::Error, schema::jobs::{dsl as jobs_dsl, self}};
+use crate::{schema::jobs::{dsl as jobs_dsl, self}};
 use diesel::prelude::*;
 use super::model::{Job, NewJob, UpdateJob};
 

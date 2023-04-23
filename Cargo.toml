@@ -7,4 +7,5 @@ members = [
     "apps/user.worker.api.namora.ai",
     "libs/agent_db_repository",
     "libs/engine_db_repository",
+    "libs/namora_core"
 ]

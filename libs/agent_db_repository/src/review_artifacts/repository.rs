@@ -2,12 +2,12 @@ use diesel::{
     r2d2::{ConnectionManager, Pool},
     PgConnection,
 };
+use namora_core::types::error::Error;
 use uuid::Uuid;
 
 use super::model::{NewReviewArtifact, ReviewArtifact, UpdateReviewArtifact};
 use crate::{
     schema::review_artifacts::{self, dsl as review_artifact_dsl},
-    types::error::Error,
 };
 use diesel::prelude::*;
 
