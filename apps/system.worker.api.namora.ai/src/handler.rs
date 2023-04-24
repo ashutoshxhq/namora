@@ -112,36 +112,49 @@ pub async fn find_actions(
             let action: Action = serde_json::from_value(doc.metadata.clone())?;
             actions.push(action);
         }
+        let mut response_context = message_context.context;
 
         let system_prompt = fs::read_to_string("./src/prompts/system/create_plan_system.txt")?;
         let query_prompt = fs::read_to_string("./src/prompts/query/create_plan_query.txt")?;
+        let reg = Handlebars::new();
+        if let Some(plan) = response_context.current_query_context.clone().plan {
+            let system = reg.render_template(
+                &system_prompt,
+                &json!({
+                    "query": response_context.current_query_context.clone().query.clone(),
+                    "plan": plan,
+                    "actions": response_context.current_query_context.clone().unfiltered_actions
+                }),
+            )?;
 
-        let ai_message = Message {
-            message_from: "SYSTEM".to_string(),
-            message_to: "AI".to_string(),
-            message: query_prompt,
-            created_at: None,
-            next_message_to: Some("SYSTEM".to_string()),
-            additional_data: Some(serde_json::to_value(response_data.matches)?),
-        };
+            let ai_message = Message {
+                message_from: "SYSTEM".to_string(),
+                message_to: "AI".to_string(),
+                message: query_prompt,
+                created_at: None,
+                next_message_to: Some("SYSTEM".to_string()),
+                additional_data: Some(serde_json::to_value(response_data.matches)?),
+            };
 
-        let mut response_context = message_context.context;
-        response_context
-            .current_query_context
-            .messages
-            .push(ai_message.clone());
-        response_context.current_query_context.unfiltered_actions = actions;
+            response_context
+                .current_query_context
+                .messages
+                .push(ai_message.clone());
+            response_context.current_query_context.unfiltered_actions = actions;
 
-        let response_with_context = MessageWithConversationContext {
-            messages: vec![ai_message],
-            ai_system_prompt: Some(system_prompt),
-            context: response_context,
-        };
-        send_message_to_ai(
-            worker_context.clone().channel,
-            serde_json::to_value(response_with_context)?,
-        )
-        .await?;
+            let response_with_context = MessageWithConversationContext {
+                messages: vec![ai_message],
+                ai_system_prompt: Some(system),
+                context: response_context,
+            };
+            send_message_to_ai(
+                worker_context.clone().channel,
+                serde_json::to_value(response_with_context)?,
+            )
+            .await?;
+        } else {
+            tracing::error!("No plan found to search actions from")
+        }
     } else {
         tracing::error!("No plan found to search actions from")
     }
@@ -295,43 +308,56 @@ pub async fn execute_action(
 
             // TODO: EXTRACT RELEVENT DATA FROM OUTPUTS SO FAR
 
-            let system_prompt = fs::read_to_string(
-                "./src/prompts/system/extract_action_input_from_context_system.txt",
-            )?;
-            let query_prompt = fs::read_to_string(
-                "./src/prompts/query/extract_action_input_from_context_query.txt",
-            )?;
-
-            let reg = Handlebars::new();
-            let query = reg.render_template(&query_prompt, &response_context)?;
-            let system = reg.render_template(&system_prompt, &response_context)?;
-
-            let ai_message = Message {
-                additional_data: None,
-                created_at: None,
-                message: query,
-                message_from: "SYSTEM".to_string(),
-                message_to: "AI".to_string(),
-                next_message_to: Some("SYSTEM".to_string()),
-            };
-
-            response_context
+            let system_prompt =
+                fs::read_to_string("./src/prompts/system/extract_action_input.txt")?;
+            let query_prompt = fs::read_to_string("./src/prompts/query/extract_action_input.txt")?;
+            if let Some(next_action) = response_context
                 .current_query_context
-                .messages
-                .push(ai_message.clone());
+                .filtered_actions
+                .first()
+            {
+                if let Some(plan) = response_context.current_query_context.clone().plan {
+                    let reg = Handlebars::new();
+                    let query = reg.render_template(&query_prompt, &response_context)?;
+                    let system = reg.render_template(&system_prompt, &json!({
+                        "query": response_context.current_query_context.clone().query.clone(),
+                        "plan": plan,
+                        "action": next_action.clone(),
+                        "executed_actions": response_context.current_query_context.clone().executed_actions
+                    }))?;
 
-            let response_with_context = MessageWithConversationContext {
-                messages: vec![ai_message],
-                ai_system_prompt: Some(system),
-                context: response_context,
-            };
+                    let ai_message = Message {
+                        additional_data: None,
+                        created_at: None,
+                        message: query,
+                        message_from: "SYSTEM".to_string(),
+                        message_to: "AI".to_string(),
+                        next_message_to: Some("SYSTEM".to_string()),
+                    };
 
-            send_message_to_ai(
-                worker_context.channel,
-                serde_json::to_value(response_with_context)?,
-            )
-            .await?;
-            return Ok(());
+                    response_context
+                        .current_query_context
+                        .messages
+                        .push(ai_message.clone());
+
+                    let response_with_context = MessageWithConversationContext {
+                        messages: vec![ai_message],
+                        ai_system_prompt: Some(system),
+                        context: response_context,
+                    };
+
+                    send_message_to_ai(
+                        worker_context.channel,
+                        serde_json::to_value(response_with_context)?,
+                    )
+                    .await?;
+                    return Ok(());
+                } else {
+                    tracing::error!("Unable to extract plan from context");
+                }
+            } else {
+                tracing::error!("Unable to find next action");
+            }
         }
     }
 
@@ -349,12 +375,11 @@ pub async fn extract_context_from_artifact_store(
     // TODO: Extract context from artifact store
 
     let system_prompt = fs::read_to_string("./src/prompts/system/initial_query_system.txt")?;
-    let query_prompt = fs::read_to_string("./src/prompts/query/initial_query.txt")?;
     if let Some(data) = data {
         let data: Message = serde_json::from_value(data)?;
 
         let reg = Handlebars::new();
-        let query = reg.render_template(&query_prompt, &data)?;
+        let query = reg.render_template(&data.message, &json!({}))?;
         let ai_message = Message {
             additional_data: None,
             created_at: None,
