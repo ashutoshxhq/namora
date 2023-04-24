@@ -71,13 +71,18 @@ pub async fn message_handler(worker_context: WorkerContext, msg: String) -> Resu
                 context,
                 messages: vec![message.clone()],
             };
+            if let Some(user_id) = context_with_response_message.context.user_id {
+                send_message_to_user(
+                    worker_context,
+                    user_id,
+                    serde_json::to_value(context_with_response_message)?,
+                )
+                .await?;
+            } else{
+                tracing::error!("No user_id found in message context")
+            }
             
-            send_message_to_user(
-                worker_context,
-                context_with_response_message.context.user_id.unwrap(),
-                serde_json::to_value(context_with_response_message)?,
-            )
-            .await?;
+           
         } else if message.message_to == "SYSTEM" {
             let context_with_response_message = MessageWithConversationContext {
                 ai_system_prompt: None,

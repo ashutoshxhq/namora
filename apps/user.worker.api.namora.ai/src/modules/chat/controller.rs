@@ -1,13 +1,17 @@
 use crate::state::NamoraAIState;
 
-use amqprs::channel::{BasicConsumeArguments, QueueBindArguments, QueueDeclareArguments, BasicAckArguments};
+use amqprs::channel::{
+    BasicAckArguments, BasicConsumeArguments, QueueBindArguments, QueueDeclareArguments,
+};
 use axum::{response::IntoResponse, Extension};
 use axum_typed_websockets::{Message as WebSocketMessage, WebSocket, WebSocketUpgrade};
 use futures::{sink::SinkExt, stream::StreamExt};
 use headers::HeaderMap;
 use namora_core::{
     connector::send_message_to_system,
-    types::message::{ConverationContext, Message, MessageWithConversationContext},
+    types::{
+        message::{ConverationContext, Message, MessageWithConversationContext},
+    },
 };
 use serde_json::json;
 use uuid::Uuid;
@@ -38,33 +42,24 @@ async fn generic_agent_socket(
                 }
                 Err(err) => {
                     tracing::error!("{:?}", err);
-                    match sender.close().await{
-                        Ok(_) => {},
-                        Err(err) => {
-                            tracing::error!("{:?}", err);
-                        }
-                    };
+                    if let Err(err) = sender.close().await {
+                        tracing::error!("{:?}", err);
+                    }
                     return;
                 }
             },
             Err(err) => {
                 tracing::error!("{:?}", err);
-                match sender.close().await{
-                    Ok(_) => {},
-                    Err(err) => {
-                        tracing::error!("{:?}", err);
-                    }
-                };
+                if let Err(err) = sender.close().await {
+                    tracing::error!("{:?}", err);
+                }
                 return;
             }
         }
     } else {
-        match sender.close().await{
-            Ok(_) => {},
-            Err(err) => {
-                tracing::error!("{:?}", err);
-            }
-        };
+        if let Err(err) = sender.close().await {
+            tracing::error!("{:?}", err);
+        }
         return;
     }
 
@@ -76,33 +71,24 @@ async fn generic_agent_socket(
                 }
                 Err(err) => {
                     tracing::error!("{:?}", err);
-                    match sender.close().await{
-            Ok(_) => {},
-            Err(err) => {
-                tracing::error!("{:?}", err);
-            }
-        };
+                    if let Err(err) = sender.close().await {
+                        tracing::error!("{:?}", err);
+                    }
                     return;
                 }
             },
             Err(err) => {
                 tracing::error!("{:?}", err);
-                match sender.close().await{
-            Ok(_) => {},
-            Err(err) => {
-                tracing::error!("{:?}", err);
-            }
-        };
+                if let Err(err) = sender.close().await {
+                    tracing::error!("{:?}", err);
+                }
                 return;
             }
         }
     } else {
-        match sender.close().await{
-            Ok(_) => {},
-            Err(err) => {
-                tracing::error!("{:?}", err);
-            }
-        };
+        if let Err(err) = sender.close().await {
+            tracing::error!("{:?}", err);
+        }
         return;
     }
 
@@ -124,47 +110,100 @@ async fn generic_agent_socket(
     let user_worker = tokio::spawn(async move {
         let channel = user_worker_channel.clone();
         // declare a queue
-        let (queue_name, _, _) = channel
+        match channel
             .queue_declare(QueueDeclareArguments::default())
             .await
-            .unwrap()
-            .unwrap();
-
-        // bind the queue to exchange
-        let routing_key = format!("amqprs.worker.user.{}", user_id);
-        let exchange_name = std::env::var("RABBITMQ_EXCHANGE_NAME").unwrap();
-
-        channel
-            .queue_bind(QueueBindArguments::new(
-                &queue_name,
-                &exchange_name,
-                &routing_key,
-            ))
-            .await
-            .unwrap();
-
-        let args = BasicConsumeArguments::new(&queue_name, &user_id.to_string());
-        let (_ctag, mut messages_rx) = channel.basic_consume_rx(args).await.unwrap();
-
-        while let Some(msg) = messages_rx.recv().await {
-            let message_bytes = msg.content.unwrap();
-            let message_str = String::from_utf8(message_bytes.clone()).unwrap();
-            let message_with_context: MessageWithConversationContext =
-                serde_json::from_str(&message_str).unwrap();
-            let res = sender
-                .send(WebSocketMessage::Item(ServerMsg::Data(
-                    serde_json::to_value(message_with_context.messages).unwrap(),
-                )))
-                .await;
-            match res {
-                Ok(_res) => {
-                    let delivery_tag = msg.deliver.unwrap().delivery_tag();
-                    channel.basic_ack(BasicAckArguments{
-                        delivery_tag,
-                        multiple: false
-                    }).await.unwrap();
+        {
+            Ok(res) => {
+                if let Some((queue_name, _, _)) = res {
+                    // bind the queue to exchange
+                    let routing_key = format!("amqprs.worker.user.{}", user_id);
+                    if let Ok(exchange_name) = std::env::var("RABBITMQ_EXCHANGE_NAME") {
+                        match channel
+                            .queue_bind(QueueBindArguments::new(
+                                &queue_name,
+                                &exchange_name,
+                                &routing_key,
+                            ))
+                            .await
+                        {
+                            Ok(_) => {
+                                let args =
+                                    BasicConsumeArguments::new(&queue_name, &user_id.to_string());
+                                match channel.basic_consume_rx(args).await {
+                                    Ok((_ctag, mut messages_rx)) => {
+                                        while let Some(msg) = messages_rx.recv().await {
+                                            if let Some(message_bytes) = msg.content {
+                                                match String::from_utf8(message_bytes.clone()) {
+                                                    Ok(message_str) => {
+                                                        match serde_json::from_str::<MessageWithConversationContext>(&message_str) {
+                                                            Ok(message_with_context) => {
+                                                                let res = sender
+                                                                    .send(WebSocketMessage::Item(
+                                                                        ServerMsg::Data(
+                                                                            serde_json::to_value(
+                                                                                message_with_context
+                                                                                    .messages,
+                                                                            )
+                                                                            .unwrap_or_default(),
+                                                                        ),
+                                                                    ))
+                                                                    .await;
+                                                                match res {
+                                                                    Ok(_res) => {
+                                                                        if let Some(delivery) = msg.deliver {
+                                                                            let delivery_tag = delivery.delivery_tag();
+                                                                            let _ = channel
+                                                                                .basic_ack(
+                                                                                    BasicAckArguments {
+                                                                                        delivery_tag,
+                                                                                        multiple: false,
+                                                                                    },
+                                                                                )
+                                                                                .await;
+                                                                        }
+                                                                    }
+                                                                    Err(err) => {
+                                                                        tracing::error!("{:?}", err);
+                                                                        break;
+                                                                    }
+                                                                }
+                                                            }
+                                                            Err(err) => {
+                                                                tracing::error!("{:?}", err);
+                                                                break;
+                                                            }
+                                                        }
+                                                    }
+                                                    Err(err) => {
+                                                        tracing::error!("{:?}", err);
+                                                        break;
+                                                    }
+                                                }
+                                            } else {
+                                                tracing::error!("Unable to read message bytes");
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    Err(err) => {
+                                        tracing::error!("{:?}", err);
+                                    }
+                                }
+                            }
+                            Err(err) => {
+                                tracing::error!("{:?}", err);
+                            }
+                        }
+                    } else {
+                        tracing::error!("Unable to read RABBITMQ_EXCHANGE_NAME");
+                    }
+                } else {
+                    tracing::error!("Unable to declare queue");
                 }
-                Err(_err) => {}
+            }
+            Err(err) => {
+                tracing::error!("{:?}", err);
             }
         }
     });
@@ -175,30 +214,37 @@ async fn generic_agent_socket(
         match msg {
             WebSocketMessage::Item(ClientMsg::Data(data)) => {
                 println!("{:?}", data);
-                let message: Message = serde_json::from_value(data).unwrap();
-                let message_to_system = MessageWithConversationContext {
-                    messages: vec![message.clone()],
-                    ai_system_prompt: None,
-                    context: ConverationContext {
-                        current_query_context: namora_core::types::message::QueryContext {
-                            query: message.message,
-                            plan: None,
-                            unfiltered_actions: Vec::new(),
-                            filtered_actions: Vec::new(),
-                            executed_actions: Vec::new(),
-                            messages: Vec::new(),
-                        },
-                        past_query_contexts: Vec::new(),
-                        team_id: Some(team_id),
-                        thread_id: None,
-                        user_id: Some(user_id),
-                    },
-                };
-                let _res = send_message_to_system(
-                    channel,
-                    serde_json::to_value(message_to_system).unwrap(),
-                )
-                .await;
+                match serde_json::from_value::<Message>(data) {
+                    Ok(message) => {
+                        let message_to_system = MessageWithConversationContext {
+                            messages: vec![message.clone()],
+                            ai_system_prompt: None,
+                            context: ConverationContext {
+                                current_query_context: namora_core::types::message::QueryContext {
+                                    query: message.message,
+                                    plan: None,
+                                    unfiltered_actions: Vec::new(),
+                                    filtered_actions: Vec::new(),
+                                    executed_actions: Vec::new(),
+                                    messages: Vec::new(),
+                                },
+                                past_query_contexts: Vec::new(),
+                                team_id: Some(team_id),
+                                thread_id: None,
+                                user_id: Some(user_id),
+                            },
+                        };
+                        if let Ok(message_json) = serde_json::to_value(message_to_system) {
+                            if let Err(err) = send_message_to_system(channel, message_json).await {
+                                tracing::error!("{:?}", err);
+                                break;
+                            }
+                        }
+                    }
+                    Err(_) => {
+                        break;
+                    }
+                }
             }
             WebSocketMessage::Close(c) => {
                 if let Some(cf) = c {
@@ -221,6 +267,9 @@ async fn generic_agent_socket(
             }
         };
     }
-
+   
+    if let Err(err) = app.channel.close().await {
+        tracing::error!("{:?}", err);
+    }
     user_worker.abort();
 }

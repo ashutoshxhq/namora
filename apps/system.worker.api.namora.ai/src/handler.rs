@@ -4,14 +4,17 @@ use crate::{actions, types::pinecone::PineconeQueryResponse};
 use agent_db_repository::jobs::{model::NewJob, repository::JobRepository};
 use async_openai::{types::CreateEmbeddingRequestArgs, Client};
 use handlebars::Handlebars;
-use namora_core::{types::{
-    error::{Error, ErrorBuilder},
-    message::{
-        Action, AdditionalData, ExecuteActionAdditionalData, ExecuteActionPlanAdditionalData,
-        FindActionsAdditionalData, Message, MessageWithConversationContext,
+use namora_core::{
+    connector::{send_message_to_ai, send_message_to_user},
+    types::{
+        error::{Error, ErrorBuilder},
+        message::{
+            Action, AdditionalData, ExecuteActionAdditionalData, ExecuteActionPlanAdditionalData,
+            FindActionsAdditionalData, Message, MessageWithConversationContext,
+        },
+        worker::WorkerContext,
     },
-    worker::WorkerContext,
-}, connector::{send_message_to_ai, send_message_to_user}};
+};
 use serde_json::{json, Value};
 
 pub async fn message_handler(worker_context: WorkerContext, msg: String) -> Result<(), Error> {
@@ -190,32 +193,48 @@ pub async fn execute_action_plan(
             ai_system_prompt: None,
             context: response_context,
         };
-        send_message_to_user(
-            worker_context.clone(),
-            response_with_context.context.user_id.unwrap(),
-            serde_json::to_value(response_with_context.clone())?,
-        )
-        .await?;
+        if let Some(user_id) = response_with_context.context.user_id {
+            if let Some(team_id) = response_with_context.context.team_id {
+                send_message_to_user(
+                    worker_context.clone(),
+                    user_id,
+                    serde_json::to_value(response_with_context.clone())?,
+                )
+                .await?;
 
-        let jobs_repo = JobRepository::new(worker_context.pool.clone());
-        let _res = jobs_repo.create_job(NewJob {
-            name: "".to_string(),
-            plan: json!({}),
-            status: "".to_string(),
-            trigger: json!({}),
-            user_id: response_with_context.context.user_id.unwrap(),
-            team_id: response_with_context.context.team_id.unwrap(),
-        });
+                let jobs_repo = JobRepository::new(worker_context.pool.clone());
+                let _res = jobs_repo.create_job(NewJob {
+                    name: "".to_string(),
+                    plan: json!({}),
+                    status: "".to_string(),
+                    trigger: json!({}),
+                    user_id,
+                    team_id,
+                });
 
-        execute_action(
-            worker_context.clone(),
-            response_with_context,
-            Some(json!({
-                "action_id": filtered_actions[0].action_id,
-                "action_input": action_plan.first_action_input
-            })),
-        )
-        .await?;
+                execute_action(
+                    worker_context.clone(),
+                    response_with_context,
+                    Some(json!({
+                        "action_id": filtered_actions[0].action_id,
+                        "action_input": action_plan.first_action_input
+                    })),
+                )
+                .await?;
+            } else {
+                tracing::error!("No team_id found in message context");
+                return Err(ErrorBuilder::new(
+                    "INTERNAL_SERVER_ERROR",
+                    "No team_id found in message context",
+                ));
+            }
+        } else {
+            tracing::error!("No user_id found in message context");
+            return Err(ErrorBuilder::new(
+                "INTERNAL_SERVER_ERROR",
+                "No user_id found in message context",
+            ));
+        }
     } else {
         tracing::error!("No ordered action found")
     }
@@ -307,8 +326,11 @@ pub async fn execute_action(
                 context: response_context,
             };
 
-            send_message_to_ai(worker_context.channel, serde_json::to_value(response_with_context)?)
-                .await?;
+            send_message_to_ai(
+                worker_context.channel,
+                serde_json::to_value(response_with_context)?,
+            )
+            .await?;
             return Ok(());
         }
     }
@@ -328,31 +350,42 @@ pub async fn extract_context_from_artifact_store(
 
     let system_prompt = fs::read_to_string("./src/prompts/system/initial_query_system.txt")?;
     let query_prompt = fs::read_to_string("./src/prompts/query/initial_query.txt")?;
+    if let Some(data) = data {
+        let data: Message = serde_json::from_value(data)?;
 
-    let data: Message = serde_json::from_value(data.unwrap())?;
+        let reg = Handlebars::new();
+        let query = reg.render_template(&query_prompt, &data)?;
+        let ai_message = Message {
+            additional_data: None,
+            created_at: None,
+            message: query,
+            message_from: "USER".to_string(),
+            message_to: "AI".to_string(),
+            next_message_to: Some("SYSTEM".to_string()),
+        };
+        let mut response_context = message_context.context;
+        response_context
+            .current_query_context
+            .messages
+            .push(ai_message.clone());
 
-    let reg = Handlebars::new();
-    let query = reg.render_template(&query_prompt, &data)?;
-    let ai_message = Message {
-        additional_data: None,
-        created_at: None,
-        message: query,
-        message_from: "USER".to_string(),
-        message_to: "AI".to_string(),
-        next_message_to: Some("SYSTEM".to_string()),
-    };
-    let mut response_context = message_context.context;
-    response_context
-        .current_query_context
-        .messages
-        .push(ai_message.clone());
+        let response_with_context = MessageWithConversationContext {
+            messages: vec![ai_message],
+            ai_system_prompt: Some(system_prompt),
+            context: response_context,
+        };
+        send_message_to_ai(
+            worker_context.channel,
+            serde_json::to_value(response_with_context)?,
+        )
+        .await?;
 
-    let response_with_context = MessageWithConversationContext {
-        messages: vec![ai_message],
-        ai_system_prompt: Some(system_prompt),
-        context: response_context,
-    };
-    send_message_to_ai(worker_context.channel, serde_json::to_value(response_with_context)?).await?;
-
-    Ok(())
+        Ok(())
+    } else {
+        tracing::error!("Unable to parse message");
+        return Err(ErrorBuilder::new(
+            "INTERNAL_SERVER_ERROR",
+            "Something went wrong parsing message",
+        ));
+    }
 }
