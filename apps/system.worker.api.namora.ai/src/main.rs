@@ -3,11 +3,14 @@ mod handler;
 mod types;
 use amqprs::{
     callbacks::{DefaultChannelCallback, DefaultConnectionCallback},
-    channel::{BasicConsumeArguments, QueueBindArguments, QueueDeclareArguments},
+    channel::{BasicConsumeArguments, QueueBindArguments, QueueDeclareArguments, BasicAckArguments},
     connection::{Connection, OpenConnectionArguments},
 };
 use dotenvy::dotenv;
-use namora_core::{types::{error::Error, worker::WorkerContext}, db::create_pool};
+use namora_core::{
+    db::create_pool,
+    types::{error::Error, worker::WorkerContext},
+};
 use tracing::Level;
 use tracing_subscriber::FmtSubscriber;
 
@@ -83,14 +86,20 @@ async fn worker() -> Result<(), Error> {
         let worker_ctx = worker_context.clone();
 
         println!("Message: {:?}", message_str);
+        let channel = channel.clone();
         tokio::spawn(async move {
             let message_handler_res = handler::message_handler(worker_ctx, message_str).await;
             match message_handler_res {
                 Ok(_) => {
-                    tracing::info!("Message handled successfully")
+                    tracing::info!("Message handled successfully");
+                    let delivery_tag = msg.deliver.unwrap().delivery_tag();
+                    channel.basic_ack(BasicAckArguments{
+                        delivery_tag,
+                        multiple: false
+                    }).await.unwrap();
                 }
                 Err(_err) => {
-                    tracing::error!("Error while handling the message")
+                    tracing::error!("Error while handling the message");
                 }
             };
         });

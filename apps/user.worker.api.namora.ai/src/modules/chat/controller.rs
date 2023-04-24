@@ -1,6 +1,6 @@
 use crate::state::NamoraAIState;
 
-use amqprs::channel::{BasicConsumeArguments, QueueBindArguments, QueueDeclareArguments};
+use amqprs::channel::{BasicConsumeArguments, QueueBindArguments, QueueDeclareArguments, BasicAckArguments};
 use axum::{response::IntoResponse, Extension};
 use axum_typed_websockets::{Message as WebSocketMessage, WebSocket, WebSocketUpgrade};
 use futures::{sink::SinkExt, stream::StreamExt};
@@ -157,7 +157,13 @@ async fn generic_agent_socket(
                 )))
                 .await;
             match res {
-                Ok(_res) => {}
+                Ok(_res) => {
+                    let delivery_tag = msg.deliver.unwrap().delivery_tag();
+                    channel.basic_ack(BasicAckArguments{
+                        delivery_tag,
+                        multiple: false
+                    }).await.unwrap();
+                }
                 Err(_err) => {}
             }
         }
