@@ -10,7 +10,7 @@ use axum_typed_websockets::{Message as WebSocketMessage, WebSocket, WebSocketUpg
 use futures::{sink::SinkExt, stream::StreamExt};
 use headers::HeaderMap;
 use namora_core::{
-    connector::send_message_to_system,
+    connector::{send_message_to_ai, send_message_to_system},
     types::message::{
         AdditionalData, ConverationContext, Message, MessageWithConversationContext, QueryContext,
     },
@@ -60,7 +60,10 @@ async fn generic_agent_socket(
     let user_id_header = match headers.get("user_id") {
         Some(header) => header,
         None => {
-            sender.close().await.unwrap_or_else(|err| tracing::error!("{:?}", err));
+            sender
+                .close()
+                .await
+                .unwrap_or_else(|err| tracing::error!("{:?}", err));
             return;
         }
     };
@@ -69,7 +72,10 @@ async fn generic_agent_socket(
         Ok(id) => id,
         Err(err) => {
             tracing::error!("{:?}", err);
-            sender.close().await.unwrap_or_else(|err| tracing::error!("{:?}", err));
+            sender
+                .close()
+                .await
+                .unwrap_or_else(|err| tracing::error!("{:?}", err));
             return;
         }
     };
@@ -77,7 +83,10 @@ async fn generic_agent_socket(
     let team_id_header = match headers.get("team_id") {
         Some(header) => header,
         None => {
-            sender.close().await.unwrap_or_else(|err| tracing::error!("{:?}", err));
+            sender
+                .close()
+                .await
+                .unwrap_or_else(|err| tracing::error!("{:?}", err));
             return;
         }
     };
@@ -86,7 +95,10 @@ async fn generic_agent_socket(
         Ok(id) => id,
         Err(err) => {
             tracing::error!("{:?}", err);
-            sender.close().await.unwrap_or_else(|err| tracing::error!("{:?}", err));
+            sender
+                .close()
+                .await
+                .unwrap_or_else(|err| tracing::error!("{:?}", err));
             return;
         }
     };
@@ -126,8 +138,7 @@ async fn generic_agent_socket(
                         ))
                         .await
                     {
-                        let args =
-                            BasicConsumeArguments::new(&queue_name, &user_id.to_string());
+                        let args = BasicConsumeArguments::new(&queue_name, &user_id.to_string());
                         if let Ok((_ctag, mut messages_rx)) = channel.basic_consume_rx(args).await {
                             while let Some(msg) = messages_rx.recv().await {
                                 if let Some(message_bytes) = msg.content {
@@ -139,42 +150,26 @@ async fn generic_agent_socket(
                                                 &message_str
                                             ) {
                                                 Ok(message_with_context) => {
-                                                    for message in
-                                                        &message_with_context.messages
-                                                    {
-                                                        if let Some(additional_data) =
-                                                            message
-                                                                .additional_data
-                                                                .clone()
-                                                        {
-                                                            let additional_data: AdditionalData = serde_json::from_value(additional_data).unwrap();
-                                                            if additional_data.action
-                                                                == "get_user_feedback"
-                                                            {
-                                                            }
-                                                        }
-                                                    }
-
+                                                    
                                                     let message_with_context_to_copy =
                                                         message_with_context.clone();
                                                     let message_with_context_global =
-                                                    user_worker_message_with_context_global
+                                                        user_worker_message_with_context_global
                                                             .clone();
                                                     tokio::spawn(async move {
-                                                        let mut
-                                                        message_with_context_global =
+                                                        let mut message_with_context_global =
                                                             message_with_context_global
                                                                 .lock()
                                                                 .unwrap();
-                                                        *message_with_context_global = message_with_context_to_copy.clone();
+                                                        *message_with_context_global =
+                                                            message_with_context_to_copy.clone();
                                                     });
 
                                                     let res = sender
                                                         .send(WebSocketMessage::Item(
                                                             ServerMsg::Data(
                                                                 serde_json::to_value(
-                                                                    message_with_context
-                                                                        .messages,
+                                                                    message_with_context.messages,
                                                                 )
                                                                 .unwrap_or_default(),
                                                             ),
@@ -255,32 +250,72 @@ async fn generic_agent_socket(
 
                         let mut ai_system_prompt = None;
 
+                        let mut is_user_feedback_res = false;
                         if let Some(_user_id) = message_with_context_value.context.user_id {
+                            for msg in message_with_context_value.messages.clone() {
+                                if let Some(additional_data) = msg.additional_data {
+                                    let additional_data: AdditionalData =
+                                        serde_json::from_value(additional_data).unwrap();
+                                    if additional_data.action
+                                        == "user_feedback_response".to_string()
+                                    {
+                                        is_user_feedback_res = true;
+                                    }
+                                }
+                            }
+                        }
+
+                        if is_user_feedback_res {
                             context = (*message_with_context_value).context.clone();
                             context.current_query_context.messages.push(message.clone());
                             ai_system_prompt = message_with_context_value.ai_system_prompt.clone();
-                        }
+                            let message_to_system = MessageWithConversationContext {
+                                messages: vec![message.clone()],
+                                ai_system_prompt,
+                                context,
+                            };
 
-                        let message_to_system = MessageWithConversationContext {
-                            messages: vec![message.clone()],
-                            ai_system_prompt,
-                            context,
-                        };
-
-                        let message_with_context_to_copy = message_to_system.clone();
-                        tokio::spawn(async move {
-                            let mut message_with_context_clone =
-                                message_with_context_global.lock().unwrap();
-                            *message_with_context_clone = message_with_context_to_copy.clone();
-                        });
-
-                        if let Ok(message_json) = serde_json::to_value(message_to_system) {
+                            let message_with_context_to_copy = message_to_system.clone();
                             tokio::spawn(async move {
-                                let res = send_message_to_system(channel, message_json).await;
-                                if let Err(err) = res {
-                                    tracing::error!("{:?}", err);
-                                }
+                                let mut message_with_context_clone =
+                                    message_with_context_global.lock().unwrap();
+                                *message_with_context_clone = message_with_context_to_copy.clone();
                             });
+
+                            if let Ok(message_json) = serde_json::to_value(message_to_system) {
+                                tokio::spawn(async move {
+                                    let res = send_message_to_ai(channel, message_json).await;
+                                    if let Err(err) = res {
+                                        tracing::error!("{:?}", err);
+                                    }
+                                });
+                            }
+                        } else {
+                            context.past_query_contexts = (*message_with_context_value)
+                                .context
+                                .past_query_contexts
+                                .clone();
+                            let message_to_system = MessageWithConversationContext {
+                                messages: vec![message.clone()],
+                                ai_system_prompt,
+                                context,
+                            };
+
+                            let message_with_context_to_copy = message_to_system.clone();
+                            tokio::spawn(async move {
+                                let mut message_with_context_clone =
+                                    message_with_context_global.lock().unwrap();
+                                *message_with_context_clone = message_with_context_to_copy.clone();
+                            });
+
+                            if let Ok(message_json) = serde_json::to_value(message_to_system) {
+                                tokio::spawn(async move {
+                                    let res = send_message_to_system(channel, message_json).await;
+                                    if let Err(err) = res {
+                                        tracing::error!("{:?}", err);
+                                    }
+                                });
+                            }
                         }
                     }
                     Err(_) => {

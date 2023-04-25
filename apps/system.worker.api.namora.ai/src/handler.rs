@@ -359,7 +359,7 @@ pub async fn execute_action(
                     tracing::error!("Unable to extract plan from context");
                 }
             } else {
-                tracing::error!("Unable to find next action");
+                //TODO: When no action is left generate final user summary
             }
         }
     }
