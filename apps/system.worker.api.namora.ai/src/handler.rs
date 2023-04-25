@@ -132,6 +132,7 @@ pub async fn find_actions(
                 message_to: "AI".to_string(),
                 message: query_prompt,
                 created_at: None,
+                step: Some("create_plan".to_string()),
                 next_message_to: Some("SYSTEM".to_string()),
                 additional_data: Some(serde_json::to_value(response_data.matches)?),
             };
@@ -191,6 +192,7 @@ pub async fn execute_action_plan(
             message: user_response,
             created_at: None,
             next_message_to: Some("SYSTEM".to_string()),
+            step: Some("created_plan".to_string()),
             additional_data: None,
         };
 
@@ -333,6 +335,7 @@ pub async fn execute_action(
                         message_from: "SYSTEM".to_string(),
                         message_to: "AI".to_string(),
                         next_message_to: Some("SYSTEM".to_string()),
+                        step: Some(format!("extract_action_input_{}", action_to_execute.action_id)),
                     };
 
                     response_context
@@ -387,6 +390,7 @@ pub async fn extract_context_from_artifact_store(
             message_from: "USER".to_string(),
             message_to: "AI".to_string(),
             next_message_to: Some("SYSTEM".to_string()),
+            step: Some("initial_query".to_string()),
         };
         let mut response_context = message_context.context;
         response_context

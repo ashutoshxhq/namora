@@ -54,7 +54,10 @@ If you require user feedback to generate action input, create a user response in
 {
     "message_from": "AI",
     "message_to": "USER",
-    "message": MESSAGE_STRING
+    "message": MESSAGE_STRING,
+    "additional_data": {
+        "action": "get_user_feedback",
+    }
 }
 ]
 ```

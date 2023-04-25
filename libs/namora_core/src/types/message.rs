@@ -45,6 +45,7 @@ pub struct Message {
     pub message_from: String,
     pub message_to: String,
     pub next_message_to: Option<String>,
+    pub step: Option<String>,
     pub message: String,
     pub additional_data: Option<Value>,
     pub created_at: Option<NaiveDateTime>,

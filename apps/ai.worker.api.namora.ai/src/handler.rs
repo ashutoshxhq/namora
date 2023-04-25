@@ -6,7 +6,7 @@ use async_openai::{
     Client,
 };
 use namora_core::{
-    connector::{send_message_to_user, send_message_to_system},
+    connector::{send_message_to_system, send_message_to_user},
     types::{
         error::Error,
         message::{Message, MessageWithConversationContext},
@@ -31,14 +31,34 @@ pub async fn message_handler(worker_context: WorkerContext, msg: String) -> Resu
             .content(ai_system_prompt)
             .build()?,
     );
-
+    let mut step =  String::new();
     for message in &message_with_context.messages {
-        messages.push(
-            ChatCompletionRequestMessageArgs::default()
-                .role(Role::User)
-                .content(serde_json::to_value(message)?.to_string())
-                .build()?,
-        );
+        if let Some(step_str) = message.step.clone() {
+            step = step_str;
+        }
+    }
+
+    for message in &message_with_context.context.current_query_context.messages {
+        if let Some(message_step) = message.step.clone() {
+            if message_step == step {
+                if message.message_from == "AI".to_string() {
+                    messages.push(
+                        ChatCompletionRequestMessageArgs::default()
+                            .role(Role::Assistant)
+                            .content(serde_json::to_value(message)?.to_string())
+                            .build()?,
+                    );
+                } else {
+                    messages.push(
+                        ChatCompletionRequestMessageArgs::default()
+                            .role(Role::User)
+                            .content(serde_json::to_value(message)?.to_string())
+                            .build()?,
+                    );
+                }
+                
+            }
+        }
     }
 
     let request = CreateChatCompletionRequestArgs::default()
@@ -78,11 +98,9 @@ pub async fn message_handler(worker_context: WorkerContext, msg: String) -> Resu
                     serde_json::to_value(context_with_response_message)?,
                 )
                 .await?;
-            } else{
+            } else {
                 tracing::error!("No user_id found in message context")
             }
-            
-           
         } else if message.message_to == "SYSTEM" {
             let context_with_response_message = MessageWithConversationContext {
                 ai_system_prompt: None,
