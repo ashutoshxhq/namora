@@ -9,7 +9,7 @@ use namora_core::{
     connector::{send_message_to_system, send_message_to_user},
     types::{
         error::Error,
-        message::{Message, MessageWithConversationContext},
+        message::{AdditionalData, Message, MessageWithConversationContext},
         worker::WorkerContext,
     },
 };
@@ -31,34 +31,49 @@ pub async fn message_handler(worker_context: WorkerContext, msg: String) -> Resu
             .content(ai_system_prompt)
             .build()?,
     );
-    let mut step =  String::new();
+    let mut step = String::new();
     for message in &message_with_context.messages {
         if let Some(step_str) = message.step.clone() {
             step = step_str;
         }
     }
-
-    for message in &message_with_context.context.current_query_context.messages {
-        if let Some(message_step) = message.step.clone() {
-            if message_step == step {
-                if message.message_from == "AI".to_string() {
-                    messages.push(
-                        ChatCompletionRequestMessageArgs::default()
-                            .role(Role::Assistant)
-                            .content(serde_json::to_value(message)?.to_string())
-                            .build()?,
-                    );
-                } else {
-                    messages.push(
-                        ChatCompletionRequestMessageArgs::default()
-                            .role(Role::User)
-                            .content(serde_json::to_value(message)?.to_string())
-                            .build()?,
-                    );
-                }
-                
+    let mut is_user_feedback_res = false;
+    for message in message_with_context.messages.clone() {
+        if let Some(additional_data) = message.additional_data {
+            let additional_data: AdditionalData = serde_json::from_value(additional_data).unwrap();
+            if additional_data.action == "user_feedback_response".to_string() {
+                is_user_feedback_res = true;
             }
         }
+    }
+
+    if is_user_feedback_res {
+        for message in &message_with_context.context.current_query_context.messages {
+            if let Some(message_step) = message.step.clone() {
+                if message_step == step {
+                    if message.message_from == "AI".to_string() {
+                        messages.push(
+                            ChatCompletionRequestMessageArgs::default()
+                                .role(Role::Assistant)
+                                .content(serde_json::to_value(message)?.to_string())
+                                .build()?,
+                        );
+                    } else {
+                        messages.push(
+                            ChatCompletionRequestMessageArgs::default()
+                                .role(Role::User)
+                                .content(serde_json::to_value(message)?.to_string())
+                                .build()?,
+                        );
+                    }
+                }
+            }
+        }
+    } else {
+        ChatCompletionRequestMessageArgs::default()
+            .role(Role::User)
+            .content(serde_json::to_value(message_with_context.messages)?.to_string())
+            .build()?;
     }
 
     let request = CreateChatCompletionRequestArgs::default()
