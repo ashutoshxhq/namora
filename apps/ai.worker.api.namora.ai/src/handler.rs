@@ -15,6 +15,7 @@ use namora_core::{
 };
 
 pub async fn message_handler(worker_context: WorkerContext, msg: String) -> Result<(), Error> {
+    tracing::info!("Recieved Message: {:?}", msg);
     let message_with_context: MessageWithConversationContext = serde_json::from_str(&msg)?;
 
     let client = Client::new().with_api_key(std::env::var("OPENAI_API_KEY")?);
@@ -24,7 +25,7 @@ pub async fn message_handler(worker_context: WorkerContext, msg: String) -> Resu
     } else {
         "".to_string()
     };
-
+    tracing::info!("ai_system_prompt: {:?}", ai_system_prompt);
     messages.push(
         ChatCompletionRequestMessageArgs::default()
             .role(Role::System)
@@ -48,9 +49,13 @@ pub async fn message_handler(worker_context: WorkerContext, msg: String) -> Resu
     }
 
     if is_user_feedback_res {
+        tracing::info!("is_user_feedback_res: {:?}", is_user_feedback_res);
         for message in &message_with_context.context.current_query_context.messages {
+            tracing::info!("message: {:?}", message);
             if let Some(message_step) = message.step.clone() {
+                tracing::info!("message_step: {:?}", message_step);
                 if message_step == step {
+                    tracing::info!("message.message_from: {:?}", message.message_from);
                     if message.message_from == "AI".to_string() {
                         messages.push(
                             ChatCompletionRequestMessageArgs::default()
@@ -70,6 +75,7 @@ pub async fn message_handler(worker_context: WorkerContext, msg: String) -> Resu
             }
         }
     } else {
+        tracing::info!("is_user_feedback_res: {:?}", is_user_feedback_res);
         ChatCompletionRequestMessageArgs::default()
             .role(Role::User)
             .content(serde_json::to_value(message_with_context.messages)?.to_string())
@@ -107,6 +113,7 @@ pub async fn message_handler(worker_context: WorkerContext, msg: String) -> Resu
                 messages: vec![message.clone()],
             };
             if let Some(user_id) = context_with_response_message.context.user_id {
+                tracing::info!("sending message to user: {:?}", user_id);
                 send_message_to_user(
                     worker_context,
                     user_id,
@@ -122,6 +129,7 @@ pub async fn message_handler(worker_context: WorkerContext, msg: String) -> Resu
                 context,
                 messages: vec![message.clone()],
             };
+            tracing::info!("sending message to system");
             send_message_to_system(
                 worker_context.channel,
                 serde_json::to_value(context_with_response_message)?,
@@ -129,7 +137,5 @@ pub async fn message_handler(worker_context: WorkerContext, msg: String) -> Resu
             .await?;
         }
     }
-
-    tracing::info!("Recieved Message: {:?}", msg);
     Ok(())
 }

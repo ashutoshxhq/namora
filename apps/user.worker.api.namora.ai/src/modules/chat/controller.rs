@@ -33,6 +33,7 @@ async fn generic_agent_socket(
     app: NamoraAIState,
     headers: HeaderMap,
 ) {
+    tracing::info!("Starting generic agent socket");
     let message_with_context_global: Arc<Mutex<MessageWithConversationContext>> =
         Arc::new(Mutex::new(MessageWithConversationContext {
             messages: Vec::new(),
@@ -53,10 +54,12 @@ async fn generic_agent_socket(
             },
         }));
 
+    tracing::info!("Starting user worker to handle sending messages to user");
     let (mut sender, mut receiver) = socket.split();
     let user_id: Uuid;
     let team_id: Uuid;
-
+    
+    tracing::info!("Getting user_id and team_id from headers");
     let user_id_header = match headers.get("user_id") {
         Some(header) => header,
         None => {
@@ -103,6 +106,7 @@ async fn generic_agent_socket(
         }
     };
 
+    tracing::info!("Sending welcome message to user");
     sender
         .send(WebSocketMessage::Item(ServerMsg::Data(json!([{
             "message_from": "AI",
@@ -122,6 +126,7 @@ async fn generic_agent_socket(
     let user_worker = tokio::spawn(async move {
         let channel = user_worker_channel.clone();
         // declare a queue
+        tracing::info!("Declaring queue for user worker");
         if let Ok(res) = channel
             .queue_declare(QueueDeclareArguments::default())
             .await
@@ -140,6 +145,7 @@ async fn generic_agent_socket(
                     {
                         let args = BasicConsumeArguments::new(&queue_name, &user_id.to_string());
                         if let Ok((_ctag, mut messages_rx)) = channel.basic_consume_rx(args).await {
+                            tracing::info!("Starting user worker loop");
                             while let Some(msg) = messages_rx.recv().await {
                                 if let Some(message_bytes) = msg.content {
                                     match String::from_utf8(message_bytes.clone()) {
@@ -150,6 +156,7 @@ async fn generic_agent_socket(
                                                 &message_str
                                             ) {
                                                 Ok(message_with_context) => {
+                                                    tracing::info!("Got message from user worker, message: {:?}", message_with_context);
                                                     
                                                     let message_with_context_to_copy =
                                                         message_with_context.clone();
@@ -165,6 +172,7 @@ async fn generic_agent_socket(
                                                             message_with_context_to_copy.clone();
                                                     });
 
+                                                    tracing::info!("Sending message to user");
                                                     let res = sender
                                                         .send(WebSocketMessage::Item(
                                                             ServerMsg::Data(
@@ -180,6 +188,7 @@ async fn generic_agent_socket(
                                                         continue;
                                                     } else if let Some(delivery) = msg.deliver {
                                                         let delivery_tag = delivery.delivery_tag();
+                                                        tracing::info!("Sending ack for message");
                                                         let _ = channel
                                                             .basic_ack(BasicAckArguments {
                                                                 delivery_tag,
@@ -221,6 +230,7 @@ async fn generic_agent_socket(
         }
     });
 
+    tracing::info!("Starting socket worker to handle messages from user");
     while let Some(Ok(msg)) = receiver.next().await {
         let channel = app.channel.clone();
         tracing::info!("Recieved a message in socket_worker");
@@ -229,6 +239,7 @@ async fn generic_agent_socket(
                 println!("{:?}", data);
                 match serde_json::from_value::<Message>(data) {
                     Ok(message) => {
+                        tracing::info!("Got message from user, message: {:?}", message);
                         let message_with_context_global = message_with_context_global.clone();
                         let message_with_context_clone = message_with_context_global.clone();
                         let message_with_context_value = message_with_context_clone.lock().unwrap();
@@ -251,6 +262,7 @@ async fn generic_agent_socket(
                         let mut ai_system_prompt = None;
 
                         let mut is_user_feedback_res = false;
+                        tracing::info!("Checking if user feedback response");
                         if let Some(_user_id) = message_with_context_value.context.user_id {
                             for msg in message_with_context_value.messages.clone() {
                                 if let Some(additional_data) = msg.additional_data {
@@ -266,6 +278,7 @@ async fn generic_agent_socket(
                         }
 
                         if is_user_feedback_res {
+                            tracing::info!("User feedback response");
                             context = (*message_with_context_value).context.clone();
                             context.current_query_context.messages.push(message.clone());
                             ai_system_prompt = message_with_context_value.ai_system_prompt.clone();
@@ -279,11 +292,13 @@ async fn generic_agent_socket(
                             tokio::spawn(async move {
                                 let mut message_with_context_clone =
                                     message_with_context_global.lock().unwrap();
+                                tracing::info!("Updating global message context");
                                 *message_with_context_clone = message_with_context_to_copy.clone();
                             });
 
                             if let Ok(message_json) = serde_json::to_value(message_to_system) {
                                 tokio::spawn(async move {
+                                    tracing::info!("Sending message to AI");
                                     let res = send_message_to_ai(channel, message_json).await;
                                     if let Err(err) = res {
                                         tracing::error!("{:?}", err);
@@ -291,6 +306,7 @@ async fn generic_agent_socket(
                                 });
                             }
                         } else {
+                            tracing::info!("Not user feedback response");
                             context.past_query_contexts = (*message_with_context_value)
                                 .context
                                 .past_query_contexts
@@ -300,16 +316,17 @@ async fn generic_agent_socket(
                                 ai_system_prompt,
                                 context,
                             };
-
                             let message_with_context_to_copy = message_to_system.clone();
                             tokio::spawn(async move {
                                 let mut message_with_context_clone =
-                                    message_with_context_global.lock().unwrap();
+                                message_with_context_global.lock().unwrap();
+                                tracing::info!("Updating global message context");
                                 *message_with_context_clone = message_with_context_to_copy.clone();
                             });
 
                             if let Ok(message_json) = serde_json::to_value(message_to_system) {
                                 tokio::spawn(async move {
+                                    tracing::info!("Sending message to SYSTEM");
                                     let res = send_message_to_system(channel, message_json).await;
                                     if let Err(err) = res {
                                         tracing::error!("{:?}", err);

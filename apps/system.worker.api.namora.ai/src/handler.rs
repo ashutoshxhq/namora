@@ -18,6 +18,7 @@ use namora_core::{
 use serde_json::{json, Value};
 
 pub async fn message_handler(worker_context: WorkerContext, msg: String) -> Result<(), Error> {
+    tracing::info!("Recieved Message: {:?}", msg);
     let message_with_context: MessageWithConversationContext = serde_json::from_str(&msg)?;
     let mut message: Option<Message> = None;
 
@@ -30,6 +31,7 @@ pub async fn message_handler(worker_context: WorkerContext, msg: String) -> Resu
     if let Some(message) = message {
         if let Some(additional_data) = message.additional_data {
             let additional_data: AdditionalData = serde_json::from_value(additional_data)?;
+            tracing::info!("Matched Action: {:?}", additional_data.action);
             match additional_data.action.as_str() {
                 "create_non_deterministic_plan" => {
                     create_non_deterministic_plan(
@@ -83,6 +85,7 @@ pub async fn find_actions(
     message_context: MessageWithConversationContext,
     data: Option<Value>,
 ) -> Result<(), Error> {
+    tracing::info!("find_actions triggered");
     if let Some(data) = data {
         let data: FindActionsAdditionalData = serde_json::from_value(data)?;
         let client = Client::new();
@@ -92,6 +95,7 @@ pub async fn find_actions(
             .build()?;
 
         let response = client.embeddings().create(request).await?;
+        tracing::info!("recieved openai embeddings response: {:?}", response);
         let embeddings = response.data[0].embedding.clone();
 
         let client = reqwest::Client::new();
@@ -109,6 +113,7 @@ pub async fn find_actions(
             .header("Api-Key", pinecone_api_key)
             .send()
             .await?;
+        tracing::info!("recieved pinecone response: {:?}", response);
 
         let response_data: PineconeQueryResponse = response.json().await?;
         println!("res: {:?}", response_data);
@@ -156,6 +161,7 @@ pub async fn find_actions(
                 ai_system_prompt: Some(system),
                 context: response_context,
             };
+            tracing::info!("Sending message to AI: {:?}", response_with_context);
             send_message_to_ai(
                 worker_context.clone().channel,
                 serde_json::to_value(response_with_context)?,
@@ -176,9 +182,10 @@ pub async fn create_deterministic_plan(
     message_context: MessageWithConversationContext,
     data: Option<Value>,
 ) -> Result<(), Error> {
+    tracing::info!("create_deterministic_plan triggered");
     if let Some(data) = data {
         let action_plan: ExecuteActionPlanAdditionalData = serde_json::from_value(data)?;
-        // TO the user no AI, just for feedback
+        // To the user not AI, just for feedback
         let mut user_response =
             "Here is a list of actions that we will execute to answer your query:\n".to_string();
         let mut filtered_actions: Vec<Action> = Vec::new();
@@ -219,6 +226,7 @@ pub async fn create_deterministic_plan(
         };
         if let Some(user_id) = response_with_context.context.user_id {
             if let Some(team_id) = response_with_context.context.team_id {
+                tracing::info!("Sending message to user: {:?}", response_with_context);
                 send_message_to_user(
                     worker_context.clone(),
                     user_id,
@@ -235,7 +243,10 @@ pub async fn create_deterministic_plan(
                     user_id,
                     team_id,
                 });
-
+                tracing::info!(
+                    "triggering execute action for action: {:?}",
+                    filtered_actions[0]
+                );
                 execute_action(
                     worker_context.clone(),
                     response_with_context,
@@ -270,6 +281,7 @@ pub async fn execute_action(
     message_context: MessageWithConversationContext,
     data: Option<Value>,
 ) -> Result<(), Error> {
+    tracing::info!("execute_action triggered");
     if let Some(data) = data {
         let execute_action_additional_data: ExecuteActionAdditionalData =
             serde_json::from_value(data)?;
@@ -288,11 +300,13 @@ pub async fn execute_action(
         }
 
         if let Some(action_to_execute) = action_to_execute {
+            tracing::info!("Executing action: {:?}", action_to_execute);
             let action_result = actions::router::route(
                 action_to_execute.action_id.clone(),
                 execute_action_additional_data.action_input,
             )
             .await?;
+            tracing::info!("Action result: {:?}", action_result);
             let mut response_context = message_context.context;
             let mut executed_action = action_to_execute.clone();
             executed_action.acion_result = Some(serde_json::to_value(action_result)?);
@@ -316,7 +330,10 @@ pub async fn execute_action(
                         .remove(index);
                 }
             }
-
+            tracing::info!(
+                "Filtered actions: {:?}",
+                response_context.current_query_context.filtered_actions
+            );
             // TODO: EXTRACT RELEVENT DATA FROM OUTPUTS SO FAR
 
             if let Some(next_action) = response_context
@@ -350,7 +367,6 @@ pub async fn execute_action(
                             action_to_execute.action_id
                         )),
                     };
-
                     response_context
                         .current_query_context
                         .messages
@@ -362,6 +378,7 @@ pub async fn execute_action(
                         context: response_context,
                     };
 
+                    tracing::info!("Sending message to AI: {:?}", response_with_context);
                     send_message_to_ai(
                         worker_context.channel,
                         serde_json::to_value(response_with_context)?,
@@ -373,6 +390,7 @@ pub async fn execute_action(
                 }
             } else {
                 //TODO: When no action is left generate final user summary
+                tracing::info!("No action left to execute, so generating final response");
                 let system_prompt =
                     fs::read_to_string("./src/prompts/system/generate_final_response.txt")?;
                 let query_prompt =
@@ -406,6 +424,7 @@ pub async fn execute_action(
                         ai_system_prompt: Some(system),
                         context: response_context,
                     };
+                    tracing::info!("Sending message to AI: {:?}", response_with_context);
 
                     send_message_to_ai(
                         worker_context.channel,
@@ -431,6 +450,7 @@ pub async fn create_non_deterministic_plan(
     message_context: MessageWithConversationContext,
     data: Option<Value>,
 ) -> Result<(), Error> {
+    tracing::info!("Creating non deterministic plan");
     // TODO: Extract context from artifact store
 
     let system_prompt =
@@ -460,6 +480,7 @@ pub async fn create_non_deterministic_plan(
             ai_system_prompt: Some(system_prompt),
             context: response_context,
         };
+        tracing::info!("Sending message to AI: {:?}", response_with_context);
         send_message_to_ai(
             worker_context.channel,
             serde_json::to_value(response_with_context)?,
