@@ -31,8 +31,8 @@ pub async fn message_handler(worker_context: WorkerContext, msg: String) -> Resu
         if let Some(additional_data) = message.additional_data {
             let additional_data: AdditionalData = serde_json::from_value(additional_data)?;
             match additional_data.action.as_str() {
-                "extract_context_from_artifact_store" => {
-                    extract_context_from_artifact_store(
+                "create_non_deterministic_plan" => {
+                    create_non_deterministic_plan(
                         worker_context.clone(),
                         message_with_context,
                         additional_data.action_data,
@@ -47,8 +47,8 @@ pub async fn message_handler(worker_context: WorkerContext, msg: String) -> Resu
                     )
                     .await?
                 }
-                "execute_action_plan" => {
-                    execute_action_plan(
+                "create_deterministic_plan" => {
+                    create_deterministic_plan(
                         worker_context.clone(),
                         message_with_context,
                         additional_data.action_data,
@@ -63,7 +63,14 @@ pub async fn message_handler(worker_context: WorkerContext, msg: String) -> Resu
                     )
                     .await?
                 }
-                _ => {}
+                _ => {
+                    create_non_deterministic_plan(
+                        worker_context.clone(),
+                        message_with_context,
+                        additional_data.action_data,
+                    )
+                    .await?
+                }
             };
         }
     }
@@ -114,8 +121,9 @@ pub async fn find_actions(
         }
         let mut response_context = message_context.context;
 
-        let system_prompt = fs::read_to_string("./src/prompts/system/create_plan_system.txt")?;
-        let query_prompt = fs::read_to_string("./src/prompts/query/create_plan_query.txt")?;
+        let system_prompt =
+            fs::read_to_string("./src/prompts/system/create_deterministic_plan.txt")?;
+        let query_prompt = fs::read_to_string("./src/prompts/query/create_deterministic_plan.txt")?;
         let reg = Handlebars::new();
         if let Some(plan) = response_context.current_query_context.clone().plan {
             let system = reg.render_template(
@@ -163,13 +171,14 @@ pub async fn find_actions(
     Ok(())
 }
 
-pub async fn execute_action_plan(
+pub async fn create_deterministic_plan(
     worker_context: WorkerContext,
     message_context: MessageWithConversationContext,
     data: Option<Value>,
 ) -> Result<(), Error> {
     if let Some(data) = data {
         let action_plan: ExecuteActionPlanAdditionalData = serde_json::from_value(data)?;
+        // TO the user no AI, just for feedback
         let mut user_response =
             "Here is a list of actions that we will execute to answer your query:\n".to_string();
         let mut filtered_actions: Vec<Action> = Vec::new();
@@ -310,14 +319,15 @@ pub async fn execute_action(
 
             // TODO: EXTRACT RELEVENT DATA FROM OUTPUTS SO FAR
 
-            let system_prompt =
-                fs::read_to_string("./src/prompts/system/extract_action_input.txt")?;
-            let query_prompt = fs::read_to_string("./src/prompts/query/extract_action_input.txt")?;
             if let Some(next_action) = response_context
                 .current_query_context
                 .filtered_actions
                 .first()
             {
+                let system_prompt =
+                    fs::read_to_string("./src/prompts/system/extract_action_input.txt")?;
+                let query_prompt =
+                    fs::read_to_string("./src/prompts/query/extract_action_input.txt")?;
                 if let Some(plan) = response_context.current_query_context.clone().plan {
                     let reg = Handlebars::new();
                     let query = reg.render_template(&query_prompt, &response_context)?;
@@ -335,7 +345,10 @@ pub async fn execute_action(
                         message_from: "SYSTEM".to_string(),
                         message_to: "AI".to_string(),
                         next_message_to: Some("SYSTEM".to_string()),
-                        step: Some(format!("extract_action_input_{}", action_to_execute.action_id)),
+                        step: Some(format!(
+                            "extract_action_input_{}",
+                            action_to_execute.action_id
+                        )),
                     };
 
                     response_context
@@ -360,6 +373,49 @@ pub async fn execute_action(
                 }
             } else {
                 //TODO: When no action is left generate final user summary
+                let system_prompt =
+                    fs::read_to_string("./src/prompts/system/generate_final_response.txt")?;
+                let query_prompt =
+                    fs::read_to_string("./src/prompts/query/generate_final_response.txt")?;
+                if let Some(plan) = response_context.current_query_context.clone().plan {
+                    let reg = Handlebars::new();
+                    let query = reg.render_template(&query_prompt, &response_context)?;
+                    let system = reg.render_template(&system_prompt, &json!({
+                    "query": response_context.current_query_context.clone().query.clone(),
+                    "plan": plan,
+                    "executed_actions": response_context.current_query_context.clone().executed_actions
+                }))?;
+
+                    let ai_message = Message {
+                        additional_data: None,
+                        created_at: None,
+                        message: query,
+                        message_from: "SYSTEM".to_string(),
+                        message_to: "AI".to_string(),
+                        next_message_to: Some("USER".to_string()),
+                        step: Some("generate_final_response".to_string()),
+                    };
+
+                    response_context
+                        .current_query_context
+                        .messages
+                        .push(ai_message.clone());
+
+                    let response_with_context = MessageWithConversationContext {
+                        messages: vec![ai_message],
+                        ai_system_prompt: Some(system),
+                        context: response_context,
+                    };
+
+                    send_message_to_ai(
+                        worker_context.channel,
+                        serde_json::to_value(response_with_context)?,
+                    )
+                    .await?;
+                    return Ok(());
+                } else {
+                    tracing::error!("Unable to extract plan from context");
+                }
             }
         }
     }
@@ -370,14 +426,15 @@ pub async fn execute_action(
     ))
 }
 
-pub async fn extract_context_from_artifact_store(
+pub async fn create_non_deterministic_plan(
     worker_context: WorkerContext,
     message_context: MessageWithConversationContext,
     data: Option<Value>,
 ) -> Result<(), Error> {
     // TODO: Extract context from artifact store
 
-    let system_prompt = fs::read_to_string("./src/prompts/system/initial_query_system.txt")?;
+    let system_prompt =
+        fs::read_to_string("./src/prompts/system/create_non_deterministic_plan.txt")?;
     if let Some(data) = data {
         let data: Message = serde_json::from_value(data)?;
 

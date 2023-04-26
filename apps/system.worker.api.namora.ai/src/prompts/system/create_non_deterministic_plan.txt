@@ -22,7 +22,8 @@ If sufficient context is available, generate a response to the USER, providing t
 {
     "message_from": "AI",
     "message_to": "USER",
-    "message": MESSAGE_STRING
+    "message": MESSAGE_STRING,
+    "step": LAST_USER_MESSAGE_STEP
 }
 ]
 ```
@@ -34,6 +35,7 @@ If more context or third-party tool interaction is required, create a response t
     "message_from": "AI",
     "message_to": "SYSTEM",
     "message": MESSAGE_STRING,
+    "step": LAST_USER_MESSAGE_STEP,
     "additional_data": {
         "action": "find_actions",
         "action_data": {

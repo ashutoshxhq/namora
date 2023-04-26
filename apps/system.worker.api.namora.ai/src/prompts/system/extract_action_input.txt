@@ -37,11 +37,12 @@ Respond to SYSTEM in the format provided below:
     "message_from": "AI",
     "message_to": "SYSTEM",
     "message": MESSAGE_STRING,
+    "step": LAST_USER_MESSAGE_STEP,
     "additional_data": {
-        "action": "execute_action_plan",
+        "action": "execute_action",
         "action_data": {
-            "action_ids": ARRAY_OF_ORDERED_ACTION_IDs,
-            "first_action_input": FIRST_ACTION_INPUT_JSON
+            "action_id": CURRENT_ACTION_ID,
+            "action_input": ACTION_INPUT_JSON
         }
     }
 }
@@ -55,8 +56,26 @@ If you require user feedback to generate action input, create a user response in
     "message_from": "AI",
     "message_to": "USER",
     "message": MESSAGE_STRING,
+    "step": LAST_USER_MESSAGE_STEP,
     "additional_data": {
         "action": "get_user_feedback",
+    }
+}
+]
+```
+
+If you receive a feedback response from the user, first verify if the response is genuine feedback to the previous question by comparing it with the current query and plan.
+If yes, proceed with the input generation or ask for further user feedback.
+If no, initiate a new plan creation by sending a response to the system using the format below.
+```
+[
+{
+    "message_from": "USER",
+    "message_to": "SYSTEM",
+    "message": USER_FEEDBACK_MESSAGE,
+    "step": "initial_query",
+    "additional_data": {
+        "action": "create_non_deterministic_plan",
     }
 }
 ]
