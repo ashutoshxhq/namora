@@ -1,7 +1,8 @@
 mod actions;
+mod db;
 mod handler;
 mod types;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 use dotenvy::dotenv;
 use lapin::{
@@ -10,12 +11,12 @@ use lapin::{
     types::FieldTable,
     Connection, ConnectionProperties,
 };
-use namora_core::{
-    db::create_pool,
-    types::{error::Error, message::MessageWithConversationContext, worker::WorkerContext},
-};
+use namora_core::types::{message::MessageWithConversationContext, worker::WorkerContext};
+use tokio::sync::Mutex;
 use tracing::Level;
 use tracing_subscriber::FmtSubscriber;
+
+use crate::db::create_pool;
 
 #[tokio::main]
 async fn main() {
@@ -30,48 +31,42 @@ async fn main() {
         .finish();
 
     tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
+    tracing::info!("Creating database pool");
+    let pool = create_pool().await.unwrap();
+    tracing::info!("Created database pool");
 
-    match worker().await {
-        Ok(_) => {}
-        Err(err) => {
-            tracing::error!("Error: {:?}", err);
-        }
-    }
-}
-
-async fn worker() -> Result<(), Error> {
-    let pool = create_pool()?;
-
-    let uri = std::env::var("RABBITMQ_URI")?;
+    let uri = std::env::var("RABBITMQ_URI").unwrap();
     let options = ConnectionProperties::default()
         .with_executor(tokio_executor_trait::Tokio::current())
         .with_reactor(tokio_reactor_trait::Tokio);
 
-    let connection = Connection::connect(&uri, options).await?;
-    let channel = connection.create_channel().await?;
+    let connection = Connection::connect(&uri, options).await.unwrap();
+    let channel = connection.create_channel().await.unwrap();
 
     let _queue = channel
         .queue_declare(
-            "amq.queue.worker.system",
+            "queue.worker.system",
             QueueDeclareOptions::default(),
             FieldTable::default(),
         )
-        .await?;
+        .await
+        .unwrap();
 
     let consumer = channel
         .basic_consume(
-            "amq.queue.worker.system",
+            "queue.worker.system",
             "system_worker",
             BasicConsumeOptions::default(),
             FieldTable::default(),
         )
-        .await?;
+        .await
+        .unwrap();
 
     let worker_context = Arc::new(Mutex::new(WorkerContext {
         pool: pool.clone(),
         channel: channel.clone(),
     }));
-
+    tracing::info!("Listning to messages");
     consumer.set_delegate(move |delivery: DeliveryResult| {
         let worker_context_mutex = Arc::clone(&worker_context);
         async move {
@@ -83,14 +78,11 @@ async fn worker() -> Result<(), Error> {
                     return;
                 }
             };
-
-            let worker_ctx = match worker_context_mutex.lock() {
-                Ok(guard) => (*guard).clone(),
-                Err(error) => {
-                    dbg!("Mutex lock failed: {}", error);
-                    return;
-                }
+            let worker_ctx = {
+                let context = worker_context_mutex.lock().await;
+                (*context).clone()
             };
+
             match String::from_utf8(delivery.data.clone()) {
                 Ok(message) => {
                     let message: MessageWithConversationContext =
@@ -117,5 +109,9 @@ async fn worker() -> Result<(), Error> {
             }
         }
     });
-    Ok(())
+
+    // Keep the main function running
+    loop {
+        tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
+    }
 }

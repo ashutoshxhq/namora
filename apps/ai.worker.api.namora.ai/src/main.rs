@@ -1,14 +1,15 @@
 mod handler;
+mod db;
+use db::create_pool;
 use dotenvy::dotenv;
 use lapin::{
     message::DeliveryResult,
     options::{BasicAckOptions, BasicConsumeOptions, QueueDeclareOptions},
     types::FieldTable,
-    ConnectionProperties, Connection,
+    Connection, ConnectionProperties,
 };
 use namora_core::{
-    db::create_pool,
-    types::{error::Error, message::MessageWithConversationContext, worker::WorkerContext},
+    types::{ message::MessageWithConversationContext, worker::WorkerContext},
 };
 use std::sync::Arc;
 use tokio::sync::Mutex;
@@ -29,37 +30,33 @@ async fn main() {
 
     tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
 
-    if let Err(err) = worker().await {
-        tracing::error!("Error: {:?}", err);
-    }
-}
-
-async fn worker() -> Result<(), Error> {
-    let pool = create_pool()?;
-    let uri = std::env::var("RABBITMQ_URI")?;
+    let pool = create_pool().await.unwrap();
+    let uri = std::env::var("RABBITMQ_URI").unwrap();
     let options = ConnectionProperties::default()
         .with_executor(tokio_executor_trait::Tokio::current())
         .with_reactor(tokio_reactor_trait::Tokio);
 
-    let connection = Connection::connect(&uri, options).await?;
-    let channel = connection.create_channel().await?;
+    let connection = Connection::connect(&uri, options).await.unwrap();
+    let channel = connection.create_channel().await.unwrap();
 
     let _queue = channel
         .queue_declare(
-            "amq.queue.worker.ai",
+            "queue.worker.ai",
             QueueDeclareOptions::default(),
             FieldTable::default(),
         )
-        .await?;
+        .await
+        .unwrap();
 
     let consumer = channel
         .basic_consume(
-            "amq.queue.worker.ai",
+            "queue.worker.ai",
             "ai_worker",
             BasicConsumeOptions::default(),
             FieldTable::default(),
         )
-        .await?;
+        .await
+        .unwrap();
 
     let worker_context = Arc::new(Mutex::new(WorkerContext {
         pool: pool.clone(),
@@ -85,18 +82,19 @@ async fn worker() -> Result<(), Error> {
             match String::from_utf8(delivery.data.clone()) {
                 Ok(message) => {
                     tracing::debug!("Received message: {:?}", message);
-                    let message: MessageWithConversationContext = match serde_json::from_str(&message) {
-                        Ok(message) => message,
-                        Err(err) => {
-                            tracing::error!("Failed to deserialize message: {:?}", err);
-                            return;
-                        }
-                    };
-        
+                    let message: MessageWithConversationContext =
+                        match serde_json::from_str(&message) {
+                            Ok(message) => message,
+                            Err(err) => {
+                                tracing::error!("Failed to deserialize message: {:?}", err);
+                                return;
+                            }
+                        };
+
                     if let Err(err) = handler::message_handler(worker_ctx, message).await {
                         tracing::error!("Failed to handle message: {:?}", err);
                     }
-        
+
                     if let Err(err) = delivery.ack(BasicAckOptions::default()).await {
                         tracing::error!("Failed to ack message: {:?}", err);
                     }
@@ -106,8 +104,10 @@ async fn worker() -> Result<(), Error> {
                     return;
                 }
             }
-            
         }
     });
-    Ok(())
+    // Keep the main function running
+    loop {
+        tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
+    }
 }

@@ -134,7 +134,7 @@ async fn generic_agent_socket(
 
         let _queue = match channel
             .queue_declare(
-                "amq.queue.worker.system",
+                "queue.worker.system",
                 QueueDeclareOptions::default(),
                 FieldTable::default(),
             )
@@ -149,7 +149,7 @@ async fn generic_agent_socket(
 
         let consumer = match channel
             .basic_consume(
-                "amq.queue.worker.system",
+                "queue.worker.system",
                 "system_worker",
                 BasicConsumeOptions::default(),
                 FieldTable::default(),
@@ -229,6 +229,10 @@ async fn generic_agent_socket(
                 }
             }
         });
+
+        loop {
+            tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
+        }
     });
 
     tracing::info!("Starting socket worker to handle messages from user");

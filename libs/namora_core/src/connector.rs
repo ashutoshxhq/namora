@@ -15,7 +15,7 @@ pub async fn send_message_to_user(
     channel
         .basic_publish(
             "amq.topic",
-            &format!("amq.queue.worker.user.{}", user_id.to_string()),
+            &format!("queue.worker.user.{}", user_id.to_string()),
             BasicPublishOptions::default(),
             &content,
             BasicProperties::default(),
@@ -31,7 +31,7 @@ pub async fn send_message_to_ai(channel: Channel, data: Value) -> Result<(), Err
     channel
         .basic_publish(
             "amq.topic",
-            "amq.queue.worker.ai",
+            "queue.worker.ai",
             BasicPublishOptions::default(),
             &content,
             BasicProperties::default(),
@@ -46,7 +46,7 @@ pub async fn send_message_to_system(channel: Channel, data: Value) -> Result<(),
     channel
         .basic_publish(
             "amq.topic",
-            "amq.queue.worker.system",
+            "queue.worker.system",
             BasicPublishOptions::default(),
             &content,
             BasicProperties::default(),
