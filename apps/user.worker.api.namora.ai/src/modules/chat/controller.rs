@@ -73,8 +73,8 @@ async fn generic_agent_socket(
         }
     };
 
-    user_id = match Uuid::parse_str(user_id_header.to_str().unwrap_or("")) {
-        Ok(id) => id,
+    match Uuid::parse_str(user_id_header.to_str().unwrap_or("")) {
+        Ok(id) => user_id = id,
         Err(err) => {
             tracing::error!("{:?}", err);
             sender
@@ -96,8 +96,8 @@ async fn generic_agent_socket(
         }
     };
 
-    team_id = match Uuid::parse_str(team_id_header.to_str().unwrap_or("")) {
-        Ok(id) => id,
+    match Uuid::parse_str(team_id_header.to_str().unwrap_or("")) {
+        Ok(id) => team_id = id,
         Err(err) => {
             tracing::error!("{:?}", err);
             sender
@@ -109,7 +109,7 @@ async fn generic_agent_socket(
     };
 
     tracing::info!("Sending welcome message to user");
-    sender
+    if let Err(err) = sender
         .send(WebSocketMessage::Item(ServerMsg::Data(json!([{
             "message_from": "AI",
             "message_to": "USER",
@@ -119,7 +119,9 @@ async fn generic_agent_socket(
             "created_at": ""
         }]))))
         .await
-        .ok();
+    {
+        tracing::error!("{:?}", err);
+    }
 
     tracing::info!("Starting user worker to handle sending messages to user");
     let user_worker_channel = app.channel.clone();
@@ -130,16 +132,22 @@ async fn generic_agent_socket(
         // declare a queue
         tracing::info!("Declaring queue for user worker");
 
-        let _queue = channel
+        let _queue = match channel
             .queue_declare(
                 "amq.queue.worker.system",
                 QueueDeclareOptions::default(),
                 FieldTable::default(),
             )
             .await
-            .unwrap();
+        {
+            Ok(queue) => queue,
+            Err(err) => {
+                tracing::error!("{:?}", err);
+                return;
+            }
+        };
 
-        let consumer = channel
+        let consumer = match channel
             .basic_consume(
                 "amq.queue.worker.system",
                 "system_worker",
@@ -147,8 +155,14 @@ async fn generic_agent_socket(
                 FieldTable::default(),
             )
             .await
-            .unwrap();
-        let sender_mutex = Arc::new(Mutex::new(sender)); 
+        {
+            Ok(consumer) => consumer,
+            Err(err) => {
+                tracing::error!("{:?}", err);
+                return;
+            }
+        };
+        let sender_mutex = Arc::new(Mutex::new(sender));
         consumer.set_delegate(move |delivery: DeliveryResult| {
             let message_with_context_global_mutex = message_with_context_global_mutex_clone.clone();
             let sender_mutex = sender_mutex.clone();
@@ -161,42 +175,58 @@ async fn generic_agent_socket(
                         return;
                     }
                 };
+                match String::from_utf8(delivery.data.clone()) {
+                    Ok(message) => {
+                        let message_with_context: MessageWithConversationContext =
+                            match serde_json::from_str(&(message)) {
+                                Ok(message) => message,
+                                Err(error) => {
+                                    dbg!("Failed to deserialize message: {}", error);
+                                    return;
+                                }
+                            };
 
-                let message_with_context: MessageWithConversationContext =
-                    serde_json::from_str(&String::from_utf8(delivery.data.clone()).unwrap())
-                        .unwrap();
+                        tracing::info!(
+                            "Got message from user worker, message: {:?}",
+                            message_with_context
+                        );
 
-                tracing::info!(
-                    "Got message from user worker, message: {:?}",
-                    message_with_context
-                );
+                        {
+                            let mut message_with_context_global_mutex_guard =
+                                message_with_context_global_mutex.lock().await;
+                            *message_with_context_global_mutex_guard = message_with_context.clone();
+                        };
 
-                {
-                    let mut message_with_context_global_mutex_guard =
-                    message_with_context_global_mutex.lock().await;
-                    *message_with_context_global_mutex_guard = message_with_context.clone();
-                };
+                        tracing::info!("Sending message to user");
 
-                tracing::info!("Sending message to user");
+                        tokio::spawn(async move {
+                            let mut sender_mutex_guard = sender_mutex.lock().await;
 
-                tokio::spawn(async move {
-                    let mut sender_mutex_guard = sender_mutex.lock().await;
-
-                    let res = sender_mutex_guard
-                        .send(WebSocketMessage::Item(ServerMsg::Data(
-                            serde_json::to_value(message_with_context.messages).unwrap_or_default(),
-                        )))
-                        .await;
-                    if let Err(err) = res {
-                        tracing::error!("{:?}", err);
-                    } else {
-                        tracing::info!("Sending ack for message");
-                        delivery
-                            .ack(BasicAckOptions::default())
-                            .await
-                            .expect("Failed to ack message");
+                            match sender_mutex_guard
+                                .send(WebSocketMessage::Item(ServerMsg::Data(
+                                    serde_json::to_value(message_with_context.messages)
+                                        .unwrap_or_default(),
+                                )))
+                                .await
+                            {
+                                Ok(_) => {
+                                    tracing::info!("Sending ack for message");
+                                    if let Err(err) = delivery.ack(BasicAckOptions::default()).await
+                                    {
+                                        tracing::error!("{:?}", err);
+                                    }
+                                }
+                                Err(err) => {
+                                    tracing::error!("{:?}", err);
+                                }
+                            }
+                        });
                     }
-                });
+                    Err(error) => {
+                        dbg!("Failed to convert message to string: {}", error);
+                        return;
+                    }
+                }
             }
         });
     });
@@ -244,12 +274,18 @@ async fn generic_agent_socket(
                                 .clone()
                             {
                                 if let Some(additional_data) = msg.additional_data {
-                                    let additional_data: AdditionalData =
-                                        serde_json::from_value(additional_data).unwrap();
-                                    if additional_data.action
-                                        == "user_feedback_response".to_string()
+                                    match serde_json::from_value::<AdditionalData>(additional_data)
                                     {
-                                        is_user_feedback_res = true;
+                                        Ok(additional_data) => {
+                                            if additional_data.action
+                                                == "user_feedback_response".to_string()
+                                            {
+                                                is_user_feedback_res = true;
+                                            }
+                                        }
+                                        Err(err) => {
+                                            tracing::error!("{:?}", err);
+                                        }
                                     }
                                 }
                             }

@@ -1,8 +1,8 @@
 use diesel::{PgConnection, r2d2::{ConnectionManager, self}};
 
-use crate::types::db::DbPool;
+use crate::types::{db::DbPool, error::Error};
 
-pub fn create_pool() -> DbPool {
+pub fn create_pool() -> Result<DbPool, Error> {
     let manager = ConnectionManager::<PgConnection>::new(
         std::env::var("DATABASE_URL").expect("Unable to get database url"),
     );
@@ -10,8 +10,7 @@ pub fn create_pool() -> DbPool {
         .max_size(10)
         .min_idle(Some(1))
         .test_on_check_out(true)
-        .build(manager)
-        .unwrap();
-    pool
+        .build(manager)?;
+    Ok(pool)
 }
 

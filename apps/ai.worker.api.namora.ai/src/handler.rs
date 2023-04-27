@@ -40,7 +40,7 @@ pub async fn message_handler(worker_context: WorkerContext, message_with_context
     let mut is_user_feedback_res = false;
     for message in message_with_context.messages.clone() {
         if let Some(additional_data) = message.additional_data {
-            let additional_data: AdditionalData = serde_json::from_value(additional_data).unwrap();
+            let additional_data: AdditionalData = serde_json::from_value(additional_data)?;
             if additional_data.action == "user_feedback_response".to_string() {
                 is_user_feedback_res = true;
             }

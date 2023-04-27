@@ -1,9 +1,7 @@
 mod actions;
 mod handler;
 mod types;
-use std::{
-    sync::{Arc, Mutex},
-};
+use std::sync::{Arc, Mutex};
 
 use dotenvy::dotenv;
 use lapin::{
@@ -33,28 +31,24 @@ async fn main() {
 
     tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
 
-    let worker_result = worker().await;
-
-    match worker_result {
+    match worker().await {
         Ok(_) => {}
-        Err(_err) => {
-            tracing::error!("Error: {:?}", _err);
+        Err(err) => {
+            tracing::error!("Error: {:?}", err);
         }
     }
 }
 
 async fn worker() -> Result<(), Error> {
-    let pool = create_pool();
+    let pool = create_pool()?;
 
     let uri = std::env::var("RABBITMQ_URI")?;
     let options = ConnectionProperties::default()
-        // Use tokio executor and reactor.
-        // At the moment the reactor is only available for unix.
         .with_executor(tokio_executor_trait::Tokio::current())
         .with_reactor(tokio_reactor_trait::Tokio);
 
-    let connection = Connection::connect(&uri, options).await.unwrap();
-    let channel = connection.create_channel().await.unwrap();
+    let connection = Connection::connect(&uri, options).await?;
+    let channel = connection.create_channel().await?;
 
     let _queue = channel
         .queue_declare(
@@ -62,8 +56,7 @@ async fn worker() -> Result<(), Error> {
             QueueDeclareOptions::default(),
             FieldTable::default(),
         )
-        .await
-        .unwrap();
+        .await?;
 
     let consumer = channel
         .basic_consume(
@@ -72,8 +65,7 @@ async fn worker() -> Result<(), Error> {
             BasicConsumeOptions::default(),
             FieldTable::default(),
         )
-        .await
-        .unwrap();
+        .await?;
 
     let worker_context = Arc::new(Mutex::new(WorkerContext {
         pool: pool.clone(),
@@ -92,20 +84,37 @@ async fn worker() -> Result<(), Error> {
                 }
             };
 
-            let worker_ctx = {
-                let worker_ctx_guard = worker_context_mutex.lock().unwrap();
-                (*worker_ctx_guard).clone()
+            let worker_ctx = match worker_context_mutex.lock() {
+                Ok(guard) => (*guard).clone(),
+                Err(error) => {
+                    dbg!("Mutex lock failed: {}", error);
+                    return;
+                }
             };
-            // Do something with the delivery data (The message payload)
-            let message: MessageWithConversationContext =
-                serde_json::from_str(&String::from_utf8(delivery.data.clone()).unwrap()).unwrap();
+            match String::from_utf8(delivery.data.clone()) {
+                Ok(message) => {
+                    let message: MessageWithConversationContext =
+                        match serde_json::from_str(&(message)) {
+                            Ok(message) => message,
+                            Err(error) => {
+                                dbg!("Failed to deserialize message: {}", error);
+                                return;
+                            }
+                        };
 
-            let _message_handler_res = handler::message_handler(worker_ctx, message).await.unwrap();
+                    if let Err(error) = handler::message_handler(worker_ctx, message).await {
+                        dbg!("Message handler error: {}", error);
+                    }
 
-            delivery
-                .ack(BasicAckOptions::default())
-                .await
-                .expect("Failed to ack message");
+                    if let Err(error) = delivery.ack(BasicAckOptions::default()).await {
+                        dbg!("Failed to ack message: {}", error);
+                    }
+                }
+                Err(error) => {
+                    dbg!("Failed to convert message to string: {}", error);
+                    return;
+                }
+            }
         }
     });
     Ok(())
