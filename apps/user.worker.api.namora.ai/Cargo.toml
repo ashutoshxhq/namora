@@ -27,4 +27,6 @@ axum-typed-websockets = { version = "0.4.0", features = ["json"]}
 diesel = { version = "2.0.0", features = ["postgres", "r2d2", "uuid", "serde_json", "chrono"] }
 namora_core = { path = "../../libs/namora_core"}
 jsonwebtoken = "8.1.1"
-amqprs = "1.2.1"
+lapin = "2.1.1"
+tokio-executor-trait = "2.1.1"
+tokio-reactor-trait = "1.1.0"

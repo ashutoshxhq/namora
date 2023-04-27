@@ -14,9 +14,8 @@ use namora_core::{
     },
 };
 
-pub async fn message_handler(worker_context: WorkerContext, msg: String) -> Result<(), Error> {
-    tracing::info!("Recieved Message: {:?}", msg);
-    let message_with_context: MessageWithConversationContext = serde_json::from_str(&msg)?;
+pub async fn message_handler(worker_context: WorkerContext, message_with_context: MessageWithConversationContext) -> Result<(), Error> {
+    tracing::info!("Recieved Message: {:?}", message_with_context);
 
     let client = Client::new().with_api_key(std::env::var("OPENAI_API_KEY")?);
     let mut messages: Vec<ChatCompletionRequestMessage> = Vec::new();
@@ -115,7 +114,7 @@ pub async fn message_handler(worker_context: WorkerContext, msg: String) -> Resu
             if let Some(user_id) = context_with_response_message.context.user_id {
                 tracing::info!("sending message to user: {:?}", user_id);
                 send_message_to_user(
-                    worker_context,
+                    worker_context.channel.clone(),
                     user_id,
                     serde_json::to_value(context_with_response_message)?,
                 )

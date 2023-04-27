@@ -1,14 +1,16 @@
-use std::sync::{Arc, Mutex};
-
 use crate::state::NamoraAIState;
+use std::sync::Arc;
+use tokio::sync::Mutex;
 
-use amqprs::channel::{
-    BasicAckArguments, BasicConsumeArguments, QueueBindArguments, QueueDeclareArguments,
-};
 use axum::{response::IntoResponse, Extension};
 use axum_typed_websockets::{Message as WebSocketMessage, WebSocket, WebSocketUpgrade};
 use futures::{sink::SinkExt, stream::StreamExt};
 use headers::HeaderMap;
+use lapin::{
+    message::DeliveryResult,
+    options::{BasicAckOptions, BasicConsumeOptions, QueueDeclareOptions},
+    types::FieldTable,
+};
 use namora_core::{
     connector::{send_message_to_ai, send_message_to_system},
     types::message::{
@@ -34,7 +36,7 @@ async fn generic_agent_socket(
     headers: HeaderMap,
 ) {
     tracing::info!("Starting generic agent socket");
-    let message_with_context_global: Arc<Mutex<MessageWithConversationContext>> =
+    let message_with_context_global_mutex: Arc<Mutex<MessageWithConversationContext>> =
         Arc::new(Mutex::new(MessageWithConversationContext {
             messages: Vec::new(),
             ai_system_prompt: None,
@@ -58,7 +60,7 @@ async fn generic_agent_socket(
     let (mut sender, mut receiver) = socket.split();
     let user_id: Uuid;
     let team_id: Uuid;
-    
+
     tracing::info!("Getting user_id and team_id from headers");
     let user_id_header = match headers.get("user_id") {
         Some(header) => header,
@@ -122,112 +124,81 @@ async fn generic_agent_socket(
     tracing::info!("Starting user worker to handle sending messages to user");
     let user_worker_channel = app.channel.clone();
 
-    let user_worker_message_with_context_global = message_with_context_global.clone();
+    let message_with_context_global_mutex_clone = message_with_context_global_mutex.clone();
     let user_worker = tokio::spawn(async move {
         let channel = user_worker_channel.clone();
         // declare a queue
         tracing::info!("Declaring queue for user worker");
-        if let Ok(res) = channel
-            .queue_declare(QueueDeclareArguments::default())
-            .await
-        {
-            if let Some((queue_name, _, _)) = res {
-                // bind the queue to exchange
-                let routing_key = format!("amqprs.worker.user.{}", user_id);
-                if let Ok(exchange_name) = std::env::var("RABBITMQ_EXCHANGE_NAME") {
-                    if let Ok(_) = channel
-                        .queue_bind(QueueBindArguments::new(
-                            &queue_name,
-                            &exchange_name,
-                            &routing_key,
-                        ))
-                        .await
-                    {
-                        let args = BasicConsumeArguments::new(&queue_name, &user_id.to_string());
-                        if let Ok((_ctag, mut messages_rx)) = channel.basic_consume_rx(args).await {
-                            tracing::info!("Starting user worker loop");
-                            while let Some(msg) = messages_rx.recv().await {
-                                if let Some(message_bytes) = msg.content {
-                                    match String::from_utf8(message_bytes.clone()) {
-                                        Ok(message_str) => {
-                                            match serde_json::from_str::<
-                                                MessageWithConversationContext,
-                                            >(
-                                                &message_str
-                                            ) {
-                                                Ok(message_with_context) => {
-                                                    tracing::info!("Got message from user worker, message: {:?}", message_with_context);
-                                                    
-                                                    let message_with_context_to_copy =
-                                                        message_with_context.clone();
-                                                    let message_with_context_global =
-                                                        user_worker_message_with_context_global
-                                                            .clone();
-                                                    tokio::spawn(async move {
-                                                        let mut message_with_context_global =
-                                                            message_with_context_global
-                                                                .lock()
-                                                                .unwrap();
-                                                        *message_with_context_global =
-                                                            message_with_context_to_copy.clone();
-                                                    });
 
-                                                    tracing::info!("Sending message to user");
-                                                    let res = sender
-                                                        .send(WebSocketMessage::Item(
-                                                            ServerMsg::Data(
-                                                                serde_json::to_value(
-                                                                    message_with_context.messages,
-                                                                )
-                                                                .unwrap_or_default(),
-                                                            ),
-                                                        ))
-                                                        .await;
-                                                    if let Err(err) = res {
-                                                        tracing::error!("{:?}", err);
-                                                        continue;
-                                                    } else if let Some(delivery) = msg.deliver {
-                                                        let delivery_tag = delivery.delivery_tag();
-                                                        tracing::info!("Sending ack for message");
-                                                        let _ = channel
-                                                            .basic_ack(BasicAckArguments {
-                                                                delivery_tag,
-                                                                multiple: false,
-                                                            })
-                                                            .await;
-                                                    }
-                                                }
-                                                Err(err) => {
-                                                    tracing::error!("{:?}", err);
-                                                    continue;
-                                                }
-                                            }
-                                        }
-                                        Err(err) => {
-                                            tracing::error!("{:?}", err);
-                                            continue;
-                                        }
-                                    }
-                                } else {
-                                    tracing::error!("Unable to read message bytes");
-                                    continue;
-                                }
-                            }
-                        } else {
-                            tracing::error!("Unable to consume messages");
-                        }
-                    } else {
-                        tracing::error!("Unable to bind queue");
+        let _queue = channel
+            .queue_declare(
+                "amq.queue.worker.system",
+                QueueDeclareOptions::default(),
+                FieldTable::default(),
+            )
+            .await
+            .unwrap();
+
+        let consumer = channel
+            .basic_consume(
+                "amq.queue.worker.system",
+                "system_worker",
+                BasicConsumeOptions::default(),
+                FieldTable::default(),
+            )
+            .await
+            .unwrap();
+        let sender_mutex = Arc::new(Mutex::new(sender)); 
+        consumer.set_delegate(move |delivery: DeliveryResult| {
+            let message_with_context_global_mutex = message_with_context_global_mutex_clone.clone();
+            let sender_mutex = sender_mutex.clone();
+            async move {
+                let delivery = match delivery {
+                    Ok(Some(delivery)) => delivery,
+                    Ok(None) => return,
+                    Err(error) => {
+                        dbg!("Failed to consume queue message {}", error);
+                        return;
                     }
-                } else {
-                    tracing::error!("Unable to read RABBITMQ_EXCHANGE_NAME");
-                }
-            } else {
-                tracing::error!("Unable to declare queue");
+                };
+
+                let message_with_context: MessageWithConversationContext =
+                    serde_json::from_str(&String::from_utf8(delivery.data.clone()).unwrap())
+                        .unwrap();
+
+                tracing::info!(
+                    "Got message from user worker, message: {:?}",
+                    message_with_context
+                );
+
+                {
+                    let mut message_with_context_global_mutex_guard =
+                    message_with_context_global_mutex.lock().await;
+                    *message_with_context_global_mutex_guard = message_with_context.clone();
+                };
+
+                tracing::info!("Sending message to user");
+
+                tokio::spawn(async move {
+                    let mut sender_mutex_guard = sender_mutex.lock().await;
+
+                    let res = sender_mutex_guard
+                        .send(WebSocketMessage::Item(ServerMsg::Data(
+                            serde_json::to_value(message_with_context.messages).unwrap_or_default(),
+                        )))
+                        .await;
+                    if let Err(err) = res {
+                        tracing::error!("{:?}", err);
+                    } else {
+                        tracing::info!("Sending ack for message");
+                        delivery
+                            .ack(BasicAckOptions::default())
+                            .await
+                            .expect("Failed to ack message");
+                    }
+                });
             }
-        } else {
-            tracing::error!("Unable to declare queue");
-        }
+        });
     });
 
     tracing::info!("Starting socket worker to handle messages from user");
@@ -240,10 +211,11 @@ async fn generic_agent_socket(
                 match serde_json::from_value::<Message>(data) {
                     Ok(message) => {
                         tracing::info!("Got message from user, message: {:?}", message);
-                        let message_with_context_global = message_with_context_global.clone();
-                        let message_with_context_clone = message_with_context_global.clone();
-                        let message_with_context_value = message_with_context_clone.lock().unwrap();
-
+                        let message_with_context_global_mutex_guard_value = {
+                            let message_with_context_global_mutex_guard =
+                                message_with_context_global_mutex.lock().await;
+                            (*message_with_context_global_mutex_guard).clone()
+                        };
                         let mut context = ConverationContext {
                             current_query_context: namora_core::types::message::QueryContext {
                                 query: message.message.clone(),
@@ -263,8 +235,14 @@ async fn generic_agent_socket(
 
                         let mut is_user_feedback_res = false;
                         tracing::info!("Checking if user feedback response");
-                        if let Some(_user_id) = message_with_context_value.context.user_id {
-                            for msg in message_with_context_value.messages.clone() {
+                        if let Some(_user_id) = message_with_context_global_mutex_guard_value
+                            .context
+                            .user_id
+                        {
+                            for msg in message_with_context_global_mutex_guard_value
+                                .messages
+                                .clone()
+                            {
                                 if let Some(additional_data) = msg.additional_data {
                                     let additional_data: AdditionalData =
                                         serde_json::from_value(additional_data).unwrap();
@@ -279,27 +257,29 @@ async fn generic_agent_socket(
 
                         if is_user_feedback_res {
                             tracing::info!("User feedback response");
-                            context = (*message_with_context_value).context.clone();
+                            context = message_with_context_global_mutex_guard_value
+                                .context
+                                .clone();
                             context.current_query_context.messages.push(message.clone());
-                            ai_system_prompt = message_with_context_value.ai_system_prompt.clone();
-                            let message_to_system = MessageWithConversationContext {
+                            ai_system_prompt = message_with_context_global_mutex_guard_value
+                                .ai_system_prompt
+                                .clone();
+                            let message_to_ai = MessageWithConversationContext {
                                 messages: vec![message.clone()],
                                 ai_system_prompt,
                                 context,
                             };
 
-                            let message_with_context_to_copy = message_to_system.clone();
-                            tokio::spawn(async move {
-                                let mut message_with_context_clone =
-                                    message_with_context_global.lock().unwrap();
-                                tracing::info!("Updating global message context");
-                                *message_with_context_clone = message_with_context_to_copy.clone();
-                            });
+                            {
+                                let mut message_with_context_global_mutex_guard =
+                                    message_with_context_global_mutex.lock().await;
+                                *message_with_context_global_mutex_guard = message_to_ai.clone();
+                            };
 
-                            if let Ok(message_json) = serde_json::to_value(message_to_system) {
+                            if let Ok(message) = serde_json::to_value(message_to_ai) {
                                 tokio::spawn(async move {
                                     tracing::info!("Sending message to AI");
-                                    let res = send_message_to_ai(channel, message_json).await;
+                                    let res = send_message_to_ai(channel, message).await;
                                     if let Err(err) = res {
                                         tracing::error!("{:?}", err);
                                     }
@@ -307,23 +287,22 @@ async fn generic_agent_socket(
                             }
                         } else {
                             tracing::info!("Not user feedback response");
-                            context.past_query_contexts = (*message_with_context_value)
-                                .context
-                                .past_query_contexts
-                                .clone();
+                            context.past_query_contexts =
+                                message_with_context_global_mutex_guard_value
+                                    .context
+                                    .past_query_contexts
+                                    .clone();
                             let message_to_system = MessageWithConversationContext {
                                 messages: vec![message.clone()],
                                 ai_system_prompt,
                                 context,
                             };
-                            let message_with_context_to_copy = message_to_system.clone();
-                            tokio::spawn(async move {
-                                let mut message_with_context_clone =
-                                message_with_context_global.lock().unwrap();
-                                tracing::info!("Updating global message context");
-                                *message_with_context_clone = message_with_context_to_copy.clone();
-                            });
-
+                            {
+                                let mut message_with_context_global_mutex_guard =
+                                    message_with_context_global_mutex.lock().await;
+                                *message_with_context_global_mutex_guard =
+                                    message_to_system.clone();
+                            };
                             if let Ok(message_json) = serde_json::to_value(message_to_system) {
                                 tokio::spawn(async move {
                                     tracing::info!("Sending message to SYSTEM");
@@ -360,10 +339,6 @@ async fn generic_agent_socket(
                 tracing::info!("sent ping with {:?}", v);
             }
         };
-    }
-
-    if let Err(err) = app.channel.close().await {
-        tracing::error!("{:?}", err);
     }
     user_worker.abort();
 }

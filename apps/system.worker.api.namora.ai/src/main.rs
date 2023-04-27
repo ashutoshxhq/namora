@@ -1,17 +1,20 @@
 mod actions;
 mod handler;
 mod types;
-use amqprs::{
-    callbacks::{DefaultChannelCallback, DefaultConnectionCallback},
-    channel::{
-        BasicAckArguments, BasicConsumeArguments, QueueBindArguments, QueueDeclareArguments,
-    },
-    connection::{Connection, OpenConnectionArguments},
+use std::{
+    sync::{Arc, Mutex},
 };
+
 use dotenvy::dotenv;
+use lapin::{
+    message::DeliveryResult,
+    options::{BasicAckOptions, BasicConsumeOptions, QueueDeclareOptions},
+    types::FieldTable,
+    Connection, ConnectionProperties,
+};
 use namora_core::{
     db::create_pool,
-    types::{error::{Error, ErrorBuilder}, worker::WorkerContext},
+    types::{error::Error, message::MessageWithConversationContext, worker::WorkerContext},
 };
 use tracing::Level;
 use tracing_subscriber::FmtSubscriber;
@@ -34,103 +37,76 @@ async fn main() {
 
     match worker_result {
         Ok(_) => {}
-        Err(_err) => {}
+        Err(_err) => {
+            tracing::error!("Error: {:?}", _err);
+        }
     }
 }
 
 async fn worker() -> Result<(), Error> {
     let pool = create_pool();
-    let connection = Connection::open(&OpenConnectionArguments::new(
-        &std::env::var("RABBITMQ_HOST")?,
-        std::env::var("RABBITMQ_PORT")?.parse::<u16>()?,
-        &std::env::var("RABBITMQ_USERNAME")?,
-        &std::env::var("RABBITMQ_PASSWORD")?,
-    ))
-    .await?;
 
-    connection
-        .register_callback(DefaultConnectionCallback)
-        .await?;
+    let uri = std::env::var("RABBITMQ_URI")?;
+    let options = ConnectionProperties::default()
+        // Use tokio executor and reactor.
+        // At the moment the reactor is only available for unix.
+        .with_executor(tokio_executor_trait::Tokio::current())
+        .with_reactor(tokio_reactor_trait::Tokio);
 
-    // open a channel on the connection
-    let channel = connection.open_channel(None).await?;
-    channel.register_callback(DefaultChannelCallback).await?;
+    let connection = Connection::connect(&uri, options).await.unwrap();
+    let channel = connection.create_channel().await.unwrap();
 
-    let worker_context = WorkerContext {
+    let _queue = channel
+        .queue_declare(
+            "amq.queue.worker.system",
+            QueueDeclareOptions::default(),
+            FieldTable::default(),
+        )
+        .await
+        .unwrap();
+
+    let consumer = channel
+        .basic_consume(
+            "amq.queue.worker.system",
+            "system_worker",
+            BasicConsumeOptions::default(),
+            FieldTable::default(),
+        )
+        .await
+        .unwrap();
+
+    let worker_context = Arc::new(Mutex::new(WorkerContext {
         pool: pool.clone(),
         channel: channel.clone(),
-    };
+    }));
 
-    // declare a queue
-    if let Some((queue_name, _, _)) = channel
-        .queue_declare(QueueDeclareArguments::default())
-        .await?
-    {
-        // bind the queue to exchange
-        let routing_key = std::env::var("RABBITMQ_SYSTEM_WORKER_ROUTING_KEY")?;
-        let exchange_name = std::env::var("RABBITMQ_EXCHANGE_NAME")?;
+    consumer.set_delegate(move |delivery: DeliveryResult| {
+        let worker_context_mutex = Arc::clone(&worker_context);
+        async move {
+            let delivery = match delivery {
+                Ok(Some(delivery)) => delivery,
+                Ok(None) => return,
+                Err(error) => {
+                    dbg!("Failed to consume queue message {}", error);
+                    return;
+                }
+            };
 
-        channel
-            .queue_bind(QueueBindArguments::new(
-                &queue_name,
-                &exchange_name,
-                &routing_key,
-            ))
-            .await?;
+            let worker_ctx = {
+                let worker_ctx_guard = worker_context_mutex.lock().unwrap();
+                (*worker_ctx_guard).clone()
+            };
+            // Do something with the delivery data (The message payload)
+            let message: MessageWithConversationContext =
+                serde_json::from_str(&String::from_utf8(delivery.data.clone()).unwrap()).unwrap();
 
-        let args = BasicConsumeArguments::new(&queue_name, "system_worker");
-        let (_ctag, mut messages_rx) = channel.basic_consume_rx(args).await?;
+            let _message_handler_res = handler::message_handler(worker_ctx, message).await.unwrap();
 
-        while let Some(msg) = messages_rx.recv().await {
-            if let Some(message_bytes) = msg.content {
-                let message_str = String::from_utf8(message_bytes.clone())?;
-                let worker_ctx = worker_context.clone();
-    
-                println!("Message: {:?}", message_str);
-                let channel = channel.clone();
-                tokio::spawn(async move {
-                    let message_handler_res = handler::message_handler(worker_ctx, message_str).await;
-                    match message_handler_res {
-                        Ok(_) => {
-                            tracing::info!("Message handled successfully");
-                            if let Some(deliver) = msg.deliver {
-                                let delivery_tag = deliver.delivery_tag();
-                                let res = channel
-                                    .basic_ack(BasicAckArguments {
-                                        delivery_tag,
-                                        multiple: false,
-                                    })
-                                    .await;
-                                match res {
-                                    Ok(_res) => {}
-                                    Err(err) => {
-                                        tracing::error!("Error: {:?}", err);
-                                    }
-                                }
-                            } else {
-                                tracing::error!("No delivery tag found");
-                            }
-                        }
-                        Err(_err) => {
-                            tracing::error!("Error while handling the message");
-                        }
-                    };
-                });
-            } else{
-                tracing::error!("Unable to parse message");
-                return Err(ErrorBuilder::new(
-                    "INTERNAL_SERVER_ERROR",
-                    "Something went wrong parsing message",
-                ));
-            }
-            
+            delivery
+                .ack(BasicAckOptions::default())
+                .await
+                .expect("Failed to ack message");
         }
-        Ok(())
-    } else {
-        tracing::error!("Unable to declare queue");
-        Err(ErrorBuilder::new(
-            "INTERNAL_SERVER_ERROR",
-            "Something went wrong declaring a queue",
-        ))
-    }
+    });
+    Ok(())
 }

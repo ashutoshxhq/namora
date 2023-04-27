@@ -17,9 +17,8 @@ use namora_core::{
 };
 use serde_json::{json, Value};
 
-pub async fn message_handler(worker_context: WorkerContext, msg: String) -> Result<(), Error> {
-    tracing::info!("Recieved Message: {:?}", msg);
-    let message_with_context: MessageWithConversationContext = serde_json::from_str(&msg)?;
+pub async fn message_handler(worker_context: WorkerContext, message_with_context: MessageWithConversationContext) -> Result<(), Error> {
+    tracing::info!("Recieved Message: {:?}", message_with_context);
     let mut message: Option<Message> = None;
 
     for msg in &message_with_context.messages {
@@ -76,7 +75,6 @@ pub async fn message_handler(worker_context: WorkerContext, msg: String) -> Resu
             };
         }
     }
-    tracing::info!("Recieved Message: {:?}", msg);
     Ok(())
 }
 
@@ -100,9 +98,10 @@ pub async fn find_actions(
 
         let client = reqwest::Client::new();
         let pinecone_api_key = env::var("PINECONE_API_KEY")?;
+        let pinecone_index_host = env::var("PINECONE_API_KEY")?;
 
         let response = client
-            .post("https://cadenceiq-action-intents-56068f7.svc.us-east1-gcp.pinecone.io/query")
+            .post(format!("https://{}/query", pinecone_index_host))
             .json(&json!({
                 "vector": embeddings,
                 "topK": 5,
@@ -228,7 +227,7 @@ pub async fn create_deterministic_plan(
             if let Some(team_id) = response_with_context.context.team_id {
                 tracing::info!("Sending message to user: {:?}", response_with_context);
                 send_message_to_user(
-                    worker_context.clone(),
+                    worker_context.channel.clone(),
                     user_id,
                     serde_json::to_value(response_with_context.clone())?,
                 )

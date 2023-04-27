@@ -1,13 +1,12 @@
 mod authz;
 mod modules;
 mod state;
-use amqprs::callbacks::{DefaultConnectionCallback, DefaultChannelCallback};
-use amqprs::connection::{Connection, OpenConnectionArguments};
 use axum::body::{boxed, BoxBody};
 use axum::routing::get;
 use axum::{error_handling::HandleErrorLayer, http::StatusCode, BoxError, Extension, Router};
 use dotenvy::dotenv;
 use hyper::{Response, Uri, Request, Body};
+use lapin::{ConnectionProperties, Connection};
 use modules::*;
 use state::NamoraAIState;
 use std::{env, net::SocketAddr, time::Duration};
@@ -54,21 +53,16 @@ async fn main() {
         .with_max_level(Level::DEBUG)
         .finish();
     tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
-    let connection = Connection::open(&OpenConnectionArguments::new(
-        &std::env::var("RABBITMQ_HOST").unwrap(),
-        std::env::var("RABBITMQ_PORT").unwrap().parse::<u16>().unwrap(),
-        &std::env::var("RABBITMQ_USERNAME").unwrap(),
-        &std::env::var("RABBITMQ_PASSWORD").unwrap(),
-    ))
-    .await.unwrap();
+    
+    let uri = std::env::var("RABBITMQ_URI").unwrap();
+    let options = ConnectionProperties::default()
+        // Use tokio executor and reactor.
+        // At the moment the reactor is only available for unix.
+        .with_executor(tokio_executor_trait::Tokio::current())
+        .with_reactor(tokio_reactor_trait::Tokio);
 
-    connection
-        .register_callback(DefaultConnectionCallback)
-        .await.unwrap();
-
-    // open a channel on the connection
-    let channel = connection.open_channel(None).await.unwrap();
-    channel.register_callback(DefaultChannelCallback).await.unwrap();
+    let connection = Connection::connect(&uri, options).await.unwrap();
+    let channel = connection.create_channel().await.unwrap();
     
 
     let app = Router::new()

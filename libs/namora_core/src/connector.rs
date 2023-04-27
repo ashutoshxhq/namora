@@ -1,49 +1,57 @@
-use amqprs::{
-    channel::{BasicPublishArguments, Channel},
-    BasicProperties,
-};
+use lapin::{options::BasicPublishOptions, BasicProperties, Channel};
 use serde_json::Value;
 use uuid::Uuid;
 
-use crate::types::{error::Error, worker::WorkerContext};
+use crate::types::error::Error;
+
 
 pub async fn send_message_to_user(
-    worker_context: WorkerContext,
+    channel: Channel,
     user_id: Uuid,
     data: Value,
 ) -> Result<(), Error> {
     let content = data.to_string().into_bytes();
 
-    let args = BasicPublishArguments::new(
-        "amq.topic",
-        &format!("amqprs.worker.user.{}", user_id.to_string()),
-    );
-    worker_context
-        .channel
-        .basic_publish(BasicProperties::default(), content, args)
+    channel
+        .basic_publish(
+            "amq.topic",
+            &format!("amq.queue.worker.user.{}", user_id.to_string()),
+            BasicPublishOptions::default(),
+            &content,
+            BasicProperties::default(),
+        )
+        .await?
         .await?;
+
     Ok(())
 }
 
 pub async fn send_message_to_ai(channel: Channel, data: Value) -> Result<(), Error> {
     let content = data.to_string().into_bytes();
-
-    let args = BasicPublishArguments::new("amq.topic", "amqprs.worker.ai");
     channel
-        .basic_publish(BasicProperties::default(), content, args)
+        .basic_publish(
+            "amq.topic",
+            "amq.queue.worker.ai",
+            BasicPublishOptions::default(),
+            &content,
+            BasicProperties::default(),
+        )
+        .await?
         .await?;
-
     Ok(())
 }
 
 pub async fn send_message_to_system(channel: Channel, data: Value) -> Result<(), Error> {
     let content = data.to_string().into_bytes();
-
-    let args = BasicPublishArguments::new("amq.topic", "amqprs.worker.system");
-
     channel
-        .basic_publish(BasicProperties::default(), content, args)
+        .basic_publish(
+            "amq.topic",
+            "amq.queue.worker.system",
+            BasicPublishOptions::default(),
+            &content,
+            BasicProperties::default(),
+        )
+        .await?
         .await?;
-
     Ok(())
 }

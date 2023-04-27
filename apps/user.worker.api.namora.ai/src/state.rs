@@ -1,5 +1,5 @@
-use amqprs::channel::Channel;
 
+use lapin::Channel;
 use crate::modules::service::NamoraAIService;
 
 #[derive(Clone)]
