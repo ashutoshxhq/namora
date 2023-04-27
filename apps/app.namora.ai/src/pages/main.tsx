@@ -26,15 +26,13 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import {
+  CheckCircleIcon,
   ChevronDownIcon,
   MagnifyingGlassIcon,
 } from "@heroicons/react/20/solid";
 import Image from "next/image";
-import {
-  StyledBox,
-  StyledButton,
-  StyledText,
-} from "@/design-system/primitives";
+import { StyledBox, StyledButton, StyledText } from "design-system/primitives";
+import { NamoraCard, NamoraDialog } from "design-system/molecules";
 
 const navigation = [
   { name: "Dashboard", href: "#", icon: HomeIcon, current: false },
@@ -307,10 +305,20 @@ export default function Main() {
               {/* Main area */}
               <StyledBox>
                 <StyledText $large={true}>asd</StyledText>
-                <StyledButton $primary={false}>
+                <StyledButton $variant="rounded-secondary">
                   Use the Container as any other React Component
+                  <CheckCircleIcon
+                    className="-mr-0.5 h-5 w-5"
+                    aria-hidden="true"
+                  />
                 </StyledButton>
               </StyledBox>
+              <NamoraCard>
+                <h3 className="text-base font-semibold leading-6 text-gray-900">
+                  Job Postings
+                </h3>
+              </NamoraCard>
+              <NamoraDialog />
             </div>
           </main>
         </div>
