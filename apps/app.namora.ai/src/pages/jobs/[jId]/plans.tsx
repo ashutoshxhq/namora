@@ -105,7 +105,7 @@ const Plan = () => {
                   </div>
                   <div className="flex min-w-0 flex-1 justify-between space-x-4 pt-1.5">
                     <div>
-                      <p className="text-sm text-gray-500">
+                      <div className="text-sm text-gray-500">
                         {event.content}{" "}
                         <a
                           href={event.href}
@@ -113,7 +113,7 @@ const Plan = () => {
                         >
                           {event.target}
                         </a>
-                      </p>
+                      </div>
                     </div>
                     <div className="text-sm text-right text-gray-500 whitespace-nowrap">
                       <time dateTime={event.datetime}>{event.date}</time>
