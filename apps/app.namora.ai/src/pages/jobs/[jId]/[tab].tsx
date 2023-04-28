@@ -10,18 +10,22 @@ import Plan from "./plans";
 const JobPage = () => {
   const router = useRouter();
   const _selectedTab = router?.query?.tab as string;
-  const selectedIndex = tabs.map((tab) => tab.id).indexOf(_selectedTab) ?? 0;
+  const _selectedIndex = tabs.map((tab) => tab.id).indexOf(_selectedTab) ?? 0;
   const { jId } = router.query;
-  console.log("JobPage", { router, jId, _selectedTab });
 
   if (!router.isReady) {
     return null;
+  }
+  if (router.isReady && (!_selectedTab || _selectedIndex === -1)) {
+    router?.replace(`/jobs/${jId}/404`, undefined, {
+      shallow: true,
+    });
   }
   return (
     <>
       <div>{jId}</div>
       <Tab.Group
-        selectedIndex={selectedIndex}
+        selectedIndex={_selectedIndex}
         onChange={(index) => {
           const tab = tabs.at(index);
           router.replace(`/jobs/${jId}/${tab?.name}`, undefined, {
@@ -43,7 +47,7 @@ const JobPage = () => {
                   href={`/jobs/${jId}/${tab?.name}`}
                   shallow
                   className={classNames(
-                    selectedIndex === index
+                    _selectedIndex === index
                       ? "border-indigo-500 text-indigo-600"
                       : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700",
                     "whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium"

@@ -4,6 +4,7 @@ import { EllipsisVerticalIcon } from "@/heroicons";
 
 import { classNames } from "@/utils";
 import Link from "next/link";
+import { useRouter } from "next/router";
 
 const statuses: { [key: string]: string } = {
   Complete: "text-green-700 bg-green-50 ring-green-600/20",
@@ -12,7 +13,7 @@ const statuses: { [key: string]: string } = {
 };
 const projects = [
   {
-    id: 1,
+    id: "1",
     name: "GraphQL API",
     href: `jobs/${1}/plan`,
     hrefSecondary: `jobs/${1}/artifact`,
@@ -22,7 +23,7 @@ const projects = [
     dueDateTime: "2023-03-17T00:00Z",
   },
   {
-    id: 2,
+    id: "2",
     name: "New benefits plan",
     href: `jobs/${2}/plan`,
     hrefSecondary: `jobs/${2}/artifact`,
@@ -32,7 +33,7 @@ const projects = [
     dueDateTime: "2023-05-05T00:00Z",
   },
   {
-    id: 3,
+    id: "3",
     name: "Onboarding emails",
     href: `jobs/${3}/plan`,
     hrefSecondary: `jobs/${3}/artifact`,
@@ -44,6 +45,15 @@ const projects = [
 ];
 
 const Jobs = () => {
+  const router = useRouter();
+  const _selectedTab = router?.query?.jId as string;
+  const _selectedIndex =
+    projects.map((project) => project.id).indexOf(_selectedTab) ?? 0;
+
+  if (!router.isReady) {
+    return null;
+  }
+
   return (
     <>
       <div>

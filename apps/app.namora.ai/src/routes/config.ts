@@ -7,6 +7,7 @@ import { CHATS, JOBS, SETTINGS } from "./constants";
 
 export const navigation = [
   {
+    id: CHATS,
     name: CHATS,
     href: {
       pathname: `/${CHATS}`,
@@ -16,6 +17,7 @@ export const navigation = [
     current: false,
   },
   {
+    id: JOBS,
     name: JOBS,
     href: {
       pathname: `/${JOBS}`,
@@ -25,6 +27,7 @@ export const navigation = [
     current: false,
   },
   {
+    id: SETTINGS,
     name: SETTINGS,
     href: {
       pathname: `/${SETTINGS}`,
