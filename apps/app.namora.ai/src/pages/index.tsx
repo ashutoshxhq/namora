@@ -7,6 +7,8 @@
 //   return <p>hello world</p>
 // }
 
+import Chats from "./chats";
+
 // Page.getLayout = function getLayout(page: ReactElement) {
 //   return (
 //     <Layout>
@@ -17,6 +19,6 @@
 
 // export default Page
 
-// export default function Home() {
-//   return <Main />;
-// }
+export default function Home() {
+  return <Chats />;
+}

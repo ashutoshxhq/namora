@@ -8,14 +8,28 @@ import { CHATS, JOBS, SETTINGS } from "./constants";
 export const navigation = [
   {
     name: CHATS,
-    href: CHATS,
+    href: {
+      pathname: `/${CHATS}`,
+      query: {},
+    },
     icon: ChatBubbleBottomCenterIcon,
     current: false,
   },
-  { name: JOBS, href: JOBS, icon: RectangleStackIcon, current: false },
+  {
+    name: JOBS,
+    href: {
+      pathname: `/${JOBS}`,
+      query: {},
+    },
+    icon: RectangleStackIcon,
+    current: false,
+  },
   {
     name: SETTINGS,
-    href: SETTINGS,
+    href: {
+      pathname: `/${SETTINGS}`,
+      query: {},
+    },
     icon: Cog8ToothIcon,
     current: false,
   },
