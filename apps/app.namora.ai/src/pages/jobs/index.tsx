@@ -3,6 +3,7 @@ import { Menu, Transition } from "@headlessui/react";
 import { EllipsisVerticalIcon } from "@/heroicons";
 
 import { classNames } from "@/utils";
+import Link from "next/link";
 
 const statuses: { [key: string]: string } = {
   Complete: "text-green-700 bg-green-50 ring-green-600/20",
@@ -13,7 +14,8 @@ const projects = [
   {
     id: 1,
     name: "GraphQL API",
-    href: `jobs/${1}/overview`,
+    href: `jobs/${1}/plan`,
+    hrefSecondary: `jobs/${1}/artifact`,
     status: "Complete",
     createdBy: "Leslie Alexander",
     dueDate: "March 17, 2023",
@@ -22,7 +24,8 @@ const projects = [
   {
     id: 2,
     name: "New benefits plan",
-    href: `jobs/${2}/overview`,
+    href: `jobs/${2}/plan`,
+    hrefSecondary: `jobs/${2}/artifact`,
     status: "In progress",
     createdBy: "Leslie Alexander",
     dueDate: "May 5, 2023",
@@ -31,29 +34,12 @@ const projects = [
   {
     id: 3,
     name: "Onboarding emails",
-    href: `jobs/${3}/overview`,
+    href: `jobs/${3}/plan`,
+    hrefSecondary: `jobs/${3}/artifact`,
     status: "In progress",
     createdBy: "Courtney Henry",
     dueDate: "May 25, 2023",
     dueDateTime: "2023-05-25T00:00Z",
-  },
-  {
-    id: 4,
-    name: "iOS app",
-    href: `jobs/${4}/overview`,
-    status: "In progress",
-    createdBy: "Leonard Krasner",
-    dueDate: "June 7, 2023",
-    dueDateTime: "2023-06-07T00:00Z",
-  },
-  {
-    id: 5,
-    name: "Marketing site redesign",
-    href: `jobs/${5}/overview`,
-    status: "Archived",
-    createdBy: "Courtney Henry",
-    dueDate: "June 10, 2023",
-    dueDateTime: "2023-06-10T00:00Z",
   },
 ];
 
@@ -69,9 +55,13 @@ const Jobs = () => {
             >
               <div className="min-w-0">
                 <div className="flex items-start gap-x-3">
-                  <p className="text-sm font-semibold leading-6 text-gray-900">
+                  <Link
+                    href={project.href}
+                    className="text-sm font-semibold leading-6 text-gray-900"
+                  >
                     {project.name}
-                  </p>
+                    <span className="sr-only">, {project.name}</span>
+                  </Link>
                   <p
                     className={classNames(
                       statuses[project.status],
@@ -95,13 +85,13 @@ const Jobs = () => {
                 </div>
               </div>
               <div className="flex items-center flex-none gap-x-4">
-                <a
-                  href={project.href}
+                <Link
+                  href={project.hrefSecondary}
                   className="hidden rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:block"
                 >
-                  View job
+                  View Review Artifact
                   <span className="sr-only">, {project.name}</span>
-                </a>
+                </Link>
                 <Menu as="div" className="relative flex-none">
                   <Menu.Button className="-m-2.5 block p-2.5 text-gray-500 hover:text-gray-900">
                     <span className="sr-only">Open options</span>

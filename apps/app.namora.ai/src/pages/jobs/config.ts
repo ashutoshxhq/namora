@@ -1,20 +1,20 @@
-import { OVERVIEW, REVIEW } from "./constants";
+import { PLAN, ARTIFACT } from "./constants";
 
 export const tabs = [
   {
-    id: OVERVIEW,
-    name: OVERVIEW,
+    id: PLAN,
+    name: PLAN,
     href: {
-      pathname: `/${OVERVIEW}`,
+      pathname: `/${PLAN}`,
       query: {},
     },
     current: false,
   },
   {
-    id: REVIEW,
-    name: REVIEW,
+    id: ARTIFACT,
+    name: ARTIFACT,
     href: {
-      pathname: `/${REVIEW}`,
+      pathname: `/${ARTIFACT}`,
       query: {},
     },
     current: false,

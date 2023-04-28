@@ -31,7 +31,7 @@ const projects = [
   },
 ];
 
-const ReviewTable = () => {
+const Artifact = () => {
   const [open, setOpen] = useState(false);
 
   const panelProps = {
@@ -84,7 +84,7 @@ const ReviewTable = () => {
                   className="hidden rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:block"
                   onClick={handleClickOnReview}
                 >
-                  Review job
+                  Review artifact
                   <span className="sr-only">, {project.name}</span>
                 </button>
                 <Menu as="div" className="relative flex-none">
@@ -159,4 +159,4 @@ const ReviewTable = () => {
     </>
   );
 };
-export default ReviewTable;
+export default Artifact;

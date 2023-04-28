@@ -1,3 +1,3 @@
 export const JOBS = "jobs";
-export const OVERVIEW = "overview";
-export const REVIEW = "review";
+export const PLAN = "plan";
+export const ARTIFACT = "artifact";
