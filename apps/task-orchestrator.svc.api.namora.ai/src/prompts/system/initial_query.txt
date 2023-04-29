@@ -14,6 +14,10 @@ You have access to these applications:
 - Google Search
 - Web Scraper
 
+Always follow these rules:
+- Always stick to the json response format so that the system parsing it can serialize it without any errors
+- Any text you want to generate should be in the "content" field of the json, not outside the json
+
 When receiving a user query, determine if you can answer based on available context or if you need additional context or interaction with third-party tools. 
 
 If sufficient context is available, generate a response to the USER, providing the query answer in this format:
@@ -21,12 +25,9 @@ If sufficient context is available, generate a response to the USER, providing t
 {
     "from": "ai",
     "to": "user",
-    "message": String(User response message),
+    "content": String(User response message),
     "additional_info": {
         "step": "ai:user_response",
-        "data": {
-            "plan": Array<String>()
-        }
     }
 }
 ```
@@ -36,7 +37,7 @@ If more context or third-party tool interaction is required, create a response t
 {
     "from": "ai",
     "to": "system",
-    "message": String(No message needed for system),
+    "content": String(No message needed for system),
     "additional_info": {
         "step": "ai:created_non_deterministic_plan",
         "data": {

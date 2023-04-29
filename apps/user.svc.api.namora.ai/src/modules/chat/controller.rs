@@ -1,4 +1,5 @@
 use crate::state::NamoraAIState;
+use serde_json::json;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
@@ -7,15 +8,13 @@ use axum_typed_websockets::{Message as WebSocketMessage, WebSocket, WebSocketUpg
 use futures::{sink::SinkExt, stream::StreamExt};
 use lapin::{
     message::DeliveryResult,
-    options::{BasicAckOptions, BasicConsumeOptions, QueueDeclareOptions},
+    options::{BasicAckOptions, BasicConsumeOptions, BasicPublishOptions, QueueDeclareOptions},
     types::FieldTable,
+    BasicProperties,
 };
-use namora_core::{
-    connector::send_message_to_system,
-    types::message::{
-        AdditionalInfo, Context, ExecutionContext, Message, MessageWithContext, UserContext,
-        UserMessage,
-    },
+use namora_core::types::message::{
+    AdditionalInfo, Context, ExecutionContext, Message, MessageWithContext, UserContext,
+    UserMessage,
 };
 use uuid::Uuid;
 
@@ -33,16 +32,24 @@ async fn generic_agent_socket(socket: WebSocket<ServerMsg, ClientMsg>, app: Namo
     let user_context: UserContext;
 
     let (sender, mut receiver) = socket.split();
+    let sender_mutex = Arc::new(Mutex::new(sender));
 
-    if let Some(Ok(WebSocketMessage::Item(ClientMsg::Data(first_message)))) = receiver.next().await
-    {
-        match serde_json::from_value::<UserMessage>(first_message) {
-            Ok(first_message) => {
-                user_id = first_message.context.user_id;
-                user_context = first_message.context;
+    if let Some(Ok(first_message)) = receiver.next().await {
+        match first_message {
+            WebSocketMessage::Item(ClientMsg::Data(data)) => {
+                match serde_json::from_value::<UserMessage>(data) {
+                    Ok(first_message) => {
+                        user_id = first_message.context.user_id;
+                        user_context = first_message.context;
+                    }
+                    Err(err) => {
+                        tracing::error!("Failed to parse first message {}", err);
+                        return;
+                    }
+                }
             }
-            Err(err) => {
-                tracing::error!("Failed to parse first message {}", err);
+            _ => {
+                tracing::error!("First Message is not a data message");
                 return;
             }
         }
@@ -50,6 +57,26 @@ async fn generic_agent_socket(socket: WebSocket<ServerMsg, ClientMsg>, app: Namo
         tracing::error!("Invalid first message");
         return;
     }
+
+    tracing::info!("sending first message to user");
+    {
+        let mut sender_mutex_guard = sender_mutex.lock().await;
+        let res = sender_mutex_guard.send(WebSocketMessage::Item(ServerMsg::Data(
+            serde_json::to_value(json!({
+                "context": user_context.clone(),
+                "content": "Hi there, How can I help you today?".to_string(),
+                "additional_info": {},
+                "created_at":chrono::Utc::now(),
+                "session_id": "",
+            }))
+            .unwrap_or_default(),
+        ))).await;
+        if let Err(err) = res {
+            tracing::error!("Failed to send first message to user {}", err);
+            return;
+        }
+    }
+    tracing::info!("First message sent to user");
 
     tracing::info!("Starting user worker to handle sending messages to user");
     let user_worker_channel = app.channel.clone();
@@ -89,7 +116,6 @@ async fn generic_agent_socket(socket: WebSocket<ServerMsg, ClientMsg>, app: Namo
                 return;
             }
         };
-        let sender_mutex = Arc::new(Mutex::new(sender));
         consumer.set_delegate(move |delivery: DeliveryResult| {
             tracing::info!("Recieved a message");
             let sender_mutex = sender_mutex.clone();
@@ -205,11 +231,23 @@ async fn generic_agent_socket(socket: WebSocket<ServerMsg, ClientMsg>, app: Namo
                         };
                         if let Ok(message_json) = serde_json::to_value(message_with_context) {
                             tracing::info!("Sending message to SYSTEM");
-                            let res = send_message_to_system(channel, message_json).await;
-                            if let Err(err) = res {
-                                tracing::error!("{:?}", err);
+                            if let Ok(payload) = serde_json::to_vec(&message_json) {
+                                let res = channel
+                                    .basic_publish(
+                                        "",
+                                        "namora.svc.task-orchestrator",
+                                        BasicPublishOptions::default(),
+                                        &payload,
+                                        BasicProperties::default(),
+                                    )
+                                    .await;
+                                if let Err(err) = res {
+                                    tracing::error!("{:?}", err);
+                                }
+                                tracing::info!("Sent message to SYSTEM");
+                            } else {
+                                tracing::error!("Failed to serialize message");
                             }
-                            tracing::info!("Sent message to SYSTEM");
                         } else {
                             tracing::error!("Failed to serialize message");
                         }

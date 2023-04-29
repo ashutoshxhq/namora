@@ -35,7 +35,7 @@ Reply to SYSTEM in the format provided below:
 {
     "from": "ai",
     "to": "system",
-    "message": String(No message needed for system),
+    "content": String(No message needed for system),
     "additional_info": {
         "step": "ai:created_deterministic_plan",
         "data": {
@@ -50,7 +50,7 @@ If you need user feedback to filter and order actions, create a user response in
 {
     "from": "ai",
     "to": "user",
-    "message": String(Question to ask user),
+    "content": String(Question to ask user),
     "additional_info": {
         "step": "ai:get_user_feedback",
     }
@@ -64,7 +64,7 @@ If no, initiate a new query handler sending a response to the system using the f
 {
     "from": "user",
     "to": "system",
-    "message": String(Last message from user),
+    "content": String(Last message from user),
     "additional_info": {
         "step": "system:basic_response_or_create_plan",
     }
