@@ -25,45 +25,39 @@ Executed Action Outputs:
 
 Craft the user response in the following format:
 ```
-[
 {
-    "message_from": "AI",
-    "message_to": "USER",
-    "message": USER_RESPONSE,
-    "step": "final_summary",
-    additional_data: ADDITIONAL_JSON_DATA_IF_NEEDED
+    "from": "ai",
+    "to": "user",
+    "message": String(Response for user),
+    "additional_info": {
+        "step": "ai:final_response",
+        "data": Json(optional, if no json data needs to be send to user)
+    }
 }
-]
 ```
 
 If user feedback is needed to create the final response, generate a user response in this format:
 ```
-[
 {
-    "message_from": "AI",
-    "message_to": "USER",
-    "message": MESSAGE_STRING,
-    "step": LAST_USER_MESSAGE_STEP,
-    "additional_data": {
-        "action": "get_user_feedback",
+    "from": "ai",
+    "to": "user",
+    "message": String(Question to ask user),
+    "additional_info": {
+        "step": "ai:get_user_feedback",
     }
 }
-]
 ```
 
 Upon receiving user feedback, first verify if it genuinely pertains to the previous question by comparing it with the current query and plan.
 If yes, continue with input generation or request more user feedback.
-If no, initiate a new plan creation by sending a response to the system using the format below.
+If no, initiate a new query handler sending a response to the system using the format below.
 ```
-[
 {
-    "message_from": "USER",
-    "message_to": "SYSTEM",
-    "message": USER_FEEDBACK_MESSAGE,
-    "step": "initial_query",
-    "additional_data": {
-        "action": "create_non_deterministic_plan",
+    "from": "user",
+    "to": "system",
+    "message": String(Last message from user),
+    "additional_info": {
+        "step": "system:basic_response_or_create_plan",
     }
 }
-]
 ```

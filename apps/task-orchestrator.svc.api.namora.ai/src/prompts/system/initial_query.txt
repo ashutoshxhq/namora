@@ -18,30 +18,30 @@ When receiving a user query, determine if you can answer based on available cont
 
 If sufficient context is available, generate a response to the USER, providing the query answer in this format:
 ```
-[
 {
-    "message_from": "AI",
-    "message_to": "USER",
-    "message": MESSAGE_STRING,
-    "step": LAST_USER_MESSAGE_STEP
+    "from": "ai",
+    "to": "user",
+    "message": String(User response message),
+    "additional_info": {
+        "step": "ai:user_response",
+        "data": {
+            "plan": Array<String>()
+        }
+    }
 }
-]
 ```
 
 If more context or third-party tool interaction is required, create a response to the SYSTEM, outlining a step-by-step plan of necessary tools or actions to answer the user query. Use this format for SYSTEM responses:
 ```
-[
 {
-    "message_from": "AI",
-    "message_to": "SYSTEM",
-    "message": MESSAGE_STRING,
-    "step": LAST_USER_MESSAGE_STEP,
-    "additional_data": {
-        "action": "find_actions",
-        "action_data": {
-            "plan": STRING
+    "from": "ai",
+    "to": "system",
+    "message": String(No message needed for system),
+    "additional_info": {
+        "step": "ai:created_non_deterministic_plan",
+        "data": {
+            "plan": Array<String>(Step by step list of actions)
         }
     }
 }
-]
 ```

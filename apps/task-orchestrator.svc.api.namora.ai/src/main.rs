@@ -1,6 +1,10 @@
-mod handler;
+mod actions;
 mod db;
-use db::create_pool;
+mod handler;
+mod types;
+mod plan;
+use std::sync::Arc;
+
 use dotenvy::dotenv;
 use lapin::{
     message::DeliveryResult,
@@ -8,13 +12,13 @@ use lapin::{
     types::FieldTable,
     Connection, ConnectionProperties,
 };
-use namora_core::{
-    types::{ message::MessageWithConversationContext, worker::WorkerContext},
-};
-use std::sync::Arc;
+use namora_core::types::{ worker::WorkerContext, message::MessageWithContext};
 use tokio::sync::Mutex;
 use tracing::Level;
 use tracing_subscriber::FmtSubscriber;
+use uuid::Uuid;
+
+use crate::db::create_pool;
 
 #[tokio::main]
 async fn main() {
@@ -24,13 +28,13 @@ async fn main() {
         .with_level(true)
         .with_line_number(true)
         .with_file(true)
-        .with_ansi(false)
-        .compact()
         .finish();
 
     tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
-
+    tracing::info!("Creating database pool");
     let pool = create_pool().await.unwrap();
+    tracing::info!("Created database pool");
+
     let uri = std::env::var("RABBITMQ_URI").unwrap();
     let options = ConnectionProperties::default()
         .with_executor(tokio_executor_trait::Tokio::current())
@@ -41,7 +45,7 @@ async fn main() {
 
     let _queue = channel
         .queue_declare(
-            "queue.worker.ai",
+            "namora.svc.task-orchestrator",
             QueueDeclareOptions::default(),
             FieldTable::default(),
         )
@@ -50,8 +54,8 @@ async fn main() {
 
     let consumer = channel
         .basic_consume(
-            "queue.worker.ai",
-            "ai_worker",
+            "namora.svc.task-orchestrator",
+            &format!("namora.svc.task-orchestrator.consumer.{}", Uuid::new_v4().to_string()),
             BasicConsumeOptions::default(),
             FieldTable::default(),
         )
@@ -62,7 +66,7 @@ async fn main() {
         pool: pool.clone(),
         channel: channel.clone(),
     }));
-
+    tracing::info!("Listning to messages");
     consumer.set_delegate(move |delivery: DeliveryResult| {
         let worker_context_mutex = Arc::clone(&worker_context);
         async move {
@@ -74,38 +78,38 @@ async fn main() {
                     return;
                 }
             };
-
             let worker_ctx = {
-                let worker_ctx_guard = worker_context_mutex.lock().await;
-                (*worker_ctx_guard).clone()
+                let context = worker_context_mutex.lock().await;
+                (*context).clone()
             };
+
             match String::from_utf8(delivery.data.clone()) {
                 Ok(message) => {
-                    tracing::debug!("Received message: {:?}", message);
-                    let message: MessageWithConversationContext =
-                        match serde_json::from_str(&message) {
+                    let message: MessageWithContext =
+                        match serde_json::from_str(&(message)) {
                             Ok(message) => message,
-                            Err(err) => {
-                                tracing::error!("Failed to deserialize message: {:?}", err);
+                            Err(error) => {
+                                tracing::error!("Failed to deserialize message: {}", error);
                                 return;
                             }
                         };
 
-                    if let Err(err) = handler::message_handler(worker_ctx, message).await {
-                        tracing::error!("Failed to handle message: {:?}", err);
+                    if let Err(error) = handler::message_router(worker_ctx, message).await {
+                        tracing::error!("Message handler error: {}", error);
                     }
 
-                    if let Err(err) = delivery.ack(BasicAckOptions::default()).await {
-                        tracing::error!("Failed to ack message: {:?}", err);
+                    if let Err(error) = delivery.ack(BasicAckOptions::default()).await {
+                        tracing::error!("Failed to ack message: {}", error);
                     }
                 }
-                Err(err) => {
-                    tracing::error!("Failed to convert message to string: {:?}", err);
+                Err(error) => {
+                    tracing::error!("Failed to convert message to string: {}", error);
                     return;
                 }
             }
         }
     });
+
     // Keep the main function running
     loop {
         tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;

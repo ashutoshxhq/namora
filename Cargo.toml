@@ -1,10 +1,9 @@
 [workspace]
 
 members = [
-    "apps/ai.worker.api.namora.ai",
     "apps/engine.api.namora.ai",
-    "apps/system.worker.api.namora.ai",
-    "apps/user.worker.api.namora.ai",
+    "apps/task-orchestrator.svc.api.namora.ai",
+    "apps/user.svc.api.namora.ai",
     "libs/agent_db_repository",
     "libs/engine_db_repository",
     "libs/namora_core"
