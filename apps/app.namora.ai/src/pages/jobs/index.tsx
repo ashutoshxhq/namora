@@ -50,10 +50,6 @@ const Jobs = () => {
   const _selectedIndex =
     projects.map((project) => project.id).indexOf(_selectedTab) ?? 0;
 
-  if (!router.isReady) {
-    return null;
-  }
-
   return (
     <>
       <div>

@@ -2,19 +2,33 @@ import { useMemo } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
+import { useState } from "react";
 
 const schema = yup.object().shape({
-  message: yup
+  first_name: yup
+    .string()
+    .required("Required")
+    .min(1, "Minimum one character is required"),
+  last_name: yup
+    .string()
+    .required("Required")
+    .min(1, "Minimum one character is required"),
+  email: yup.string().email().required("Required"),
+  username: yup
     .string()
     .required("Required")
     .min(1, "Minimum one character is required"),
 });
 
-export const useChatInput = () => {
+export const usePersonalDetails = () => {
+  const [showAlert, setShowAlert] = useState(false)
   const useFormObj = useMemo(
     () => ({
       defaultValues: {
-        message: "",
+        first_name: "",
+        last_name: "",
+        email: "",
+        username: "",
       },
       resolver: yupResolver(schema),
     }),
@@ -38,9 +52,12 @@ export const useChatInput = () => {
     // console.log("Sending", { data, binaryData });
     console.log({ submittedFormData });
     // web_socket.send(binaryData.buffer)
+    setShowAlert(true)
   };
 
   return {
+    showAlert,
+    setShowAlert,
     hookFormProps: { ...hookFormProps, onFormSubmit },
   };
 };
