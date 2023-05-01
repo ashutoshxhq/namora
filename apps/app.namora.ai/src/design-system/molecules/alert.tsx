@@ -17,7 +17,7 @@ export const Alert = ({
   return (
     <div
       aria-live="assertive"
-      className="fixed inset-0 flex items-end px-4 py-6 pointer-events-none sm:items-start sm:p-6"
+      className="fixed inset-0 z-10 flex items-end px-4 py-6 pointer-events-none sm:items-start sm:p-6"
     >
       <div className="absolute flex flex-col items-center w-full space-y-4 bottom-5 right-5 sm:items-end">
         <Transition

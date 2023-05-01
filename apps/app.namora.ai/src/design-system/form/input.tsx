@@ -2,7 +2,6 @@ import React from "react";
 
 import { Controller } from "react-hook-form";
 import { ExclamationCircleIcon } from "@heroicons/react/24/outline";
-import { Input } from "design-system/primitives/input";
 
 const errMsgColor: { [key: string]: string } = {
   chat_message_input: "transparent",
@@ -44,7 +43,7 @@ export const FormInputTextField = ({
               {label}
             </label>
             <div className="relative rounded-md shadow-sm">
-              <Input
+              <input
                 id={id}
                 type="text"
                 className={`${
@@ -54,8 +53,8 @@ export const FormInputTextField = ({
                 }`}
                 placeholder={errMessage || placeholder}
                 aria-invalid="true"
+                aria-describedby="error-text"
                 {...field}
-                //   aria-describedby="error-text"
               />
               <div
                 className={`absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none ${

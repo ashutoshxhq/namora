@@ -4,7 +4,6 @@ import { EllipsisVerticalIcon } from "@/heroicons";
 
 import { classNames } from "@/utils";
 import Link from "next/link";
-import { useRouter } from "next/router";
 
 const statuses: { [key: string]: string } = {
   Complete: "text-green-700 bg-green-50 ring-green-600/20",
@@ -45,11 +44,6 @@ const projects = [
 ];
 
 const Jobs = () => {
-  const router = useRouter();
-  const _selectedTab = router?.query?.jId as string;
-  const _selectedIndex =
-    projects.map((project) => project.id).indexOf(_selectedTab) ?? 0;
-
   return (
     <>
       <div>

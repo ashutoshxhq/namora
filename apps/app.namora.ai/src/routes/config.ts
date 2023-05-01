@@ -4,6 +4,7 @@ import {
   Cog8ToothIcon,
 } from "@/heroicons";
 import { CHATS, JOBS, SETTINGS } from "./constants";
+import { ACCOUNT } from "@/pages/settings/constants";
 
 export const navigation = [
   {
@@ -30,7 +31,7 @@ export const navigation = [
     id: SETTINGS,
     name: SETTINGS,
     href: {
-      pathname: `/${SETTINGS}`,
+      pathname: `/${SETTINGS}/${ACCOUNT}`,
       query: {},
     },
     icon: Cog8ToothIcon,
