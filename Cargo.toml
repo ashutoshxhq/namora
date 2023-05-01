@@ -6,5 +6,6 @@ members = [
     "apps/user.svc.api.namora.ai",
     "libs/agent_db_repository",
     "libs/engine_db_repository",
-    "libs/namora_core"
+    "libs/namora_core",
+    "functions/upsert-indexes-pinecone"
 ]

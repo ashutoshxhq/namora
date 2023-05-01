@@ -104,7 +104,7 @@ async fn generic_agent_socket(socket: WebSocket<ServerMsg, ClientMsg>, app: Namo
         let consumer = match channel
             .basic_consume(
                 &format!("namora.user.{}", user_id.to_string()),
-                &format!("namora.user.consumer.{}", user_id.to_string()),
+                &format!("namora.user.consumer.{}.{}", user_id.to_string(), Uuid::new_v4()),
                 BasicConsumeOptions::default(),
                 FieldTable::default(),
             )

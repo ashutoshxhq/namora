@@ -5,7 +5,7 @@ use super::handlers::{linkedin::get_linkedin_profile, crm::{get_object_record_fr
 
 pub async fn route(action_id: String, action_data: Value) -> Result<Value, Error> {
     let res = match action_id.as_str() {
-        "get_linkedin_profile" => {
+        "get_linkedin_person_profile" => {
             get_linkedin_profile(action_data).await?
         }
         "get_lead_from_crm_with_filter" => {

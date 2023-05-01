@@ -28,9 +28,18 @@ Identified Actions:
 {{actions}}
 ```
 
-Your task is to filter and arrange the actions to create a deterministic plan based on the query requirements and the plan so that the user's query can be achieved.
+Always follow these rules:
+- Always stick to the json response format so that the system parsing it can serialize it without any errors
+- Any text you want to generate should be in the "content" field of the json, not outside the json
 
-Reply to SYSTEM in the format provided below:
+Guidelines on choosing actions:
+1. Choose minimum set of actions that can fulfil the query requirements
+2. Try not to have any unnessesay side effects
+
+Your task is to filter and arrange the `Identified Actions` to create a deterministic plan based on the query requirements and the plan(its only a guideline to pick right action from `Identified Actions`) so that the user's query can be achieved.
+
+
+Respond to SYSTEM in the format described below so SYSTEM can start executing the actions:
 ```
 {
     "from": "ai",
@@ -39,9 +48,19 @@ Reply to SYSTEM in the format provided below:
     "additional_info": {
         "step": "ai:created_deterministic_plan",
         "data": {
-            "plan": HashMap<u32(auto increment number signifying order of execution), String(action_id)>,
+            "deterministic_plan": HashMap<u32(auto increment number starting from 0), String(action_id)>,
         }
     }
+}
+```
+Here `deterministic_plan` is a key value pair of key: a auto increment number starting from 0 and value: `action_id` of one of the actions from the `Identified Actions` array, do not include any thing apart from `action_id` as value
+Example of a deterministic_plan which searches for accounts and then creates a deal:
+```
+{
+    "deterministic_plan": {
+        "0": "search_accounts",
+        "1": "create_deal"
+    },
 }
 ```
 

@@ -41,7 +41,7 @@ If more context or third-party tool interaction is required, create a response t
     "additional_info": {
         "step": "ai:created_non_deterministic_plan",
         "data": {
-            "plan": Array<String>(Step by step list of actions)
+            "plan": Array<String>(Step by step list of actions as an array of string)
         }
     }
 }

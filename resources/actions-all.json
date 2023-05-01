@@ -1,0 +1,355 @@
+[
+    {
+        "id": "create_contact",
+        "name": "Create a new contact in the CRM system",
+        "description": "Create a new contact in the CRM system with comprehensive information such as name, email, phone number, job title, company, and custom fields. This function ensures the contact is accurately added to the CRM database, enabling associations with deals, tasks, and other CRM objects. It also performs validation checks and deduplication strategies to maintain data integrity.",
+        "sample_queries": [
+            "Can you add a contact named John Smith with john@email.com?",
+            "Add Jane Doe to our contacts, her number is 555-1234.",
+            "I just met Mike Johnson, can you save his info? His email is mike.johnson@company.com.",
+            "Please create a new contact for Sarah Parker, sarahp@domain.com, and she's a Marketing Manager.",
+            "Add a contact: Alice Cooper, phone: 555-6789, email: a.cooper@website.com.",
+            "Store the contact info for Tom Harris, tom.harris@workemail.com.",
+            "Include Linda Green in our contact list, her email is lindagreen@companyxyz.com.",
+            "Save the info for Peter Brown, his email is peter.brown@bizmail.com.",
+            "I need you to store a new contact, Emma Wilson, her email is emma@emailexample.com.",
+            "Add a new contact for David Martin, david.martin@hisemail.com, and he's a Sales Director."
+        ],
+        "input_format": "{\r\n   \"contact\":{\r\n\t\"accountId\": string(optional: The Id of the account to associate this contact with),\r\n\t\"additional\": object(optional: Create any property in the downstream CRM, such as a custom or native property. For a list of all properties see \/details.),\r\n\t\"email\": string,\r\n  \"firstName\": string,\r\n\t\"jobTitle\": string,\r\n  \"lastName\": string,\r\n\t\"mobilePhone\": string,\r\n\t\"ownerUserId\": string\r\n}\r\n}"
+
+    },
+    {
+        "id": "update_contact",
+        "name": "Update an existing contact's information within the CRM system",
+        "description": "Update an existing contact's information within the CRM system, including name, email, phone number, job title, company, and custom fields. This function maintains accuracy and up-to-date information in the CRM database by reflecting contact detail changes or corrections. It also handles validation checks and updates related CRM objects (e.g., associated deals, tasks).",
+        "sample_queries": [
+            "Can you change John Smith's email to johnsmith@newemail.com?",
+            "Update Jane Doe's phone number to 555-9876.",
+            "Please change Mike Johnson's job title to Project Manager.",
+            "I need Sarah Parker's company name updated to ABC Corporation.",
+            "Change Alice Cooper's phone number to 555-2468 and her job title to HR Manager.",
+            "Update Tom Harris' email to tom.harris@newworkemail.com.",
+            "Modify Linda Green's contact information, her new phone number is 555-1357.",
+            "Change Peter Brown's job title to Senior Consultant.",
+            "Update Emma Wilson's contact info, her new email is emma@newemailexample.com.",
+            "David Martin got promoted, please update his job title to Senior Sales Director."
+        ],
+        "input_format": "{\r\n    \"id\": string(required: id of the string),\r\n    \"contact\": {\r\n        \"accountId\": string(optional: The Id of the account to associate this contact with),\r\n        \"additional\": object(optional: Create any property in the downstream CRM, such as a custom or native property. For a list of all properties see \/details.),\r\n        \"email\": string(optional),\r\n        \"firstName\": string(optional),\r\n        \"jobTitle\": string(optional),\r\n        \"lastName\": string(optional),\r\n        \"mobilePhone\": string(optional),\r\n        \"ownerUserId\": string(optional)\r\n    }\r\n}"
+    },
+    {
+        "id": "search_contact",
+        "name": "Search for contacts in the CRM system",
+        "description": "Search for contacts in the CRM system using various criteria, including name, email, phone number, and a wide range of date-related filters (e.g., created time, updated time, last email opened, last contacted, and activity timestamps). This function supports advanced filtering and sorting options for efficient and targeted search results.",
+        "sample_queries": [
+            "Can you find contacts with the last name Smith?",
+            "Look for contacts that have an email address from companyxyz.com.",
+            "Who are the contacts that were added last month?",
+            "Show me contacts who haven't been contacted in the past 6 months.",
+            "Find contacts with the job title \"Marketing Manager.\"",
+            "Search for contacts that work at ABC Corporation.",
+            "Can you list contacts who have opened our emails in the last week?",
+            "Look for contacts with phone numbers starting with 555.",
+            "Find all the contacts that were last updated today.",
+            "Show me contacts that have been inactive for over a year."
+        ],
+        "input_format": "{\r\n\t\"filters\": object {\r\n\t\tstring(field_name): object {\r\n\t\t\t\"contains\": string,\r\n\t\t\t\"endsWith\": string,\r\n\t\t\t\"equals\": string,\r\n\t\t\t\"in\": array<string>,\r\n\t\t\t\"mode\": \"insensitive\",\r\n\t\t\t\"not\": string,\r\n\t\t\t\"notIn\": array<string>,\r\n\t\t\t\"startsWith\": string,\r\n\t}\r\n}"
+    },
+    {
+        "id": "create_deal",
+        "name": "Add a new deal to the CRM system",
+        "description": "Add a new deal to the CRM system by associating it with a contact or company and defining deal properties such as amount, pipeline, stage, expected close date, and custom fields. This function facilitates tracking sales opportunities and managing the sales process within the CRM. It also performs validation checks, deal status tracking, and automatic updates to associated contacts and companies.",
+        "sample_queries": [
+            "Add a new deal for John Smith worth $10,000.",
+            "Create a deal with ABC Corporation for $50,000 in the negotiation stage.",
+            "Add a sales opportunity with Mike Johnson, potential revenue of $25,000.",
+            "Set up a new deal with Jane Doe, expected close date is next month, and the amount is $15,000.",
+            "Create a deal for Sarah Parker at XYZ Company, with a deal value of $40,000.",
+            "Add a deal with a potential revenue of $20,000 for Tom Harris.",
+            "Can you create a new deal with Linda Green, with an estimated value of $30,000?",
+            "Start a new deal with Peter Brown for $35,000 in the proposal stage.",
+            "Add a $45,000 deal for Emma Wilson, set the expected close date to the end of this quarter.",
+            "Create a deal for David Martin, deal amount is $60,000, and it's in the qualification stage."
+        ]
+    },
+    {
+        "id": "update_deal",
+        "name": "Modify an existing deal's properties within the CRM system",
+        "description": "Modify an existing deal's properties within the CRM system, including deal amount, pipeline, stage, expected close date, associated contact or company, and custom fields. This function keeps deal information current and accurately reflects any changes in the sales process. It also handles validation checks and updates related CRM objects (e.g., associated contacts, companies, tasks).",
+        "sample_queries": [
+            "Change the deal amount for John Smith to $12,000.",
+            "Update the deal stage for ABC Corporation to \"closed won.\"",
+            "Move the deal with Mike Johnson to the next stage in the pipeline.",
+            "Update Jane Doe's deal expected close date to next week.",
+            "Change the associated contact for the XYZ Company deal to Sarah Parker.",
+            "Increase the deal amount for Tom Harris' deal to $22,000.",
+            "Update Linda Green's deal stage to \"contract sent.\"",
+            "Move Peter Brown's deal to the \"negotiation\" stage and update the deal amount to $40,000.",
+            "Change the expected close date for Emma Wilson's deal to next month.",
+            "Update David Martin's deal stage to \"closed lost\" and add a reason for losing the deal."
+        ]
+    },
+    {
+        "id": "search_deal",
+        "name": "Search for deals in the CRM system",
+        "description": "Search for deals in the CRM system using specific criteria, such as deal name, contact, company, stage, pipeline, and a comprehensive set of date-related filters (e.g., created time, updated time, expected close date, and activity timestamps). The function offers advanced filtering and sorting options to effectively manage the sales pipeline.",
+        "sample_queries": [
+            "Show me deals in the \"proposal\" stage.",
+            "Find deals that are expected to close this quarter.",
+            "Can you list deals with a value over $30,000?",
+            "Search for deals associated with ABC Corporation.",
+            "Look for deals in the \"negotiation\" stage for contacts from XYZ Company.",
+            "Find deals that were updated within the last week.",
+            "Show me deals that are in the \"contract sent\" stage.",
+            "Search for deals related to John Smith.",
+            "Can you find deals that were lost in the last month and their reasons?",
+            "Show me all the deals in the pipeline with an expected close date in the next 60 days."
+        ],
+        "input_format": "{\r\n\t\"filters\": object {\r\n\t\tstring(field_name): object {\r\n\t\t\t\"contains\": string,\r\n\t\t\t\"endsWith\": string,\r\n\t\t\t\"equals\": string,\r\n\t\t\t\"in\": array<string>,\r\n\t\t\t\"mode\": \"insensitive\",\r\n\t\t\t\"not\": string,\r\n\t\t\t\"notIn\": array<string>,\r\n\t\t\t\"startsWith\": string,\r\n\t}\r\n}"
+    },
+    {
+        "id": "create_company",
+        "name": "Create a new company in the CRM system",
+        "description": "Create a new company in the CRM system with detailed information, including company name, website, address, industry, size, and custom fields. This function enables users to manage and track interactions with companies while associating contacts and deals with the appropriate organization. It also performs validation checks and deduplication strategies to ensure data integrity.",
+        "sample_queries": [
+            "Add a new company called ABC Corporation with the website abccorp.com.",
+            "Create a company named XYZ Company, their website is xyzcompany.com.",
+            "Add a company called \"Global Tech\" with the website globaltech.com and 500 employees.",
+            "Can you create a new company called \"Innovative Solutions\" with the website innovativesolutions.com?",
+            "Set up a new company called \"Future Enterprises\" and their website is future-enterprises.com.",
+            "Add a company named \"Tech Pioneers\" with the website techpioneers.com and an industry of software development.",
+            "Create a new company called \"NextGen Robotics\" and their website is nextgenrobotics.com.",
+            "Add a company named \"Green Energy Solutions\" with the website greenenergysolutions.com.",
+            "Create a new company called \"Digital Marketing Hub\" with the website digitalmarketinghub.com.",
+            "Set up a new company called \"Creative Design Studio\" and their website is creativedesignstudio.com."
+        ]
+    },
+    {
+        "id": "update_company",
+        "name": "Update an existing company's information within the CRM system",
+        "description": "Update an existing company's information within the CRM system, such as company name, website, address, industry, size, and custom fields. This function ensures company information remains accurate and up-to-date, reflecting any changes in the organization's details. It also handles validation checks and updates related CRM objects (e.g., associated contacts, deals, tasks).",
+        "input_format": "",
+        "sample_queries": [
+            "Update ABC Corporation's website to newabccorp.com.",
+            "Change XYZ Company's industry to \"E-commerce.\"",
+            "Update Global Tech's employee count to 550.",
+            "Change Innovative Solutions' website to innovative-solutions.com.",
+            "Update Future Enterprises' address to 123 Main Street.",
+            "Change Tech Pioneers' industry to \"Mobile App Development.\"",
+            "Update NextGen Robotics' website to next-gen-robotics.com.",
+            "Modify Green Energy Solutions' employee count to 300.",
+            "Update Digital Marketing Hub's address to 456 Market Street.",
+            "Change Creative Design Studio's website to cds-studio.com."
+        ]
+    },
+    {
+        "id": "search_company",
+        "name": "Search for companies in the CRM system",
+        "description": "Search for companies in the CRM system using specific criteria like company name, website, industry, size, and an extensive range of date-related filters (e.g., created time, updated time, and activity timestamps). The function supports advanced filtering and sorting options for efficient company relationship management.",
+        "input_format": "",
+        "sample_queries": [
+            "Find companies in the \"E-commerce\" industry.",
+            "Show me companies with more than 500 employees.",
+            "Can you list companies that were added to the CRM last week?",
+            "Search for companies with \"Tech\" in their name.",
+            "Look for companies with websites ending in \".org.\"",
+            "Find companies in the \"Software Development\" industry with fewer than 200 employees.",
+            "Show me companies with addresses in New York.",
+            "Search for companies that were last updated within the past month.",
+            "Can you find companies with \"Energy\" in their name?",
+            "Look for companies with websites containing \"design.\""
+        ]
+    },
+    {
+        "id": "create_task",
+        "name": "Create a new task in the CRM system",
+        "description": "Create a new task in the CRM system, associating it with a specific contact, deal, or company, and defining task properties such as due date, priority, status, task type, and custom fields. This function helps users manage and track their activities, ensuring important tasks are not overlooked. It also performs validation checks, handles task dependencies, and provides automatic notifications when necessary.",
+        "input_format": "",
+        "sample_queries": [
+            "Set a reminder to call John Smith next Monday.",
+            "Create a task to follow up with ABC Corporation in two weeks.",
+            "Add a task to send a proposal to XYZ Company tomorrow.",
+            "Schedule a meeting with Mike Johnson for next Friday.",
+            "Create a task to update the deal amount for Jane Doe's deal.",
+            "Add a task to research competitor pricing before the end of this week.",
+            "Set a reminder to email Sarah Parker the latest marketing materials.",
+            "Schedule a task to review Tom Harris' sales presentation.",
+            "Create a task to send a contract to Linda Green in three days.",
+            "Add a task to check the status of Peter Brown's deal next Tuesday."
+        ]
+    },
+    {
+        "id": "update_task",
+        "name": "Update an existing task's properties within the CRM system",
+        "description": "Update an existing task's properties within the CRM system, including due date, priority, status, task type, associated contact, deal, or company, and custom fields. This function allows users to maintain current task information and accurately reflect changes in priorities or deadlines. It also handles validation checks and updates related CRM objects (e.g., associated contacts, companies, deals).",
+        "input_format": "",
+        "sample_queries": [
+            "Change the due date for John Smith's call to next Tuesday.",
+            "Update the follow-up task with ABC Corporation to be due in three weeks.",
+            "Move the proposal deadline for XYZ Company to the day after tomorrow.",
+            "Reschedule the meeting with Mike Johnson for next Thursday.",
+            "Change the task to update Jane Doe's deal amount to be due tomorrow.",
+            "Update the competitor pricing research task to be due by the end of next week.",
+            "Modify the task to email Sarah Parker, add a reminder to attach the latest marketing materials.",
+            "Change the due date for reviewing Tom Harris' sales presentation to next Wednesday.",
+            "Update the task to send a contract to Linda Green, set the due date to five days from now.",
+            "Reschedule the task to check the status of Peter Brown's deal to next Friday."
+        ]
+    },
+    {
+        "id": "search_task",
+        "name": "Search for tasks in the CRM system",
+        "description": "Search for tasks in the CRM system using specific criteria, such as contact, deal, company, due date, priority, status, task type, and a thorough set of date-related filters (e.g., created time, updated time, and activity timestamps). The function supports advanced filtering and sorting options, enabling users to manage their workload effectively.",
+        "input_format": "",
+        "sample_queries": [
+            "Show me tasks due today.",
+            "Find tasks related to John Smith.",
+            "Can you list tasks with the status \"In Progress\"?",
+            "Search for tasks related to ABC Corporation.",
+            "Look for tasks that were completed in the last week.",
+            "Find tasks with the priority set to \"High.\"",
+            "Show me tasks that are due within the next three days.",
+            "Search for tasks associated with deals in the \"Proposal\" stage.",
+            "Can you find tasks with the type \"Call\"?",
+            "Look for tasks that were assigned to me and are due next week."
+        ]
+    },
+    {
+        "id": "create_note",
+        "name": "Create a new note in the CRM system",
+        "description": "Create a new note in the CRM system, associating it with a specific contact, deal, company, or task, and adding content such as text, attachments, and custom fields. This function helps users capture important information, insights, and observations during interactions, keeping records up-to-date and relevant. It also performs validation checks and supports rich text editing options and collaboration features.",
+        "input_format": "",
+        "sample_queries": [
+            "Add a note for John Smith about our call today.",
+            "Create a note about the meeting with ABC Corporation, mentioning the key takeaways.",
+            "Write a note for XYZ Company's deal on their pricing preferences.",
+            "Make a note about Mike Johnson's feedback on our proposal.",
+            "Add a note for Jane Doe's contact record about her upcoming vacation.",
+            "Create a note on Sarah Parker's task to mention additional resources she requested.",
+            "Write a note about Tom Harris' deal mentioning the new product request.",
+            "Make a note for Linda Green's company with insights from our latest conversation.",
+            "Add a note about Peter Brown's recent email expressing interest in a partnership.",
+            "Create a note for Emma Wilson's task mentioning the need for a status update."
+        ]
+    },
+    {
+        "id": "update_note",
+        "name": "Update an existing note's content within the CRM system",
+        "description": "Update an existing note's content within the CRM system, including text, attachments, associated contact, deal, company, task, and custom fields. This function allows users to modify notes, ensuring they remain accurate, relevant, and reflect any changes in the related CRM objects. It also handles validation checks and supports collaboration features when updating notes.",
+        "input_format": "",
+        "sample_queries": [
+            "Update the note for John Smith's call, mentioning that he requested a follow-up next week.",
+            "Modify the note about the ABC Corporation meeting to include the action items.",
+            "Edit the note on XYZ Company's deal to add a new pricing strategy.",
+            "Change the note about Mike Johnson's feedback to include his suggestions.",
+            "Update the note for Jane Doe to mention her vacation dates.",
+            "Modify the note on Sarah Parker's task to include the resources she received.",
+            "Edit the note about Tom Harris' deal to mention the product demo scheduled.",
+            "Change the note for Linda Green's company to include feedback on our services.",
+            "Update the note about Peter Brown's email to include the next steps for partnership.",
+            "Modify the note for Emma Wilson's task to add a deadline for the status update."
+        ]
+    },
+    {
+        "id": "search_note",
+        "name": "Search for notes in the CRM system",
+        "description": "Search for notes in the CRM system using specific criteria, such as contact, deal, company, task, content keywords, and an extensive range of date-related filters (e.g., created time, updated time, and activity timestamps). The function supports advanced filtering and sorting options, enabling users to find relevant notes and manage their records more effectively.",
+        "input_format": "",
+        "sample_queries": [
+            "Show me notes related to John Smith.",
+            "Find notes mentioning ABC Corporation from the past month.",
+            "Can you list notes with the keyword 'proposal'?",
+            "Search for notes related to XYZ Company's deals.",
+            "Look for notes that mention 'vacation' or 'time off'.",
+            "Find notes associated with Sarah Parker's tasks.",
+            "Show me notes that contain the word 'pricing'.",
+            "Search for notes related to Linda Green's company.",
+            "Can you find notes with the keyword 'partnership'?",
+            "Look for notes that mention 'status update' or 'deadline'."
+        ]
+    },
+    {
+        "id": "search_web",
+        "name": "Perform a web search using the SERP API",
+        "description": "Perform a web search using the SERP API with a given query, returning a list of search results, including webpage titles, URLs, and snippets. This function allows users to obtain relevant information from the web to answer their questions or find resources related to their query.",
+        "input_format": "",
+        "sample_queries": [
+            "Search the web for 'best CRM software'.",
+            "Find articles on 'effective sales strategies'.",
+            "Can you look up 'customer retention techniques'?",
+            "Search for 'digital marketing trends in 2022'.",
+            "Look up 'how to create a successful business plan'.",
+            "Find information on 'improving customer satisfaction'.",
+            "Search the web for 'top project management tools'.",
+            "Find resources on 'building a strong company culture'.",
+            "Can you search for 'sales funnel optimization techniques'?",
+            "Look up 'how to increase employee productivity'."
+        ]
+    },
+    {
+        "id": "search_news",
+        "name": "Perform a news search using the SERP API",
+        "description": "Perform a news search using the SERP API with a given query, returning a list of news articles, including article titles, URLs, sources, and publication dates. This function allows users to stay informed about the latest news and events related to their query.",
+        "input_format": "",
+        "sample_queries": [
+            "Find news about 'new CRM software releases'.",
+            "Search for news on 'sales industry trends'.",
+            "Can you look up recent news on 'customer service improvements'?",
+            "Search news for 'digital marketing innovations'.",
+            "Look up news about 'successful business startups'.",
+            "Find news on 'new project management tools'.",
+            "Search for news related to 'employee engagement'.",
+            "Find recent news on 'remote work and productivity'.",
+            "Can you search news for 'AI in sales and marketing'?",
+            "Look up news about 'technology advancements in the workplace'."
+        ]
+    },
+    {
+        "id": "search_books",
+        "name": "Perform a books search using the SERP API",
+        "description": "Perform a books search using the SERP API with a given query, returning a list of book search results, including book titles, authors, publication dates, and book URLs. This function allows users to find and explore books related to their query.",
+        "input_format": "",
+        "sample_queries": [
+            "Search for books about 'CRM software best practices'.",
+            "Find books on 'sales techniques and strategies'.",
+            "Can you look up books about 'customer relationship management'?",
+            "Search for books on 'digital marketing for businesses'.",
+            "Look up books about 'creating a successful business plan'.",
+            "Find books on 'improving customer satisfaction'.",
+            "Search for books related to 'project management skills'.",
+            "Find books about 'building a strong company culture'.",
+            "Can you search for books on 'marketing and sales alignment'?",
+            "Look up books about 'increasing employee productivity'."
+        ]
+    },
+    {
+        "id": "search_local",
+        "name": "Search for local businesses or points of interest",
+        "description": "Search for local businesses or points of interest using the SERP API with a given query, returning a list of local search results, including business names, addresses, phone numbers, and map URLs. This function enables users to discover and explore local businesses and services related to their query.",
+        "input_format": "",
+        "sample_queries": [
+            "Find local CRM software providers.",
+            "Search for local sales training courses.",
+            "Can you look up nearby customer service workshops?",
+            "Search for local digital marketing agencies.",
+            "Look up local business consulting services.",
+            "Find local project management training providers.",
+            "Search for nearby team-building activities.",
+            "Find local coworking spaces.",
+            "Can you search for local networking events?",
+            "Look up nearby sales and marketing conferences."
+        ]
+    },
+    {
+        "id": "get_linkedin_person_profile",
+        "name": "Retrieve a person's LinkedIn profile",
+        "description": "Given a LinkedIn profile URL, this function returns a JSON object containing the person's profile information, such as name, headline, current position, education, and skills. This function enables users to obtain comprehensive and relevant professional information from LinkedIn profiles.",
+        "input_format": "LinkedIn profile URL",
+        "sample_queries": [
+            "Get the LinkedIn profile for 'https://www.linkedin.com/in/johndoe'.",
+            "Retrieve the LinkedIn profile information for 'https://www.linkedin.com/in/jane-smith'.",
+            "Can you fetch the LinkedIn profile data for 'https://www.linkedin.com/in/michaeljohnson'?",
+            "Get the profile information from LinkedIn for 'https://www.linkedin.com/in/sarahparker'.",
+            "Retrieve the LinkedIn profile details for 'https://www.linkedin.com/in/alice-cooper'."
+        ]
+    }
+]

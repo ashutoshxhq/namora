@@ -21,7 +21,7 @@ use serde_json::json;
 
 use crate::{
     actions,
-    plan::{create_deterministic_plan, find_action_for_plan, initial_query_handler},
+    plan::{create_deterministic_plan, find_actions_for_plan, initial_query_handler},
 };
 
 pub async fn message_router(
@@ -98,7 +98,7 @@ pub async fn basic_response_or_create_plan(
     if let Some(data) = ai_message.additional_info.data {
         let data: NonDeterministicPlanAdditionalInfo = serde_json::from_value(data)?;
 
-        let actions = find_action_for_plan(data.plan.clone()).await?;
+        let actions = find_actions_for_plan(data.plan.clone()).await?;
 
         let deterministic_plan = create_deterministic_plan(
             message_with_context.message.content.clone(),
@@ -111,6 +111,7 @@ pub async fn basic_response_or_create_plan(
                 .clone(),
         )
         .await?;
+        tracing::info!("Deterministic Plan: {:?}", deterministic_plan);
         let response_message = Message {
             from: "ai".to_string(),
             to: "system".to_string(),
@@ -173,7 +174,7 @@ pub async fn execute_action(
             &json!({
                 "query": message_with_context.context.execution_context.user_query,
                 "plan": message_with_context.context.execution_context.non_deterministic_plan,
-                "executed_actions": message_with_context.context.execution_context.executed_actions,
+                "executed_actions": serde_json::to_value(message_with_context.context.execution_context.executed_actions.clone()).unwrap().to_string(),
                 "action": {
                     "action_id": action_to_execute.id,
                     "action_name": action_to_execute.name,
@@ -242,6 +243,9 @@ pub async fn execute_action(
 
             if let Some(action) = next_action {
                 let mut message_with_context = message_with_context.clone();
+                let mut current_action = action_to_execute;
+                current_action.acion_result = Some(action_result.clone());
+                message_with_context.context.execution_context.executed_actions.push(current_action);
                 message_with_context.message = Message {
                     from: "system".to_string(),
                     to: "system".to_string(),
@@ -256,6 +260,9 @@ pub async fn execute_action(
                 return Ok(vec![message_with_context]);
             } else {
                 let mut message_with_context = message_with_context.clone();
+                let mut current_action = action_to_execute;
+                current_action.acion_result = Some(action_result.clone());
+                message_with_context.context.execution_context.executed_actions.push(current_action);
                 message_with_context.message = Message {
                     from: "system".to_string(),
                     to: "system".to_string(),
@@ -289,12 +296,18 @@ pub async fn generate_response(
     );
     let system_message = fs::read_to_string("./src/prompts/system/generate_response.txt")?;
     let reg = Handlebars::new();
+    let executed_action_outputs = message_with_context.context.execution_context.executed_actions.iter().map(|action| {
+        json!({
+            "action_id": action.name.clone(),
+            "action_output": serde_json::to_value(action.acion_result.clone().unwrap()).unwrap().to_string(),
+        })
+    }).collect::<Vec<serde_json::Value>>();
     let system_message_with_data = reg.render_template(
         &system_message,
         &json!({
             "query": message_with_context.context.execution_context.user_query,
             "plan": message_with_context.context.execution_context.deterministic_plan,
-            "executed_actions": message_with_context.context.execution_context.executed_actions,
+            "executed_actions": serde_json::to_value(executed_action_outputs.clone()).unwrap().to_string(),
         }),
     )?;
 

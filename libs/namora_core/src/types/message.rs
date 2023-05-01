@@ -33,6 +33,8 @@ pub struct Action {
     pub name: String,
     pub description: String,
     pub input_format: String,
+    pub sample_queries: Option<String>,
+    pub additional_info: Option<String>,
     pub acion_result: Option<Value>,
 }
 
