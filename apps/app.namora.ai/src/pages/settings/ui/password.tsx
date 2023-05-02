@@ -1,10 +1,58 @@
-import React from "react";
-import { usePassword } from "settings/ui/usePassword";
-import { SettingInput } from "settings/ui/SettingInput";
+import { useMemo } from "react";
+import { useForm, SubmitHandler } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
 
-export const Password = () => {
-  const { hookFormProps }: any = usePassword();
-  const { handleSubmit, onFormSubmit } = hookFormProps;
+import { FormInputPasswordField } from "@/design-system/form";
+
+const schema = yup.object().shape({
+  current_password: yup
+    .string()
+    .required("Required")
+    .min(1, "Minimum one character is required"),
+  new_password: yup
+    .string()
+    .required("Required")
+    .min(1, "Minimum one character is required"),
+  confirm_password: yup
+    .string()
+    .required("Required")
+    .min(1, "Minimum one character is required"),
+});
+
+const Password = () => {
+  const useFormObj = useMemo(
+    () => ({
+      defaultValues: {
+        current_password: "",
+        new_password: "",
+        confirm_password: "",
+      },
+      resolver: yupResolver(schema),
+    }),
+    []
+  );
+  const hookFormProps = useForm(useFormObj);
+
+  const onFormSubmit: SubmitHandler<any> = (submittedFormData) => {
+    handleClickOnSendMessage(submittedFormData);
+  };
+  const handleClickOnSendMessage = (submittedFormData: any) => {
+    // let data = JSON.stringify({
+    //   Data: {
+    //     message_from: "USER",
+    //     message_to: "AI",
+    //     message: submittedFormData.message,
+    //   },
+    // });
+    // const encoder = new TextEncoder();
+    // const binaryData = encoder.encode(data);
+    // console.log("Sending", { data, binaryData });
+    console.log({ submittedFormData });
+    // web_socket.send(binaryData.buffer)
+  };
+
+  const { handleSubmit } = hookFormProps;
   return (
     <div className="grid grid-cols-1 px-4 py-16 max-w-7xl gap-x-8 gap-y-10 sm:px-6 md:grid-cols-3 lg:px-8">
       <div>
@@ -26,12 +74,11 @@ export const Password = () => {
               Current password
             </label>
             <div className="mt-2">
-              <SettingInput
+              <FormInputPasswordField
                 id="current-password"
                 name="current_password"
-                type="password"
-                autoComplete="current-password"
-                className="block w-full rounded-md border-0 bg-white/5 py-1.5 text-black shadow-sm ring-1 ring-inset ring-gray-400 focus:ring-0 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
+                contextId="current-password"
+                placeholder="..."
                 {...hookFormProps}
               />
             </div>
@@ -45,12 +92,11 @@ export const Password = () => {
               New password
             </label>
             <div className="mt-2">
-              <SettingInput
+              <FormInputPasswordField
                 id="new-password"
                 name="new_password"
-                type="password"
-                autoComplete="new-password"
-                className="block w-full rounded-md border-0 bg-white/5 py-1.5 text-black shadow-sm ring-1 ring-inset ring-gray-400 focus:ring-0 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
+                contextId="new-password"
+                placeholder="..."
                 {...hookFormProps}
               />
             </div>
@@ -64,12 +110,11 @@ export const Password = () => {
               Confirm password
             </label>
             <div className="mt-2">
-              <SettingInput
-                id="confirm-password"
+              <FormInputPasswordField
+                id="confirm-passwordd"
                 name="confirm_password"
-                type="password"
-                autoComplete="new-password"
-                className="block w-full rounded-md border-0 bg-white/5 py-1.5 text-black shadow-sm ring-1 ring-inset ring-gray-400 focus:ring-0 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
+                contextId="confirm-passwordd"
+                placeholder="..."
                 {...hookFormProps}
               />
             </div>
@@ -88,3 +133,5 @@ export const Password = () => {
     </div>
   );
 };
+
+export default Password;

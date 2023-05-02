@@ -3,7 +3,7 @@ import { Menu, Transition } from "@headlessui/react";
 import { EllipsisVerticalIcon } from "@/heroicons";
 
 import { classNames } from "@/utils";
-import { NamoraPanel } from "design-system/molecules";
+import { NamoraPanel } from "@/design-system/molecules";
 
 const statuses: { [key: string]: string } = {
   Complete: "text-green-700 bg-green-50 ring-green-600/20",
@@ -160,4 +160,5 @@ const Artifact = () => {
     </>
   );
 };
+
 export default Artifact;

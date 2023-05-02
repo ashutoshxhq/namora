@@ -1,6 +1,6 @@
 import React from "react";
-import { PersonalDetails } from "settings/ui/personal-details";
-import { Password } from "settings/ui/password";
+import PersonalDetails from "settings/ui/personal-details";
+import Password from "settings/ui/password";
 
 const Account = () => {
   return (
@@ -12,4 +12,5 @@ const Account = () => {
     </div>
   );
 };
+
 export default Account;

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Sidebar, SidebarMobile, TopBar } from "design-system/molecules";
+import { Sidebar, SidebarMobile, TopBar } from "@/design-system/molecules";
 
 export default function MainLayout({ children }: { children: JSX.Element }) {
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);

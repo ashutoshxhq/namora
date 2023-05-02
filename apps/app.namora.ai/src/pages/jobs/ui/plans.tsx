@@ -7,7 +7,7 @@ import {
 
 import { classNames } from "@/utils";
 import { JOBS, NOT_FOUND } from "@/routes/constants";
-import { tabs } from "jobs/config";
+import { jobTabList } from "@/routes/config";
 
 const timeline = [
   {
@@ -65,7 +65,7 @@ const timeline = [
 const Plan = () => {
   const router = useRouter();
   const _selectedTab = router?.query?.tab as string;
-  const _selectedIndex = tabs.map((tab) => tab.id).indexOf(_selectedTab) ?? 0;
+  const _selectedIndex = jobTabList.map((tab) => tab.id).indexOf(_selectedTab) ?? 0;
   const { jobId } = router.query;
 
   if (!router.isReady) {
@@ -128,4 +128,5 @@ const Plan = () => {
     </>
   );
 };
+
 export default Plan;

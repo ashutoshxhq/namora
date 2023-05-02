@@ -1,4 +1,4 @@
-import { ChatInput } from "chats/ui/ChatInput";
+import ChatInput from "chats/ui/ChatInput";
 import ChatWindow from "chats/ui/ChatWindow";
 
 const messages = [

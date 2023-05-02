@@ -3,17 +3,17 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 
 import { classNames } from "@/utils";
-import { tabs } from "settings/config";
-import { SETTINGS } from "settings/constants";
+import { NOT_FOUND, SETTINGS } from "@/routes/constants";
+import { settingTabList } from "@/routes/config";
 import Account from "settings/ui/account";
 import TeamMembers from "settings/ui/team-members";
 import Integrations from "settings/ui/integrations";
-import { NOT_FOUND } from "@/routes/constants";
 
 export default function SettingsPage() {
   const router = useRouter();
   const _selectedTab = router?.query?.tab as string;
-  const _selectedIndex = tabs.map((tab) => tab.id).indexOf(_selectedTab) ?? 0;
+  const _selectedIndex =
+    settingTabList.map((tab) => tab.id).indexOf(_selectedTab) ?? 0;
 
   // console.log("@[tab]", { router, _selectedTab, _selectedIndex });
 
@@ -24,7 +24,7 @@ export default function SettingsPage() {
   }
 
   const handleClickOnTab = (index: number) => {
-    const tab = tabs.at(index);
+    const tab = settingTabList.at(index);
     router.push(`/${SETTINGS}/${tab?.name}`);
   };
   return (
@@ -38,7 +38,7 @@ export default function SettingsPage() {
                 className="flex -mb-px space-x-8"
                 aria-label="Tabs"
               >
-                {tabs.map((tab, index) => (
+                {settingTabList.map((tab, index) => (
                   <Tab
                     key={tab.id}
                     as={Link}

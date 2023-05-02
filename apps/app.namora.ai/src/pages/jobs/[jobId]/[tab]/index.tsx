@@ -4,14 +4,15 @@ import { useRouter } from "next/router";
 
 import { classNames } from "@/utils";
 import { JOBS, NOT_FOUND } from "@/routes/constants";
-import { tabs } from "jobs/config";
-import Artifact from "jobs/ui/artifacts";
+import { jobTabList } from "@/routes/config";
 import Plan from "jobs/ui/plans";
+import Artifact from "jobs/ui/artifacts";
 
 const JobPage = () => {
   const router = useRouter();
   const _selectedTab = router?.query?.tab as string;
-  const _selectedIndex = tabs.map((tab) => tab.id).indexOf(_selectedTab) ?? 0;
+  const _selectedIndex =
+    jobTabList.map((tab) => tab.id).indexOf(_selectedTab) ?? 0;
   const { jobId } = router.query;
 
   if (!router.isReady) {
@@ -31,7 +32,7 @@ const JobPage = () => {
         <Tab.Group
           selectedIndex={_selectedIndex}
           onChange={(index) => {
-            const tab = tabs.at(index);
+            const tab = jobTabList.at(index);
             router.push(`/${JOBS}/${jobId}/${tab?.name}`);
           }}
         >
@@ -42,7 +43,7 @@ const JobPage = () => {
                 className="flex -mb-px space-x-8"
                 aria-label="Tabs"
               >
-                {tabs.map((tab, index) => (
+                {jobTabList.map((tab, index) => (
                   <Tab
                     key={tab.id}
                     as={Link}

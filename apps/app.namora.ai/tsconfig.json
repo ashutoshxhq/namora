@@ -16,7 +16,6 @@
     "incremental": true,
     "paths": {
       "@/*": ["./src/*"],
-      "design-system/*": ["./src/design-system/*"],
       "chats/*": ["./src/pages/chats/*"],
       "settings/*": ["./src/pages/settings/*"],
       "jobs/*": ["./src/pages/jobs/*"],

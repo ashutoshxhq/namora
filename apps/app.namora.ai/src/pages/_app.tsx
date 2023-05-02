@@ -2,7 +2,7 @@ import "@/styles/globals.css";
 import type { AppProps } from "next/app";
 import { Inter } from "next/font/google";
 
-import MainLayout from "design-system/layouts/primary";
+import MainLayout from "@/design-system/layouts/primary";
 
 const inter = Inter({ subsets: ["latin"] });
 

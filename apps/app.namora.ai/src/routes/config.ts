@@ -1,12 +1,21 @@
 import {
+  CHATS,
+  JOBS,
+  SETTINGS,
+  PLAN,
+  ARTIFACT,
+  ACCOUNT,
+  TEAM_MEMBERS,
+  INTEGRATIONS,
+} from "./constants";
+
+import {
   ChatBubbleBottomCenterIcon,
   RectangleStackIcon,
   Cog8ToothIcon,
 } from "@/heroicons";
-import { CHATS, JOBS, SETTINGS } from "./constants";
-import { ACCOUNT } from "@/pages/settings/constants";
 
-export const navigation = [
+export const sideBarMenuList = [
   {
     id: CHATS,
     name: CHATS,
@@ -42,4 +51,55 @@ export const navigation = [
 export const userNavigation = [
   { name: "Your profile", href: "#" },
   { name: "Sign out", href: "#" },
+];
+
+export const jobTabList = [
+  {
+    id: PLAN,
+    name: PLAN,
+    href: {
+      pathname: `/${PLAN}`,
+      query: {},
+    },
+    current: false,
+  },
+  {
+    id: ARTIFACT,
+    name: ARTIFACT,
+    href: {
+      pathname: `/${ARTIFACT}`,
+      query: {},
+    },
+    current: false,
+  },
+];
+
+export const settingTabList = [
+  {
+    id: ACCOUNT,
+    name: ACCOUNT,
+    href: {
+      pathname: `${SETTINGS}/${ACCOUNT}`,
+      query: {},
+    },
+    current: false,
+  },
+  {
+    id: TEAM_MEMBERS,
+    name: TEAM_MEMBERS,
+    href: {
+      pathname: `${SETTINGS}/${TEAM_MEMBERS}`,
+      query: {},
+    },
+    current: false,
+  },
+  {
+    id: INTEGRATIONS,
+    name: INTEGRATIONS,
+    href: {
+      pathname: `${SETTINGS}/${INTEGRATIONS}`,
+      query: {},
+    },
+    current: false,
+  },
 ];

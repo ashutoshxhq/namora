@@ -1,13 +1,63 @@
-import React from "react";
 import Image from "next/image";
+import { useMemo } from "react";
+import { useForm, SubmitHandler } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+import { useState } from "react";
 
 import { Alert } from "@/design-system/molecules/alert";
-import { usePersonalDetails } from "settings/ui/usePersonalDetails";
-import { SettingInput } from "settings/ui/SettingInput";
+import { FormInputTextField, FormInputEmailField } from "@/design-system/form";
 
-export const PersonalDetails = () => {
-  const { showAlert, setShowAlert, hookFormProps }: any = usePersonalDetails();
-  const { handleSubmit, onFormSubmit } = hookFormProps;
+const schema = yup.object().shape({
+  first_name: yup
+    .string()
+    .required("Required")
+    .min(1, "Minimum one character is required"),
+  last_name: yup
+    .string()
+    .required("Required")
+    .min(1, "Minimum one character is required"),
+  email: yup.string().email().required("Required"),
+  username: yup
+    .string()
+    .required("Required")
+    .min(1, "Minimum one character is required"),
+});
+
+const PersonalDetails = () => {
+  const [showAlert, setShowAlert] = useState(false);
+  const useFormObj = useMemo(
+    () => ({
+      defaultValues: {
+        first_name: "",
+        last_name: "",
+        email: "",
+        username: "",
+      },
+      resolver: yupResolver(schema),
+    }),
+    []
+  );
+  const hookFormProps = useForm(useFormObj);
+
+  const onFormSubmit: SubmitHandler<any> = (submittedFormData) => {
+    handleClickOnSendMessage(submittedFormData);
+  };
+  const handleClickOnSendMessage = (submittedFormData: any) => {
+    // let data = JSON.stringify({
+    //   Data: {
+    //     message_from: "USER",
+    //     message_to: "AI",
+    //     message: submittedFormData.message,
+    //   },
+    // });
+    // const encoder = new TextEncoder();
+    // const binaryData = encoder.encode(data);
+    // console.log("Sending", { data, binaryData });
+    console.log({ submittedFormData });
+    // web_socket.send(binaryData.buffer)
+    setShowAlert(true);
+  };
 
   const alertProps = {
     title: "Account/Profile",
@@ -15,6 +65,8 @@ export const PersonalDetails = () => {
     show: showAlert,
     setShow: setShowAlert,
   };
+  const { handleSubmit } = hookFormProps;
+
   return (
     <div className="grid grid-cols-1 px-4 py-16 max-w-7xl gap-x-8 gap-y-10 sm:px-6 md:grid-cols-3 lg:px-8">
       <div>
@@ -57,12 +109,11 @@ export const PersonalDetails = () => {
               First name
             </label>
             <div className="mt-2">
-              <SettingInput
+              <FormInputTextField
                 id="first-name"
                 name="first_name"
-                type="text"
-                autoComplete="first-name"
-                className="block w-full rounded-md border-0 bg-white/5 py-1.5 text-black shadow-sm ring-1 ring-inset ring-gray-400 focus:ring-0 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
+                contextId="first-name"
+                placeholder="..."
                 {...hookFormProps}
               />
             </div>
@@ -76,12 +127,11 @@ export const PersonalDetails = () => {
               Last name
             </label>
             <div className="mt-2">
-              <SettingInput
-                type="text"
-                name="last_name"
+              <FormInputTextField
                 id="last-name"
-                autoComplete="last-name"
-                className="block w-full rounded-md border-0 bg-white/5 py-1.5 text-black shadow-sm ring-1 ring-inset ring-gray-400 focus:ring-0 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
+                name="last_name"
+                contextId="email"
+                placeholder="..."
                 {...hookFormProps}
               />
             </div>
@@ -95,12 +145,11 @@ export const PersonalDetails = () => {
               Email address
             </label>
             <div className="mt-2">
-              <SettingInput
+              <FormInputEmailField
                 id="email"
                 name="email"
-                type="email"
-                autoComplete="email"
-                className="block w-full rounded-md border-0 bg-white/5 py-1.5 text-black shadow-sm ring-1 ring-inset ring-gray-400 focus:ring-0 focus:ring-inset focus:ring-indigo-500 sm:text-sm sm:leading-6"
+                contextId="email"
+                placeholder="..."
                 {...hookFormProps}
               />
             </div>
@@ -114,13 +163,11 @@ export const PersonalDetails = () => {
               Username
             </label>
             <div className="mt-2">
-              <SettingInput
-                type="text"
-                name="username"
+              <FormInputTextField
                 id="username"
-                autoComplete="username"
-                className="flex-1 shadow-none outline-transparent border-0 bg-transparent py-1.5 pl-1 text-black focus:ring-0 sm:text-sm sm:leading-6"
-                placeholder="username"
+                name="username"
+                contextId="username"
+                placeholder="..."
                 {...hookFormProps}
               />
             </div>
@@ -134,13 +181,11 @@ export const PersonalDetails = () => {
               Company name
             </label>
             <div className="mt-2">
-              <SettingInput
-                type="text"
-                name="company_name"
+              <FormInputTextField
                 id="company-name"
-                autoComplete="company-name"
-                className="flex-1 shadow-none outline-transparent border-0 bg-transparent py-1.5 pl-1 text-black focus:ring-0 sm:text-sm sm:leading-6"
-                placeholder="company name"
+                name="company_name"
+                contextId="company-name"
+                placeholder="..."
                 {...hookFormProps}
               />
             </div>
@@ -154,12 +199,10 @@ export const PersonalDetails = () => {
               Company position
             </label>
             <div className="mt-2">
-              <SettingInput
-                type="text"
-                name="company_position"
+              <FormInputTextField
                 id="company-position"
-                autoComplete="company-position"
-                className="flex-1 shadow-none outline-transparent border-0 bg-transparent py-1.5 pl-1 text-black focus:ring-0 sm:text-sm sm:leading-6"
+                name="company_position"
+                contextId="company-position"
                 placeholder="..."
                 {...hookFormProps}
               />
@@ -174,12 +217,10 @@ export const PersonalDetails = () => {
               What do you do?
             </label>
             <div className="mt-2">
-              <SettingInput
-                type="text"
-                name="what_do_you_do"
+              <FormInputTextField
                 id="what-do-you-do"
-                autoComplete="what-do-you-do"
-                className="flex-1 shadow-none outline-transparent border-0 bg-transparent py-1.5 pl-1 text-black focus:ring-0 sm:text-sm sm:leading-6"
+                name="what_do_you_do"
+                contextId="what-do-you-do"
                 placeholder="..."
                 {...hookFormProps}
               />
@@ -194,12 +235,10 @@ export const PersonalDetails = () => {
               What does your company do?
             </label>
             <div className="mt-2">
-              <SettingInput
-                type="text"
-                name="what_does_your_company_do"
+              <FormInputTextField
                 id="what-does-your-company-do"
-                autoComplete="what-does-your-company-do"
-                className="flex-1 shadow-none outline-transparent border-0 bg-transparent py-1.5 pl-1 text-black focus:ring-0 sm:text-sm sm:leading-6"
+                name="what_does_your_company_do"
+                contextId="what-does-your-company-do"
                 placeholder="..."
                 {...hookFormProps}
               />
@@ -220,3 +259,5 @@ export const PersonalDetails = () => {
     </div>
   );
 };
+
+export default PersonalDetails;

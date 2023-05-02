@@ -4,7 +4,7 @@ import { XMarkIcon } from "@/heroicons";
 import Link from "next/link";
 import Image from "next/image";
 
-import { navigation } from "@/routes/config";
+import { sideBarMenuList } from "@/routes/config";
 import { classNames } from "@/utils";
 
 export const SidebarMobile = ({
@@ -80,7 +80,7 @@ export const SidebarMobile = ({
                 </div>
                 <nav className="flex flex-col flex-1">
                   <ul role="list" className="flex-1 -mx-2 space-y-1">
-                    {navigation.map((item) => (
+                    {sideBarMenuList.map((item) => (
                       <li key={item.name}>
                         <Link
                           href={item.href}
