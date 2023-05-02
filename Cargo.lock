@@ -771,6 +771,27 @@ dependencies = [
 [[package]]
 name = "engine-service"
 version = "0.1.0"
+dependencies = [
+ "axum",
+ "chrono",
+ "diesel",
+ "dotenvy",
+ "futures",
+ "futures-util",
+ "headers",
+ "hyper",
+ "jsonwebtoken",
+ "namora_core",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tower",
+ "tower-http",
+ "tracing",
+ "tracing-subscriber",
+ "uuid",
+]
 
 [[package]]
 name = "engine_db_repository"
