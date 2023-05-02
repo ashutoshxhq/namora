@@ -58,7 +58,6 @@ async fn main() {
     let options = ConnectionProperties::default()
         .with_executor(tokio_executor_trait::Tokio::current())
         .with_reactor(tokio_reactor_trait::Tokio);
-
     let connection = Connection::connect(&uri, options).await.unwrap();
     let channel = connection.create_channel().await.unwrap();
     

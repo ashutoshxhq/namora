@@ -43,7 +43,6 @@ async fn main() {
 
     let connection = Connection::connect(&uri, options).await.unwrap();
     let channel = connection.create_channel().await.unwrap();
-
     let _queue = channel
         .queue_declare(
             "namora.svc.task-orchestrator",
