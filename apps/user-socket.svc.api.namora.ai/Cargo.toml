@@ -1,5 +1,5 @@
 [package]
-name = "chat-user-worker"
+name = "user-socket-service"
 version = "0.1.0"
 edition = "2021"
 

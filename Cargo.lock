@@ -479,59 +479,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
-name = "chat-system-worker"
-version = "0.1.0"
-dependencies = [
- "agent_db_repository",
- "async-openai",
- "chrono",
- "diesel",
- "dotenvy",
- "handlebars",
- "lapin",
- "namora_core",
- "reqwest",
- "serde",
- "serde_json",
- "tokio",
- "tokio-executor-trait",
- "tokio-reactor-trait",
- "tracing",
- "tracing-subscriber",
- "uuid",
-]
-
-[[package]]
-name = "chat-user-worker"
-version = "0.1.0"
-dependencies = [
- "async-openai",
- "axum",
- "axum-typed-websockets",
- "chrono",
- "diesel",
- "dotenvy",
- "futures",
- "futures-util",
- "headers",
- "hyper",
- "jsonwebtoken",
- "lapin",
- "namora_core",
- "reqwest",
- "serde",
- "serde_json",
- "tokio",
- "tokio-executor-trait",
- "tokio-reactor-trait",
- "tower",
- "tower-http",
- "tracing",
- "tracing-subscriber",
- "uuid",
-]
-
-[[package]]
 name = "chrono"
 version = "0.4.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2396,6 +2343,29 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2047c6ded9c721764247e62cd3b03c09ffc529b2ba5b10ec482ae507a4a70160"
 
 [[package]]
+name = "task-orchestrator-service"
+version = "0.1.0"
+dependencies = [
+ "agent_db_repository",
+ "async-openai",
+ "chrono",
+ "diesel",
+ "dotenvy",
+ "handlebars",
+ "lapin",
+ "namora_core",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tokio-executor-trait",
+ "tokio-reactor-trait",
+ "tracing",
+ "tracing-subscriber",
+ "uuid",
+]
+
+[[package]]
 name = "tcp-stream"
 version = "0.24.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2848,6 +2818,36 @@ dependencies = [
  "form_urlencoded",
  "idna",
  "percent-encoding",
+]
+
+[[package]]
+name = "user-socket-service"
+version = "0.1.0"
+dependencies = [
+ "async-openai",
+ "axum",
+ "axum-typed-websockets",
+ "chrono",
+ "diesel",
+ "dotenvy",
+ "futures",
+ "futures-util",
+ "headers",
+ "hyper",
+ "jsonwebtoken",
+ "lapin",
+ "namora_core",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tokio-executor-trait",
+ "tokio-reactor-trait",
+ "tower",
+ "tower-http",
+ "tracing",
+ "tracing-subscriber",
+ "uuid",
 ]
 
 [[package]]
