@@ -5,11 +5,15 @@ import Link from "next/link";
 import { navigation } from "@/routes/config";
 import { classNames } from "@/utils";
 import { useRouter } from "next/router";
+import { SETTINGS } from "@/routes/constants";
 
 export const Sidebar = () => {
   const router = useRouter();
   const _selectedTab = router?.asPath as string;
-  const replacedTabStr = _selectedTab?.replace("/", "");
+  let replacedTabStr = _selectedTab?.replace("/", "");
+  if (replacedTabStr.startsWith(SETTINGS)) {
+    replacedTabStr = `${SETTINGS}`;
+  }
   const _selectedIndex =
     navigation.map((tab) => tab.id).indexOf(replacedTabStr) ?? 0;
 
@@ -31,7 +35,7 @@ export const Sidebar = () => {
               <Link
                 href={item.href}
                 className={classNames(
-                  _selectedIndex == index
+                  _selectedIndex === index
                     ? "bg-gray-800 text-white"
                     : "text-gray-400 hover:text-white hover:bg-gray-800",
                   "group flex gap-x-3 rounded-md p-3 text-sm leading-6 font-semibold"
