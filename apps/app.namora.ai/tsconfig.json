@@ -17,6 +17,8 @@
     "paths": {
       "@/*": ["./src/*"],
       "design-system/*": ["./src/design-system/*"],
+      "settings/*": ["./src/pages/settings/*"],
+
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],

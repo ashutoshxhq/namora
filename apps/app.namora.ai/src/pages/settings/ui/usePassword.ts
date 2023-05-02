@@ -4,17 +4,27 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 
 const schema = yup.object().shape({
-  message: yup
+  current_password: yup
+    .string()
+    .required("Required")
+    .min(1, "Minimum one character is required"),
+  new_password: yup
+    .string()
+    .required("Required")
+    .min(1, "Minimum one character is required"),
+  confirm_password: yup
     .string()
     .required("Required")
     .min(1, "Minimum one character is required"),
 });
 
-export const useChatInput = () => {
+export const usePassword = () => {
   const useFormObj = useMemo(
     () => ({
       defaultValues: {
-        message: "",
+        current_password: "",
+        new_password: "",
+        confirm_password: "",
       },
       resolver: yupResolver(schema),
     }),
