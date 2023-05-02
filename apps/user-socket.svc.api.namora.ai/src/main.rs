@@ -56,8 +56,6 @@ async fn main() {
     
     let uri = std::env::var("TASK_ORCHESTRATION_BROKER_URI").unwrap();
     let options = ConnectionProperties::default()
-        // Use tokio executor and reactor.
-        // At the moment the reactor is only available for unix.
         .with_executor(tokio_executor_trait::Tokio::current())
         .with_reactor(tokio_reactor_trait::Tokio);
 

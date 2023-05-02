@@ -1,9 +1,9 @@
 use diesel::{PgConnection, r2d2::{ConnectionManager, self}};
 use namora_core::types::{db::DbPool, error::Error};
 
-pub async fn create_pool() -> Result<DbPool, Error> {
+pub async fn create_pool(url: String) -> Result<DbPool, Error> {
     let manager = ConnectionManager::<PgConnection>::new(
-        std::env::var("ENGINE_SERVICE_DATABASE_URL").expect("Unable to get database url"),
+        url,
     );
     let pool = r2d2::Pool::builder()
         .max_size(10)

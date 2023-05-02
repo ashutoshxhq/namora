@@ -32,7 +32,8 @@ async fn main() {
 
     tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
     tracing::info!("Creating database pool");
-    let pool = create_pool().await.unwrap();
+    let db_url = std::env::var("ENGINE_SERVICE_DATABASE_URL").expect("Unable to get database url");
+    let pool = create_pool(db_url).await.unwrap();
     tracing::info!("Created database pool");
 
     let uri = std::env::var("TASK_ORCHESTRATION_BROKER_URI").unwrap();
