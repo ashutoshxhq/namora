@@ -1,10 +1,12 @@
 FROM rust:1.65 as builder
-
-RUN USER=root cargo new --bin task-orchestrator-service
-WORKDIR ./task-orchestrator-service
-COPY ./Cargo.toml ./Cargo.toml
+RUN mkdir ./apps
+RUN mkdir ./libs
+COPY --from=libs ./ ./libs
+RUN cd apps && USER=root cargo new --bin task-orchestrator-service
+WORKDIR ./apps/task-orchestrator-service
 
 ADD . ./
+
 RUN cargo build --release
 
 
@@ -26,7 +28,7 @@ RUN groupadd $APP_USER \
     && useradd -g $APP_USER $APP_USER \
     && mkdir -p ${APP}
 
-COPY --from=builder /task-orchestrator-service/target/release/task-orchestrator-service ${APP}/task-orchestrator-service
+COPY --from=builder /apps/task-orchestrator-service/target/release/task-orchestrator-service ${APP}/task-orchestrator-service
 
 RUN chown -R $APP_USER:$APP_USER ${APP}
 
