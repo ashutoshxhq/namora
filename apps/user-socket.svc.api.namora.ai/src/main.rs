@@ -53,7 +53,6 @@ async fn main() {
         .with_max_level(Level::DEBUG)
         .finish();
     tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
-    
     let uri = std::env::var("TASK_ORCHESTRATION_BROKER_URI").unwrap();
     let options = ConnectionProperties::default()
         .with_executor(tokio_executor_trait::Tokio::current())

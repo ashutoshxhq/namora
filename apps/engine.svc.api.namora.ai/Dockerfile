@@ -1,10 +1,12 @@
 FROM rust:1.65 as builder
-
-RUN USER=root cargo new --bin engine-service
-WORKDIR ./engine-service
-COPY ./Cargo.toml ./Cargo.toml
+RUN mkdir ./apps
+RUN mkdir ./libs
+COPY --from=libs ./ ./libs
+RUN cd apps && USER=root cargo new --bin engine-service
+WORKDIR ./apps/engine-service
 
 ADD . ./
+
 RUN cargo build --release
 
 
@@ -26,7 +28,7 @@ RUN groupadd $APP_USER \
     && useradd -g $APP_USER $APP_USER \
     && mkdir -p ${APP}
 
-COPY --from=builder /engine-service/target/release/engine-service ${APP}/engine-service
+COPY --from=builder /apps/engine-service/target/release/engine-service ${APP}/engine-service
 
 RUN chown -R $APP_USER:$APP_USER ${APP}
 

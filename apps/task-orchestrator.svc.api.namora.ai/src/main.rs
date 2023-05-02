@@ -51,7 +51,6 @@ async fn main() {
         )
         .await
         .unwrap();
-
     let consumer = channel
         .basic_consume(
             "namora.svc.task-orchestrator",
