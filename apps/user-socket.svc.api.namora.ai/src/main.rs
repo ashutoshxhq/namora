@@ -62,7 +62,6 @@ async fn main() {
     let connection = Connection::connect(&uri, options).await.unwrap();
     let channel = connection.create_channel().await.unwrap();
     
-
     let app = Router::new()
         .nest("/playground", get(file_handler))
         .merge(router::router())

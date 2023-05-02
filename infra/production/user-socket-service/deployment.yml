@@ -16,7 +16,7 @@ spec:
         name: user-socket-service-pod
     spec:
       containers:
-        - name: user-socket-service-container
+        - name: user-socket-service-pod
           image: 538780007699.dkr.ecr.us-west-2.amazonaws.com/user-socket-service:latest
           ports:
             - containerPort: 8000

@@ -16,8 +16,8 @@ spec:
         name: engine-service-pod
     spec:
       containers:
-        - name: engine-service-container
-          image: 538780007699.dkr.ecr.us-west-2.amazonaws.com/engine-service:latest
+        - name: engine-service-pod
+          image: 538780007699.dkr.ecr.us-west-2.amazonaws.com/engine-service:0ffa6bccd328eacdd95a8d0f3e31bd76adb637fa
           ports:
             - containerPort: 8000
           env:

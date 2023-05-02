@@ -16,7 +16,7 @@ spec:
         name: task-orchestrator-service-pod
     spec:
       containers:
-        - name: task-orchestrator-service-container
+        - name: task-orchestrator-service-pod
           image: 538780007699.dkr.ecr.us-west-2.amazonaws.com/task-orchestrator-service:latest
           ports:
             - containerPort: 8000

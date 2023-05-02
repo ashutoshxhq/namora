@@ -29,7 +29,6 @@ pub async fn message_router(
     message_with_context: MessageWithContext,
 ) -> Result<(), Error> {
     tracing::info!("Recieved Message: {:?}", message_with_context);
-
     let response_message_with_contexts =
         match message_with_context.message.additional_info.step.as_str() {
             "system:basic_response_or_create_plan" => {

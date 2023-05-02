@@ -1,3 +1,3 @@
 fn main() {
-    println!("Hello, from Engine Service!");
+    println!("Hello from Engine Service!");
 }
