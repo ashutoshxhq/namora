@@ -49,7 +49,7 @@ const Integrations = () => {
   return (
     <ul
       role="list"
-      className="grid grid-cols-1 gap-x-6 gap-y-8 lg:grid-cols-3 xl:gap-x-8"
+      className="grid grid-cols-1 gap-x-6 gap-y-8 lg:grid-cols-[repeat(auto-fill,_minmax(400px,_1fr))] xl:gap-x-8"
     >
       {clients.map((client) => (
         <li

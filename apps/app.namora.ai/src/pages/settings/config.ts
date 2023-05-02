@@ -1,4 +1,9 @@
-import { SETTINGS, ACCOUNT, TEAM_MEMBERS, INTEGRATIONS } from "./constants";
+import {
+  SETTINGS,
+  ACCOUNT,
+  TEAM_MEMBERS,
+  INTEGRATIONS,
+} from "settings/constants";
 
 export const tabs = [
   {

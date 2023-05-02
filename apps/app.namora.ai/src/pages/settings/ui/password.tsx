@@ -1,6 +1,6 @@
 import React from "react";
-import { usePassword } from "./usePassword";
-import { SettingInput } from "./SettingInput";
+import { usePassword } from "settings/ui/usePassword";
+import { SettingInput } from "settings/ui/SettingInput";
 
 export const Password = () => {
   const { hookFormProps }: any = usePassword();

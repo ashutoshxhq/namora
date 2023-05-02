@@ -1,9 +1,9 @@
 import React from "react";
 import Image from "next/image";
 
-import { usePersonalDetails } from "./usePersonalDetails";
-import { SettingInput } from "./SettingInput";
 import { Alert } from "@/design-system/molecules/alert";
+import { usePersonalDetails } from "settings/ui/usePersonalDetails";
+import { SettingInput } from "settings/ui/SettingInput";
 
 export const PersonalDetails = () => {
   const { showAlert, setShowAlert, hookFormProps }: any = usePersonalDetails();

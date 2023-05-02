@@ -1,5 +1,5 @@
-import { ChatInput } from "./ui/ChatInput";
-import ChatWindow from "./ui/ChatWindow";
+import { ChatInput } from "chats/ui/ChatInput";
+import ChatWindow from "chats/ui/ChatWindow";
 
 const messages = [
   { message: "Hello!", sender: false },

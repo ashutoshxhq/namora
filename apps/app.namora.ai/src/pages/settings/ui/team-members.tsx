@@ -4,10 +4,12 @@ import { EllipsisVerticalIcon } from "@heroicons/react/20/solid";
 import Image from "next/image";
 import { classNames } from "@/utils";
 import Link from "next/link";
+
 import { NamoraPanel } from "@/design-system/molecules";
 
 const people = [
   {
+    id: "1",
     name: "Leslie Alexander",
     email: "leslie.alexander@example.com",
     role: "Co-Founder / CEO",
@@ -18,6 +20,7 @@ const people = [
     lastSeenDateTime: "2023-01-23T13:23Z",
   },
   {
+    id: "2",
     name: "Michael Foster",
     email: "michael.foster@example.com",
     role: "Co-Founder / CTO",
@@ -28,6 +31,7 @@ const people = [
     lastSeenDateTime: "2023-01-23T13:23Z",
   },
   {
+    id: "3",
     name: "Dries Vincent",
     email: "dries.vincent@example.com",
     role: "Business Relations",
@@ -37,6 +41,7 @@ const people = [
     lastSeen: null,
   },
   {
+    id: "4",
     name: "Lindsay Walton",
     email: "lindsay.walton@example.com",
     role: "Front-end Developer",
@@ -47,6 +52,7 @@ const people = [
     lastSeenDateTime: "2023-01-23T13:23Z",
   },
   {
+    id: "5",
     name: "Courtney Henry",
     email: "courtney.henry@example.com",
     role: "Designer",
@@ -57,6 +63,7 @@ const people = [
     lastSeenDateTime: "2023-01-23T13:23Z",
   },
   {
+    id: "5",
     name: "Tom Cook",
     email: "tom.cook@example.com",
     role: "Director of Product",
@@ -69,9 +76,17 @@ const people = [
 
 const TeamMembers = () => {
   const [open, setOpen] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<any>({});
+
+  const handleClickOnEdit = (id: string) => {
+    setOpen(true);
+    const selectedMember = people?.find((person) => person.id === id);
+    setSelectedMember(selectedMember);
+  };
 
   const panelProps = {
     open,
+    data: selectedMember,
     setOpen,
   };
   return (
@@ -156,8 +171,8 @@ const TeamMembers = () => {
                     <Menu.Item>
                       {({ active }) => (
                         <Link
-                          href="#"
-                          onClick={() => setOpen(true)}
+                          href="javascript:void(0)"
+                          onClick={() => handleClickOnEdit(person.id)}
                           className={classNames(
                             active ? "bg-gray-50" : "",
                             "block px-3 py-1 text-sm leading-6 text-gray-900"
@@ -170,7 +185,7 @@ const TeamMembers = () => {
                     <Menu.Item>
                       {({ active }) => (
                         <Link
-                          href="#"
+                          href="javascript:void(0)"
                           className={classNames(
                             active ? "bg-gray-50" : "",
                             "block px-3 py-1 text-sm leading-6 text-gray-900"

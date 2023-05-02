@@ -36,6 +36,7 @@ const Artifact = () => {
 
   const panelProps = {
     open,
+    data: {},
     setOpen,
   };
 

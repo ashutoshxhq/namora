@@ -2,22 +2,23 @@ import { Tab } from "@headlessui/react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 
-import { tabs } from "../config";
 import { classNames } from "@/utils";
-import Artifact from "./artifacts";
-import Plan from "./plans";
+import { JOBS, NOT_FOUND } from "@/routes/constants";
+import { tabs } from "jobs/config";
+import Artifact from "jobs/ui/artifacts";
+import Plan from "jobs/ui/plans";
 
 const JobPage = () => {
   const router = useRouter();
   const _selectedTab = router?.query?.tab as string;
   const _selectedIndex = tabs.map((tab) => tab.id).indexOf(_selectedTab) ?? 0;
-  const { jId } = router.query;
+  const { jobId } = router.query;
 
   if (!router.isReady) {
     return null;
   }
-  if (router.isReady && (!_selectedTab || _selectedIndex === -1)) {
-    router?.replace(`/jobs/${jId}/404`, undefined, {
+  if (router.isReady && _selectedIndex === -1) {
+    router?.replace(`/${JOBS}/${jobId}/${NOT_FOUND}`, undefined, {
       shallow: true,
     });
   }
@@ -25,15 +26,13 @@ const JobPage = () => {
     <>
       <div className="pb-5 border-b border-gray-200 sm:pb-0">
         <h3 className="text-base font-semibold leading-6 text-gray-900">
-          {jId}
+          {jobId}
         </h3>
         <Tab.Group
           selectedIndex={_selectedIndex}
           onChange={(index) => {
             const tab = tabs.at(index);
-            router.replace(`/jobs/${jId}/${tab?.name}`, undefined, {
-              shallow: true,
-            });
+            router.push(`/${JOBS}/${jobId}/${tab?.name}`);
           }}
         >
           <div className="hidden sm:block">
@@ -47,7 +46,7 @@ const JobPage = () => {
                   <Tab
                     key={tab.id}
                     as={Link}
-                    href={`/jobs/${jId}/${tab?.name}`}
+                    href={`/${JOBS}/${jobId}/${tab?.name}`}
                     shallow
                     className={classNames(
                       _selectedIndex === index

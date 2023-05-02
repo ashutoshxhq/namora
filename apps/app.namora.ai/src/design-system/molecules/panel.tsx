@@ -4,9 +4,11 @@ import { Dialog, Transition } from "@headlessui/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 
 export function NamoraPanel({
+  data,
   open,
   setOpen,
 }: {
+  data: any;
   open: boolean;
   setOpen: (value: boolean) => void;
 }) {
@@ -66,6 +68,7 @@ export function NamoraPanel({
                     </div>
                     <div className="relative flex-1 px-4 mt-6 sm:px-6">
                       {/* Your content */}
+                      {data?.name ?? "No data"}
                     </div>
                   </div>
                 </Dialog.Panel>

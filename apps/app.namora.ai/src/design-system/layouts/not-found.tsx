@@ -1,4 +1,4 @@
-export default function Custom404() {
+export default function NotFound() {
   return (
     <main className="grid min-h-full px-6 py-24 bg-white place-items-center sm:py-32 lg:px-8">
       <div className="text-center">

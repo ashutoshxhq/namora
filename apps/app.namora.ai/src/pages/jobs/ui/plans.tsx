@@ -5,9 +5,9 @@ import {
   UserIcon,
 } from "@heroicons/react/20/solid";
 
-import { tabs } from "../config";
-import { PLAN } from "../constants";
 import { classNames } from "@/utils";
+import { JOBS, NOT_FOUND } from "@/routes/constants";
+import { tabs } from "jobs/config";
 
 const timeline = [
   {
@@ -66,13 +66,13 @@ const Plan = () => {
   const router = useRouter();
   const _selectedTab = router?.query?.tab as string;
   const _selectedIndex = tabs.map((tab) => tab.id).indexOf(_selectedTab) ?? 0;
-  const { jId } = router.query;
+  const { jobId } = router.query;
 
   if (!router.isReady) {
     return null;
   }
   if (router.isReady && (!_selectedTab || _selectedIndex === -1)) {
-    router?.replace(`/jobs/${jId}/404`, undefined, {
+    router?.replace(`/${JOBS}/${jobId}/${NOT_FOUND}`, undefined, {
       shallow: true,
     });
   }

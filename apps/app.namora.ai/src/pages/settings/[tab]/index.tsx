@@ -8,6 +8,7 @@ import { SETTINGS } from "settings/constants";
 import Account from "settings/ui/account";
 import TeamMembers from "settings/ui/team-members";
 import Integrations from "settings/ui/integrations";
+import { NOT_FOUND } from "@/routes/constants";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -17,22 +18,19 @@ export default function SettingsPage() {
   // console.log("@[tab]", { router, _selectedTab, _selectedIndex });
 
   if (router.isReady && (!_selectedTab || _selectedIndex === -1)) {
-    router?.replace(`/${SETTINGS}/404`, undefined, {
+    router?.replace(`/${SETTINGS}/${NOT_FOUND}`, undefined, {
       shallow: true,
     });
   }
+
+  const handleClickOnTab = (index: number) => {
+    const tab = tabs.at(index);
+    router.push(`/${SETTINGS}/${tab?.name}`);
+  };
   return (
     <>
       <div className="pb-5 border-b border-gray-200 sm:pb-0">
-        <Tab.Group
-          selectedIndex={_selectedIndex}
-          onChange={(index) => {
-            const tab = tabs.at(index);
-            router.replace(`/${SETTINGS}/${tab?.name}`, undefined, {
-              shallow: true,
-            });
-          }}
-        >
+        <Tab.Group selectedIndex={_selectedIndex} onChange={handleClickOnTab}>
           <div className="hidden sm:block">
             <div className="border-b border-gray-200">
               <Tab.List
