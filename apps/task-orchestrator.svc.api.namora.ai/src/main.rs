@@ -29,7 +29,6 @@ async fn main() {
         .with_line_number(true)
         .with_file(true)
         .finish();
-
     tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
     tracing::info!("Creating database pool");
     let db_url = std::env::var("ENGINE_SERVICE_DATABASE_URL").expect("Unable to get database url");

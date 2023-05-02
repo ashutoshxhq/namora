@@ -43,7 +43,7 @@ jobs:
             ${{ runner.os }}-single-buildx   
 
       - name: Build & Push Image                                                                                      
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         env:                                                                                                          
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}                                                       
           RELEASE_IMAGE: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
@@ -52,7 +52,7 @@ jobs:
           build-contexts: |
             libs=libs
           push: true
-          tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+          tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}, latest
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new
       
