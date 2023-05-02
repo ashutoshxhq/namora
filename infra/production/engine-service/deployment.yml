@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: engine-service-deployment
+  labels:
+    name: engine-service-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: engine-service-pod
+  template:
+    metadata:
+      name: engine-service-pod
+      labels:
+        name: engine-service-pod
+    spec:
+      containers:
+        - name: engine-service-container
+          image: 538780007699.dkr.ecr.us-west-2.amazonaws.com/engine-service:latest
+          ports:
+            - containerPort: 8000
+          env:
+          - name: PORT
+            value: "8000"
+          envFrom:
+          - secretRef:
+              name: namora-secrets

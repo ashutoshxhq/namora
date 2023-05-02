@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user-socket-service-deployment
+  labels:
+    name: user-socket-service-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: user-socket-service-pod
+  template:
+    metadata:
+      name: user-socket-service-pod
+      labels:
+        name: user-socket-service-pod
+    spec:
+      containers:
+        - name: user-socket-service-container
+          image: 538780007699.dkr.ecr.us-west-2.amazonaws.com/user-socket-service:latest
+          ports:
+            - containerPort: 8000
+          env:
+          - name: PORT
+            value: "8000"
+          envFrom:
+          - secretRef:
+              name: namora-secrets

@@ -54,7 +54,7 @@ async fn main() {
         .finish();
     tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
     
-    let uri = std::env::var("RABBITMQ_URI").unwrap();
+    let uri = std::env::var("TASK_ORCHESTRATION_BROKER_URI").unwrap();
     let options = ConnectionProperties::default()
         // Use tokio executor and reactor.
         // At the moment the reactor is only available for unix.

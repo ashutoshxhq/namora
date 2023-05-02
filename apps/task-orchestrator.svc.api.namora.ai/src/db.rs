@@ -3,7 +3,7 @@ use namora_core::types::{db::DbPool, error::Error};
 
 pub async fn create_pool() -> Result<DbPool, Error> {
     let manager = ConnectionManager::<PgConnection>::new(
-        std::env::var("DATABASE_URL").expect("Unable to get database url"),
+        std::env::var("ENGINE_SERVICE_DATABASE_URL").expect("Unable to get database url"),
     );
     let pool = r2d2::Pool::builder()
         .max_size(10)

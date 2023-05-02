@@ -35,7 +35,7 @@ async fn main() {
     let pool = create_pool().await.unwrap();
     tracing::info!("Created database pool");
 
-    let uri = std::env::var("RABBITMQ_URI").unwrap();
+    let uri = std::env::var("TASK_ORCHESTRATION_BROKER_URI").unwrap();
     let options = ConnectionProperties::default()
         .with_executor(tokio_executor_trait::Tokio::current())
         .with_reactor(tokio_reactor_trait::Tokio);

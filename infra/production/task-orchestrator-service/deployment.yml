@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: task-orchestration-service-deployment
+  labels:
+    name: task-orchestration-service-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: task-orchestration-service-pod
+  template:
+    metadata:
+      name: task-orchestration-service-pod
+      labels:
+        name: task-orchestration-service-pod
+    spec:
+      containers:
+        - name: task-orchestration-service-container
+          image: 538780007699.dkr.ecr.us-west-2.amazonaws.com/task-orchestration-service:latest
+          ports:
+            - containerPort: 8000
+          env:
+          - name: PORT
+            value: "8000"
+          envFrom:
+          - secretRef:
+              name: namora-secrets
