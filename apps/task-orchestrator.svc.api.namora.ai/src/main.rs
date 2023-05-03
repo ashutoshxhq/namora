@@ -34,7 +34,6 @@ async fn main() {
     let db_url = std::env::var("ENGINE_SERVICE_DATABASE_URL").expect("Unable to get database url");
     let pool = create_pool(db_url).await.unwrap();
     tracing::info!("Created database pool");
-
     let uri = std::env::var("TASK_ORCHESTRATION_BROKER_URI").unwrap();
     let options = ConnectionProperties::default()
         .with_executor(tokio_executor_trait::Tokio::current())

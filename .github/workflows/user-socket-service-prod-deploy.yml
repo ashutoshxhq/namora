@@ -72,3 +72,14 @@ jobs:
         uses: kodermax/kubectl-aws-eks@master                            
         with:                                                            
           args: rollout status deploy user-socket-service-deployment -n $KUBE_NAMESPACE
+      
+      - name: Post Deployment Slack Notification
+        id: slack
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          payload: |
+            {
+              "message": "User Socket Service has been successfully deployed to production."
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

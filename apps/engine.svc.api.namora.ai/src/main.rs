@@ -25,7 +25,6 @@ async fn main() {
     tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
     let db_url = std::env::var("ENGINE_SERVICE_DATABASE_URL").expect("Unable to get database url");
     let pool = create_pool(db_url).await.unwrap();
-    
     let app = Router::new().merge(router::router()).layer(
         ServiceBuilder::new()
             .layer(HandleErrorLayer::new(|error: BoxError| async move {
