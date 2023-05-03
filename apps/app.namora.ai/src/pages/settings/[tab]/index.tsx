@@ -25,11 +25,21 @@ export default function SettingsPage() {
 
   const handleClickOnTab = (index: number) => {
     const tab = settingTabList.at(index);
-    router.push(`/${SETTINGS}/${tab?.name}`);
+    router.push(`/${SETTINGS}/${tab?.path}`);
   };
+
   return (
     <>
-      <div className="pb-5 border-b border-gray-200 sm:pb-0">
+      <div className="pb-3 border-b">
+        <h3 className="text-xl font-semibold leading-6 text-gray-900">
+          Settings
+        </h3>
+        <p className="mt-1 text-xs text-gray-500">
+          Lorem ipsum dolor sit amet consectetur adipisicing elit quam corrupti
+          consectetur.
+        </p>
+      </div>
+      <div className="pb-5 border-gray-200 sm:pb-0">
         <Tab.Group selectedIndex={_selectedIndex} onChange={handleClickOnTab}>
           <div className="hidden sm:block">
             <div className="border-b border-gray-200">
@@ -42,7 +52,7 @@ export default function SettingsPage() {
                   <Tab
                     key={tab.id}
                     as={Link}
-                    href={`/${SETTINGS}/${tab?.name}`}
+                    href={`/${SETTINGS}/${tab?.path}`}
                     shallow
                     className={classNames(
                       _selectedIndex === index
@@ -58,14 +68,14 @@ export default function SettingsPage() {
               </Tab.List>
             </div>
           </div>
-          <Tab.Panels className="p-2 my-4 rounded-md bg-base-200 text-base-content">
-            <Tab.Panel>
+          <Tab.Panels className="pb-3 mb-3 rounded-md bg-base-200 text-base-content">
+            <Tab.Panel className="focus-visible:outline-0">
               <Account />
             </Tab.Panel>
-            <Tab.Panel>
+            <Tab.Panel className="focus-visible:outline-0">
               <TeamMembers />
             </Tab.Panel>
-            <Tab.Panel>
+            <Tab.Panel className="focus-visible:outline-0">
               <Integrations />
             </Tab.Panel>
           </Tab.Panels>

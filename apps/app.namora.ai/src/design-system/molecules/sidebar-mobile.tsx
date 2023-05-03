@@ -81,7 +81,7 @@ export const SidebarMobile = ({
                 <nav className="flex flex-col flex-1">
                   <ul role="list" className="flex-1 -mx-2 space-y-1">
                     {sideBarMenuList.map((item) => (
-                      <li key={item.name}>
+                      <li key={item.id}>
                         <Link
                           href={item.href}
                           className={classNames(

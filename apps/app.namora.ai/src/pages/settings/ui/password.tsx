@@ -54,82 +54,22 @@ const Password = () => {
 
   const { handleSubmit } = hookFormProps;
   return (
-    <div className="grid grid-cols-1 px-4 py-16 max-w-7xl gap-x-8 gap-y-10 sm:px-6 md:grid-cols-3 lg:px-8">
-      <div>
-        <h2 className="text-base font-semibold leading-7 text-black">
-          Change password
-        </h2>
-        <p className="mt-1 text-sm leading-6 text-gray-400">
-          Update your password associated with your account.
-        </p>
+    <div className="grid grid-cols-1 gap-6 py-2">
+      <div className="z-0 flex items-center justify-center w-full px-4 py-4 overflow-hidden bg-white shadow sm:rounded-md sm:px-6 gap-x-6 ">
+        <form onSubmit={handleSubmit(onFormSubmit)}>
+          <div className="flex items-center justify-between w-full gap-4">
+            <h2 className="text-base font-semibold leading-7 text-black">
+              Reset your Password via Email
+            </h2>
+            <button
+              type="submit"
+              className="px-3 py-2 text-sm font-semibold text-white bg-indigo-500 rounded-md shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+            >
+              Send email
+            </button>
+          </div>
+        </form>
       </div>
-
-      <form className="md:col-span-2" onSubmit={handleSubmit(onFormSubmit)}>
-        <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:max-w-xl sm:grid-cols-6">
-          <div className="col-span-full">
-            <label
-              htmlFor="current-password"
-              className="block text-sm font-medium leading-6 text-black"
-            >
-              Current password
-            </label>
-            <div className="mt-2">
-              <FormInputPasswordField
-                id="current-password"
-                name="current_password"
-                contextId="current-password"
-                placeholder="..."
-                {...hookFormProps}
-              />
-            </div>
-          </div>
-
-          <div className="col-span-full">
-            <label
-              htmlFor="new-password"
-              className="block text-sm font-medium leading-6 text-black"
-            >
-              New password
-            </label>
-            <div className="mt-2">
-              <FormInputPasswordField
-                id="new-password"
-                name="new_password"
-                contextId="new-password"
-                placeholder="..."
-                {...hookFormProps}
-              />
-            </div>
-          </div>
-
-          <div className="col-span-full">
-            <label
-              htmlFor="confirm-password"
-              className="block text-sm font-medium leading-6 text-black"
-            >
-              Confirm password
-            </label>
-            <div className="mt-2">
-              <FormInputPasswordField
-                id="confirm-passwordd"
-                name="confirm_password"
-                contextId="confirm-passwordd"
-                placeholder="..."
-                {...hookFormProps}
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="flex mt-8">
-          <button
-            type="submit"
-            className="px-3 py-2 text-sm font-semibold text-white bg-indigo-500 rounded-md shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
-          >
-            Save
-          </button>
-        </div>
-      </form>
     </div>
   );
 };

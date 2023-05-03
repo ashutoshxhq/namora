@@ -4,6 +4,7 @@ import { EllipsisVerticalIcon } from "@/heroicons";
 
 import { classNames } from "@/utils";
 import Link from "next/link";
+import { ARTIFACT, JOBS, PLAN } from "@/routes/constants";
 
 const statuses: { [key: string]: string } = {
   Complete: "text-green-700 bg-green-50 ring-green-600/20",
@@ -14,8 +15,8 @@ const projects = [
   {
     id: "1",
     name: "GraphQL API",
-    href: `jobs/${1}/plan`,
-    hrefSecondary: `jobs/${1}/artifact`,
+    href: `${JOBS}/${1}/${PLAN}`,
+    hrefSecondary: `${JOBS}/${1}/${ARTIFACT}`,
     status: "Complete",
     createdBy: "Leslie Alexander",
     dueDate: "March 17, 2023",
@@ -23,38 +24,37 @@ const projects = [
   },
   {
     id: "2",
-    name: "New benefits plan",
-    href: `jobs/${2}/plan`,
-    hrefSecondary: `jobs/${2}/artifact`,
-    status: "In progress",
+    name: "B API",
+    href: `${JOBS}/${1}/${PLAN}`,
+    hrefSecondary: `${JOBS}/${1}/${ARTIFACT}`,
+    status: "Complete",
     createdBy: "Leslie Alexander",
-    dueDate: "May 5, 2023",
-    dueDateTime: "2023-05-05T00:00Z",
-  },
-  {
-    id: "3",
-    name: "Onboarding emails",
-    href: `jobs/${3}/plan`,
-    hrefSecondary: `jobs/${3}/artifact`,
-    status: "In progress",
-    createdBy: "Courtney Henry",
-    dueDate: "May 25, 2023",
-    dueDateTime: "2023-05-25T00:00Z",
+    dueDate: "March 17, 2023",
+    dueDateTime: "2023-03-17T00:00Z",
   },
 ];
 
 const Jobs = () => {
   return (
     <>
-      <div>
-        <ul role="list" className="divide-y divide-gray-100">
+      <div className="pb-3 mb-3 border-b">
+        <h3 className="text-xl font-semibold leading-6 text-gray-900">
+          Review Jobs
+        </h3>
+        <p className="mt-1 text-xs text-gray-500">
+          Lorem ipsum dolor sit amet consectetur adipisicing elit quam corrupti
+          consectetur.
+        </p>
+      </div>
+      <div className="overflow-hidden bg-white shadow sm:rounded-md">
+        <ul role="list" className="divide-y divide-gray-200">
           {projects.map((project) => (
             <li
               key={project.id}
-              className="flex items-center justify-between py-5 gap-x-6"
+              className="z-0 flex items-center justify-between px-4 py-5 sm:px-6 gap-x-6"
             >
               <div className="min-w-0">
-                <div className="flex items-start gap-x-3">
+                <div className="flex items-start gap-x-3 ">
                   <Link
                     href={project.href}
                     className="text-sm font-semibold leading-6 text-gray-900"
@@ -109,7 +109,7 @@ const Jobs = () => {
                     leaveFrom="transform opacity-100 scale-100"
                     leaveTo="transform opacity-0 scale-95"
                   >
-                    <Menu.Items className="absolute right-0 z-10 w-32 py-2 mt-2 origin-top-right bg-white rounded-md shadow-lg ring-1 ring-gray-900/5 focus:outline-none">
+                    <Menu.Items className="fixed z-10 w-32 py-2 mt-2 origin-top-right bg-white rounded-md shadow-lg right-10 ring-1 ring-gray-900/5 focus:outline-none">
                       <Menu.Item>
                         {({ active }) => (
                           <a

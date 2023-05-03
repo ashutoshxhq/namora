@@ -22,7 +22,7 @@ export const Sidebar = () => {
       <div className="flex items-center justify-center h-16 shrink-0">
         <Image
           className="w-auto h-8"
-          src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=500"
+          src="/namora.svg"
           alt="Your Company"
           width="100"
           height="100"
@@ -31,7 +31,7 @@ export const Sidebar = () => {
       <nav className="mt-8">
         <ul role="list" className="flex flex-col items-center space-y-1">
           {sideBarMenuList.map((item, index) => (
-            <li key={item.name}>
+            <li key={item.id}>
               <Link
                 href={item.href}
                 className={classNames(

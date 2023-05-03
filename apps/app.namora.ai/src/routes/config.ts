@@ -15,10 +15,22 @@ import {
   Cog8ToothIcon,
 } from "@/heroicons";
 
+const routeNameMap = {
+  [CHATS]: "Chats",
+  [JOBS]: "Review Jobs",
+  [SETTINGS]: "Settings",
+  [TEAM_MEMBERS]: "Team Members",
+  [PLAN]: "Plans",
+  [ARTIFACT]: "Artifacts",
+  [ACCOUNT]: "Account",
+  [INTEGRATIONS]: "Integrations",
+};
+
 export const sideBarMenuList = [
   {
     id: CHATS,
-    name: CHATS,
+    name: routeNameMap[CHATS],
+    path: CHATS,
     href: {
       pathname: `/${CHATS}`,
       query: {},
@@ -28,7 +40,8 @@ export const sideBarMenuList = [
   },
   {
     id: JOBS,
-    name: JOBS,
+    name: routeNameMap[JOBS],
+    path: JOBS,
     href: {
       pathname: `/${JOBS}`,
       query: {},
@@ -38,7 +51,8 @@ export const sideBarMenuList = [
   },
   {
     id: SETTINGS,
-    name: SETTINGS,
+    name: routeNameMap[SETTINGS],
+    path: SETTINGS,
     href: {
       pathname: `/${SETTINGS}/${ACCOUNT}`,
       query: {},
@@ -56,7 +70,8 @@ export const userNavigation = [
 export const jobTabList = [
   {
     id: PLAN,
-    name: PLAN,
+    name: routeNameMap[PLAN],
+    path: PLAN,
     href: {
       pathname: `/${PLAN}`,
       query: {},
@@ -65,7 +80,8 @@ export const jobTabList = [
   },
   {
     id: ARTIFACT,
-    name: ARTIFACT,
+    name: routeNameMap[ARTIFACT],
+    path: ARTIFACT,
     href: {
       pathname: `/${ARTIFACT}`,
       query: {},
@@ -77,7 +93,8 @@ export const jobTabList = [
 export const settingTabList = [
   {
     id: ACCOUNT,
-    name: ACCOUNT,
+    name: routeNameMap[ACCOUNT],
+    path: ACCOUNT,
     href: {
       pathname: `${SETTINGS}/${ACCOUNT}`,
       query: {},
@@ -86,7 +103,8 @@ export const settingTabList = [
   },
   {
     id: TEAM_MEMBERS,
-    name: TEAM_MEMBERS,
+    name: routeNameMap[TEAM_MEMBERS],
+    path: TEAM_MEMBERS,
     href: {
       pathname: `${SETTINGS}/${TEAM_MEMBERS}`,
       query: {},
@@ -95,7 +113,8 @@ export const settingTabList = [
   },
   {
     id: INTEGRATIONS,
-    name: INTEGRATIONS,
+    name: routeNameMap[INTEGRATIONS],
+    path: INTEGRATIONS,
     href: {
       pathname: `${SETTINGS}/${INTEGRATIONS}`,
       query: {},

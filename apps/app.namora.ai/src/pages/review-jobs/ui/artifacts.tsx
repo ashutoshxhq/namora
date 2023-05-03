@@ -46,12 +46,12 @@ const Artifact = () => {
 
   return (
     <>
-      <div>
+      <div className="overflow-hidden bg-white shadow sm:rounded-md">
         <ul role="list" className="divide-y divide-gray-100">
           {projects.map((project) => (
             <li
               key={project.id}
-              className="flex items-center justify-between py-5 gap-x-6"
+              className="z-0 flex items-center justify-between px-4 py-5 sm:px-6 gap-x-6"
             >
               <div className="min-w-0">
                 <div className="flex items-start gap-x-3">
@@ -105,7 +105,7 @@ const Artifact = () => {
                     leaveFrom="transform opacity-100 scale-100"
                     leaveTo="transform opacity-0 scale-95"
                   >
-                    <Menu.Items className="absolute right-0 z-10 w-32 py-2 mt-2 origin-top-right bg-white rounded-md shadow-lg ring-1 ring-gray-900/5 focus:outline-none">
+                    <Menu.Items className="fixed z-10 w-32 py-2 mt-2 origin-top-right bg-white rounded-md shadow-lg right-10 ring-1 ring-gray-900/5 focus:outline-none">
                       <Menu.Item>
                         {({ active }) => (
                           <a

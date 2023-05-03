@@ -65,7 +65,8 @@ const timeline = [
 const Plan = () => {
   const router = useRouter();
   const _selectedTab = router?.query?.tab as string;
-  const _selectedIndex = jobTabList.map((tab) => tab.id).indexOf(_selectedTab) ?? 0;
+  const _selectedIndex =
+    jobTabList.map((tab) => tab.id).indexOf(_selectedTab) ?? 0;
   const { jobId } = router.query;
 
   if (!router.isReady) {
@@ -90,7 +91,7 @@ const Plan = () => {
                   />
                 ) : null}
                 <div className="relative flex space-x-3">
-                  <div>
+                  <div className="flex items-center ">
                     <span
                       className={classNames(
                         event.iconBackground,
@@ -103,7 +104,8 @@ const Plan = () => {
                       />
                     </span>
                   </div>
-                  <div className="flex min-w-0 flex-1 justify-between space-x-4 pt-1.5">
+                  {/* <div className="flex min-w-0 flex-1 justify-between space-x-4 pt-1.5"> */}
+                  <div className="flex justify-between flex-1 min-w-0 p-4 space-x-4 bg-white shadow sm:rounded-md">
                     <div>
                       <div className="text-sm text-gray-500">
                         {event.content}{" "}

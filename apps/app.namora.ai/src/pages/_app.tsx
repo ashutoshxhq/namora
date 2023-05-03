@@ -8,7 +8,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
-    <div className={`bg-slate-50 ${inter.className}`}>
+    <div className={`${inter.className}`}>
       <MainLayout>
         <Component {...pageProps} />
       </MainLayout>

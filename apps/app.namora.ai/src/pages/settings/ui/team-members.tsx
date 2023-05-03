@@ -143,8 +143,8 @@ const TeamMembers = () => {
     setOpen,
   };
   return (
-    <div className="overflow-auto h-[calc(100vh - theme(space.20))]">
-      <div className="pb-5 border-b border-gray-200 sm:flex sm:items-center sm:justify-between">
+    <div className="overflow-auto h-[calc(100vh - theme(space.20))] overflow-hidden bg-white shadow rounded-md my-3 mb-11 ">
+      <div className="p-3 border-b border-gray-200 sm:flex sm:items-center sm:justify-between">
         <h3 className="text-base font-semibold leading-6 text-gray-900">
           Members (0/0)
         </h3>
@@ -159,7 +159,10 @@ const TeamMembers = () => {
       </div>
       <ul role="list" className="divide-y divide-gray-100">
         {people.map((person) => (
-          <li key={person.email} className="flex justify-between py-5 gap-x-6">
+          <li
+            key={person.email}
+            className="z-0 flex items-center justify-between px-4 py-5 sm:px-6 gap-x-6"
+          >
             <div className="flex gap-x-4">
               <Image
                 className="flex-none w-12 h-12 rounded-full bg-gray-50"
@@ -220,11 +223,11 @@ const TeamMembers = () => {
                   leaveFrom="transform opacity-100 scale-100"
                   leaveTo="transform opacity-0 scale-95"
                 >
-                  <Menu.Items className="absolute right-0 z-10 w-32 py-2 mt-2 origin-top-right bg-white rounded-md shadow-lg ring-1 ring-gray-900/5 focus:outline-none">
+                  <Menu.Items className="absolute z-10 w-32 py-2 mt-2 origin-top-right bg-white rounded-md shadow-lg right-10 ring-1 ring-gray-900/5 focus:outline-none">
                     <Menu.Item>
                       {({ active }) => (
                         <Link
-                          href="javascript:void(0)"
+                          href="#"
                           onClick={() => handleClickOnEdit(person.id)}
                           className={classNames(
                             active ? "bg-gray-50" : "",
@@ -238,7 +241,7 @@ const TeamMembers = () => {
                     <Menu.Item>
                       {({ active }) => (
                         <Link
-                          href="javascript:void(0)"
+                          href="#"
                           className={classNames(
                             active ? "bg-gray-50" : "",
                             "block px-3 py-1 text-sm leading-6 text-gray-900"

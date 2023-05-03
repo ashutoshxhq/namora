@@ -18,7 +18,7 @@
       "@/*": ["./src/*"],
       "chats/*": ["./src/pages/chats/*"],
       "settings/*": ["./src/pages/settings/*"],
-      "jobs/*": ["./src/pages/jobs/*"],
+      "review-jobs/*": ["./src/pages/review-jobs/*"],
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
