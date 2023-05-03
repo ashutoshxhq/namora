@@ -4,8 +4,13 @@ use axum::{
     response::{IntoResponse, Response},
     Json,
 };
-use jsonwebtoken::errors::ErrorKind;
-use jsonwebtoken::{decode, Algorithm, DecodingKey, Validation};
+use hyper::Uri;
+use jsonwebtoken::{
+    decode, decode_header,
+    jwk::{AlgorithmParameters, JwkSet},
+    Algorithm, DecodingKey, Validation,
+};
+use namora_core::types::error::Error;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use uuid::Uuid;
@@ -21,8 +26,7 @@ pub struct Claims {
     pub team_id: Uuid,
     pub role: String,
 }
-
-pub async fn _auth<B>(req: Request<B>, next: Next<B>) -> Response {
+pub async fn auth<B>(req: Request<B>, next: Next<B>) -> Response {
     let (parts, body) = req.into_parts();
     let headers = parts.headers.clone();
 
@@ -33,54 +37,26 @@ pub async fn _auth<B>(req: Request<B>, next: Next<B>) -> Response {
     if let Some(auth_header) = auth_header {
         let auth_token = auth_header.split(" ").last();
         if let Some(auth_token) = auth_token {
-            let mut validation = Validation::new(Algorithm::HS256);
-            validation.set_issuer(&["https://api.NamoraAI.app"]);
-            let token_data =
-                match decode::<Claims>(
-                    auth_token,
-                    &DecodingKey::from_secret(
-                        std::env::var("JWT_SECRET")
-                            .expect("Please set JWT_SECRET in .env")
-                            .as_bytes(),
-                    ),
-                    &validation,
-                ) {
-                    Ok(c) => c,
-                    Err(err) => {
-                        match *err.kind() {
-                            ErrorKind::InvalidToken => return (
-                                StatusCode::UNAUTHORIZED,
-                                Json(json!({
-                                    "error": "UNAUTHORIZED",
-                                    "status": "error",
-                                    "message": "Unauthorized: please provide a valid auth token",
-                                })),
-                            )
-                                .into_response(), // Example on how to handle a specific error
-                            ErrorKind::InvalidIssuer => return (
-                                StatusCode::UNAUTHORIZED,
-                                Json(json!({
-                                    "error": "UNAUTHORIZED",
-                                    "status": "error",
-                                    "message": "Unauthorized: please provide a valid auth token",
-                                })),
-                            )
-                                .into_response(), // Example on how to handle a specific error
-                            _ => return (
-                                StatusCode::UNAUTHORIZED,
-                                Json(json!({
-                                    "error": "UNAUTHORIZED",
-                                    "status": "error",
-                                    "message": "Unauthorized: please provide a valid auth token",
-                                })),
-                            )
-                                .into_response(),
-                        }
-                    }
-                };
-            let mut new_req = Request::from_parts(parts, body);
-            new_req.extensions_mut().insert(token_data.claims);
-            return next.run(new_req).await;
+            let claims = decode_token(auth_token).await;
+            match claims {
+                Ok(claims) => {
+                    let mut new_req = Request::from_parts(parts, body);
+                    new_req.extensions_mut().insert(claims.clone());
+                    return next.run(new_req).await;
+                }
+                Err(e) => {
+                    println!("error: {:?}", e);
+                    return (
+                        StatusCode::UNAUTHORIZED,
+                        Json(json!({
+                            "error": "UNAUTHORIZED",
+                            "status": "error",
+                            "message": "Unauthorized: please provide a valid auth token",
+                        })),
+                    )
+                        .into_response();
+                }
+            }
         } else {
             println!("no token");
             return (
@@ -104,4 +80,47 @@ pub async fn _auth<B>(req: Request<B>, next: Next<B>) -> Response {
         )
             .into_response();
     }
+}
+
+async fn decode_token(token: &str) -> Result<Claims, Error> {
+    let kid = get_kid_from_token(token)?;
+    if let Some(kid) = kid {
+        let jwks = reqwest::get(format!(
+            "https://{}/.well-known/jwks.json",
+            std::env::var("AUTH0_DOMAIN").expect("Unable to get AUTH0_DOMAIN")
+        ))
+        .await?
+        .json::<JwkSet>()
+        .await?;
+        if let Some(jwk) = jwks.find(&kid) {
+            match jwk.clone().algorithm {
+                AlgorithmParameters::RSA(ref rsa) => {
+                    let mut validation = Validation::new(Algorithm::RS256);
+                    validation.set_audience(&[
+                        &std::env::var("AUTH0_AUDIENCE").expect("Unable to get AUTH0_AUDIENCE")
+                    ]);
+                    validation.set_issuer(&[Uri::builder()
+                        .scheme("https")
+                        .authority(
+                            std::env::var("AUTH0_DOMAIN").expect("Unable to get AUTH0_DOMAIN"),
+                        )
+                        .path_and_query("/")
+                        .build()?]);
+                    let key = DecodingKey::from_rsa_components(&rsa.n, &rsa.e)?;
+                    let token_data = decode::<Claims>(token, &key, &validation)?;
+                    return Ok(token_data.claims);
+                }
+                _ => return Err(Error::from("Unsupported algorithm")),
+            }
+        } else {
+            return Err(Error::from("No matching kid found in jwks for token"));
+        }
+    } else {
+        return Err(Error::from("No kid found in token headers"));
+    }
+}
+
+pub fn get_kid_from_token(auth_token: &str) -> Result<Option<String>, Error> {
+    let header = decode_header(&auth_token)?;
+    Ok(header.kid)
 }
