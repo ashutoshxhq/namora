@@ -24,4 +24,5 @@ reqwest = { version = "0.11", features = ["blocking", "json"] }
 chrono = { version = "0.4.22", features = ["serde"]}
 diesel = { version = "2.0.0", features = ["postgres", "r2d2", "uuid", "serde_json", "chrono"] }
 namora_core = { path = "../../libs/namora_core"}
+engine_db_repository = { path = "../../libs/engine_db_repository"}
 jsonwebtoken = "8.1.1"

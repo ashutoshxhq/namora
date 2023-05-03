@@ -4,7 +4,6 @@ members = [
     "apps/engine.svc.api.namora.ai",
     "apps/task-orchestrator.svc.api.namora.ai",
     "apps/user-socket.svc.api.namora.ai",
-    "libs/agent_db_repository",
     "libs/engine_db_repository",
     "libs/namora_core",
     "functions/upsert-indexes-pinecone"

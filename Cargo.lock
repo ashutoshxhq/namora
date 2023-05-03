@@ -24,21 +24,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "agent_db_repository"
-version = "0.1.0"
-dependencies = [
- "chrono",
- "diesel",
- "namora_core",
- "serde",
- "serde_json",
- "tokio",
- "tracing",
- "tracing-subscriber",
- "uuid",
-]
-
-[[package]]
 name = "alloc-no-stdlib"
 version = "2.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -776,6 +761,7 @@ dependencies = [
  "chrono",
  "diesel",
  "dotenvy",
+ "engine_db_repository",
  "futures",
  "futures-util",
  "headers",
@@ -796,6 +782,13 @@ dependencies = [
 [[package]]
 name = "engine_db_repository"
 version = "0.1.0"
+dependencies = [
+ "chrono",
+ "diesel",
+ "serde",
+ "serde_json",
+ "uuid",
+]
 
 [[package]]
 name = "errno"
@@ -2367,7 +2360,6 @@ checksum = "2047c6ded9c721764247e62cd3b03c09ffc529b2ba5b10ec482ae507a4a70160"
 name = "task-orchestrator-service"
 version = "0.1.0"
 dependencies = [
- "agent_db_repository",
  "async-openai",
  "chrono",
  "diesel",

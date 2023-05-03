@@ -26,6 +26,7 @@ pub struct Claims {
     pub team_id: Uuid,
     pub role: String,
 }
+
 pub async fn auth<B>(req: Request<B>, next: Next<B>) -> Response {
     let (parts, body) = req.into_parts();
     let headers = parts.headers.clone();
