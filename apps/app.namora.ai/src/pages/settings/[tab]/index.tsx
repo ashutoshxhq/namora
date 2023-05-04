@@ -3,8 +3,8 @@ import { useRouter } from "next/router";
 import Link from "next/link";
 
 import { classNames } from "@/utils";
-import { tabs } from "settings/config";
-import { SETTINGS } from "settings/constants";
+import { NOT_FOUND, SETTINGS } from "@/routes/constants";
+import { settingTabList } from "@/routes/config";
 import Account from "settings/ui/account";
 import TeamMembers from "settings/ui/team-members";
 import Integrations from "settings/ui/integrations";
@@ -12,27 +12,32 @@ import Integrations from "settings/ui/integrations";
 export default function SettingsPage() {
   const router = useRouter();
   const _selectedTab = router?.query?.tab as string;
-  const _selectedIndex = tabs.map((tab) => tab.id).indexOf(_selectedTab) ?? 0;
+  const _selectedIndex =
+    settingTabList.map((tab) => tab.id).indexOf(_selectedTab) ?? 0;
 
   // console.log("@[tab]", { router, _selectedTab, _selectedIndex });
 
   if (router.isReady && (!_selectedTab || _selectedIndex === -1)) {
-    router?.replace(`/${SETTINGS}/404`, undefined, {
+    router?.replace(`/${SETTINGS}/${NOT_FOUND}`, undefined, {
       shallow: true,
     });
   }
+
+  const handleClickOnTab = (index: number) => {
+    const tab = settingTabList.at(index);
+    router.push(`/${SETTINGS}/${tab?.path}`);
+  };
+
   return (
     <>
-      <div className="pb-5 border-b border-gray-200 sm:pb-0">
-        <Tab.Group
-          selectedIndex={_selectedIndex}
-          onChange={(index) => {
-            const tab = tabs.at(index);
-            router.replace(`/${SETTINGS}/${tab?.name}`, undefined, {
-              shallow: true,
-            });
-          }}
-        >
+      <div className="pb-3 border-b">
+        <h3 className="text-xl font-semibold leading-6 text-gray-900">
+          Settings
+        </h3>
+        <p className="mt-1 text-xs text-gray-500">...</p>
+      </div>
+      <div className="pb-5 border-gray-200 sm:pb-0">
+        <Tab.Group selectedIndex={_selectedIndex} onChange={handleClickOnTab}>
           <div className="hidden sm:block">
             <div className="border-b border-gray-200">
               <Tab.List
@@ -40,11 +45,11 @@ export default function SettingsPage() {
                 className="flex -mb-px space-x-8"
                 aria-label="Tabs"
               >
-                {tabs.map((tab, index) => (
+                {settingTabList.map((tab, index) => (
                   <Tab
                     key={tab.id}
                     as={Link}
-                    href={`/${SETTINGS}/${tab?.name}`}
+                    href={`/${SETTINGS}/${tab?.path}`}
                     shallow
                     className={classNames(
                       _selectedIndex === index
@@ -60,14 +65,14 @@ export default function SettingsPage() {
               </Tab.List>
             </div>
           </div>
-          <Tab.Panels className="p-2 my-4 rounded-md bg-base-200 text-base-content">
-            <Tab.Panel>
+          <Tab.Panels className="pb-3 mb-3 rounded-md bg-base-200 text-base-content">
+            <Tab.Panel className="focus-visible:outline-0">
               <Account />
             </Tab.Panel>
-            <Tab.Panel>
+            <Tab.Panel className="focus-visible:outline-0">
               <TeamMembers />
             </Tab.Panel>
-            <Tab.Panel>
+            <Tab.Panel className="focus-visible:outline-0">
               <Integrations />
             </Tab.Panel>
           </Tab.Panels>

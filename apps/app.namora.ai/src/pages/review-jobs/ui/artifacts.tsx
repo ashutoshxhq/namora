@@ -1,9 +1,9 @@
-import React, { Fragment } from "react";
+import React, { Fragment, useState } from "react";
 import { Menu, Transition } from "@headlessui/react";
 import { EllipsisVerticalIcon } from "@/heroicons";
 
 import { classNames } from "@/utils";
-import Link from "next/link";
+import { NamoraPanel } from "@/design-system/molecules";
 
 const statuses: { [key: string]: string } = {
   Complete: "text-green-700 bg-green-50 ring-green-600/20",
@@ -12,56 +12,52 @@ const statuses: { [key: string]: string } = {
 };
 const projects = [
   {
-    id: "1",
-    name: "GraphQL API",
-    href: `jobs/${1}/plan`,
-    hrefSecondary: `jobs/${1}/artifact`,
+    id: 1,
+    name: "A",
+    href: `#`,
     status: "Complete",
     createdBy: "Leslie Alexander",
     dueDate: "March 17, 2023",
     dueDateTime: "2023-03-17T00:00Z",
   },
   {
-    id: "2",
-    name: "New benefits plan",
-    href: `jobs/${2}/plan`,
-    hrefSecondary: `jobs/${2}/artifact`,
+    id: 2,
+    name: "B",
+    href: `#`,
     status: "In progress",
     createdBy: "Leslie Alexander",
     dueDate: "May 5, 2023",
     dueDateTime: "2023-05-05T00:00Z",
   },
-  {
-    id: "3",
-    name: "Onboarding emails",
-    href: `jobs/${3}/plan`,
-    hrefSecondary: `jobs/${3}/artifact`,
-    status: "In progress",
-    createdBy: "Courtney Henry",
-    dueDate: "May 25, 2023",
-    dueDateTime: "2023-05-25T00:00Z",
-  },
 ];
 
-const Jobs = () => {
+const Artifact = () => {
+  const [open, setOpen] = useState(false);
+
+  const panelProps = {
+    open,
+    data: {},
+    setOpen,
+  };
+
+  const handleClickOnReview = () => {
+    setOpen(true);
+  };
+
   return (
     <>
-      <div>
+      <div className="overflow-hidden bg-white shadow sm:rounded-md">
         <ul role="list" className="divide-y divide-gray-100">
           {projects.map((project) => (
             <li
               key={project.id}
-              className="flex items-center justify-between py-5 gap-x-6"
+              className="z-0 flex items-center justify-between px-4 py-5 sm:px-6 gap-x-6"
             >
               <div className="min-w-0">
                 <div className="flex items-start gap-x-3">
-                  <Link
-                    href={project.href}
-                    className="text-sm font-semibold leading-6 text-gray-900"
-                  >
+                  <p className="text-sm font-semibold leading-6 text-gray-900">
                     {project.name}
-                    <span className="sr-only">, {project.name}</span>
-                  </Link>
+                  </p>
                   <p
                     className={classNames(
                       statuses[project.status],
@@ -85,13 +81,13 @@ const Jobs = () => {
                 </div>
               </div>
               <div className="flex items-center flex-none gap-x-4">
-                <Link
-                  href={project.hrefSecondary}
+                <button
                   className="hidden rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:block"
+                  onClick={handleClickOnReview}
                 >
-                  View Review Artifact
+                  Review artifact
                   <span className="sr-only">, {project.name}</span>
-                </Link>
+                </button>
                 <Menu as="div" className="relative flex-none">
                   <Menu.Button className="-m-2.5 block p-2.5 text-gray-500 hover:text-gray-900">
                     <span className="sr-only">Open options</span>
@@ -109,7 +105,7 @@ const Jobs = () => {
                     leaveFrom="transform opacity-100 scale-100"
                     leaveTo="transform opacity-0 scale-95"
                   >
-                    <Menu.Items className="absolute right-0 z-10 w-32 py-2 mt-2 origin-top-right bg-white rounded-md shadow-lg ring-1 ring-gray-900/5 focus:outline-none">
+                    <Menu.Items className="absolute z-10 w-32 py-2 mt-2 origin-top-right bg-white rounded-md shadow-lg right-10 ring-1 ring-gray-900/5 focus:outline-none -top-9">
                       <Menu.Item>
                         {({ active }) => (
                           <a
@@ -120,20 +116,6 @@ const Jobs = () => {
                             )}
                           >
                             Edit
-                            <span className="sr-only">, {project.name}</span>
-                          </a>
-                        )}
-                      </Menu.Item>
-                      <Menu.Item>
-                        {({ active }) => (
-                          <a
-                            href="#"
-                            className={classNames(
-                              active ? "bg-gray-50" : "",
-                              "block px-3 py-1 text-sm leading-6 text-gray-900"
-                            )}
-                          >
-                            Move
                             <span className="sr-only">, {project.name}</span>
                           </a>
                         )}
@@ -159,8 +141,10 @@ const Jobs = () => {
             </li>
           ))}
         </ul>
+        <NamoraPanel {...panelProps} />
       </div>
     </>
   );
 };
-export default Jobs;
+
+export default Artifact;

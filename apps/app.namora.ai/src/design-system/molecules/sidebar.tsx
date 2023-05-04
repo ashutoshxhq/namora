@@ -2,7 +2,7 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 
-import { navigation } from "@/routes/config";
+import { sideBarMenuList } from "@/routes/config";
 import { classNames } from "@/utils";
 import { useRouter } from "next/router";
 import { SETTINGS } from "@/routes/constants";
@@ -15,23 +15,25 @@ export const Sidebar = () => {
     replacedTabStr = `${SETTINGS}`;
   }
   const _selectedIndex =
-    navigation.map((tab) => tab.id).indexOf(replacedTabStr) ?? 0;
+    sideBarMenuList.map((tab) => tab.id).indexOf(replacedTabStr) ?? 0;
 
   return (
     <div className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-50 lg:block lg:w-20 lg:overflow-y-auto lg:bg-gray-900 lg:pb-4">
       <div className="flex items-center justify-center h-16 shrink-0">
-        <Image
-          className="w-auto h-8"
-          src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=500"
-          alt="Your Company"
-          width="100"
-          height="100"
-        />
+        <Link href="/">
+          <Image
+            className="w-auto h-8"
+            src="/namora.svg"
+            alt="Your Company"
+            width="100"
+            height="100"
+          />
+        </Link>
       </div>
       <nav className="mt-8">
         <ul role="list" className="flex flex-col items-center space-y-1">
-          {navigation.map((item, index) => (
-            <li key={item.name}>
+          {sideBarMenuList.map((item, index) => (
+            <li key={item.id}>
               <Link
                 href={item.href}
                 className={classNames(

@@ -1,13 +1,34 @@
-import { Fragment, useState } from "react";
+import { Fragment, useState, useMemo } from "react";
 import { Menu, Transition } from "@headlessui/react";
 import { EllipsisVerticalIcon } from "@heroicons/react/20/solid";
 import Image from "next/image";
 import { classNames } from "@/utils";
 import Link from "next/link";
+import { useForm, SubmitHandler } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
+
 import { NamoraPanel } from "@/design-system/molecules";
+
+const schema = yup.object().shape({
+  first_name: yup
+    .string()
+    .required("Required")
+    .min(1, "Minimum one character is required"),
+  last_name: yup
+    .string()
+    .required("Required")
+    .min(1, "Minimum one character is required"),
+  email: yup.string().email().required("Required"),
+  username: yup
+    .string()
+    .required("Required")
+    .min(1, "Minimum one character is required"),
+});
 
 const people = [
   {
+    id: "1",
     name: "Leslie Alexander",
     email: "leslie.alexander@example.com",
     role: "Co-Founder / CEO",
@@ -18,6 +39,7 @@ const people = [
     lastSeenDateTime: "2023-01-23T13:23Z",
   },
   {
+    id: "2",
     name: "Michael Foster",
     email: "michael.foster@example.com",
     role: "Co-Founder / CTO",
@@ -28,6 +50,7 @@ const people = [
     lastSeenDateTime: "2023-01-23T13:23Z",
   },
   {
+    id: "3",
     name: "Dries Vincent",
     email: "dries.vincent@example.com",
     role: "Business Relations",
@@ -37,6 +60,7 @@ const people = [
     lastSeen: null,
   },
   {
+    id: "4",
     name: "Lindsay Walton",
     email: "lindsay.walton@example.com",
     role: "Front-end Developer",
@@ -47,6 +71,7 @@ const people = [
     lastSeenDateTime: "2023-01-23T13:23Z",
   },
   {
+    id: "5",
     name: "Courtney Henry",
     email: "courtney.henry@example.com",
     role: "Designer",
@@ -57,6 +82,7 @@ const people = [
     lastSeenDateTime: "2023-01-23T13:23Z",
   },
   {
+    id: "5",
     name: "Tom Cook",
     email: "tom.cook@example.com",
     role: "Director of Product",
@@ -69,14 +95,56 @@ const people = [
 
 const TeamMembers = () => {
   const [open, setOpen] = useState(false);
+  const [selectedMember, setSelectedMember] = useState<any>({});
+
+  const [showAlert, setShowAlert] = useState(false);
+  const useFormObj = useMemo(
+    () => ({
+      defaultValues: {
+        first_name: "",
+        last_name: "",
+        email: "",
+        username: "",
+      },
+      resolver: yupResolver(schema),
+    }),
+    []
+  );
+  const hookFormProps = useForm(useFormObj);
+
+  const onFormSubmit: SubmitHandler<any> = (submittedFormData) => {
+    handleClickOnSendMessage(submittedFormData);
+  };
+  const handleClickOnSendMessage = (submittedFormData: any) => {
+    // let data = JSON.stringify({
+    //   Data: {
+    //     message_from: "USER",
+    //     message_to: "AI",
+    //     message: submittedFormData.message,
+    //   },
+    // });
+    // const encoder = new TextEncoder();
+    // const binaryData = encoder.encode(data);
+    // console.log("Sending", { data, binaryData });
+    console.log({ submittedFormData });
+    // web_socket.send(binaryData.buffer)
+    setShowAlert(true);
+  };
+
+  const handleClickOnEdit = (id: string) => {
+    setOpen(true);
+    const selectedMember = people?.find((person) => person.id === id);
+    setSelectedMember(selectedMember);
+  };
 
   const panelProps = {
     open,
+    data: selectedMember,
     setOpen,
   };
   return (
-    <div className="overflow-auto h-[calc(100vh - theme(space.20))]">
-      <div className="pb-5 border-b border-gray-200 sm:flex sm:items-center sm:justify-between">
+    <div className="overflow-auto h-[calc(100vh - theme(space.20))] overflow-hidden bg-white shadow rounded-md my-3 mb-11 ">
+      <div className="p-3 border-b border-gray-200 sm:flex sm:items-center sm:justify-between">
         <h3 className="text-base font-semibold leading-6 text-gray-900">
           Members (0/0)
         </h3>
@@ -91,7 +159,10 @@ const TeamMembers = () => {
       </div>
       <ul role="list" className="divide-y divide-gray-100">
         {people.map((person) => (
-          <li key={person.email} className="flex justify-between py-5 gap-x-6">
+          <li
+            key={person.email}
+            className="z-0 flex items-center justify-between px-4 py-5 sm:px-6 gap-x-6"
+          >
             <div className="flex gap-x-4">
               <Image
                 className="flex-none w-12 h-12 rounded-full bg-gray-50"
@@ -152,12 +223,12 @@ const TeamMembers = () => {
                   leaveFrom="transform opacity-100 scale-100"
                   leaveTo="transform opacity-0 scale-95"
                 >
-                  <Menu.Items className="absolute right-0 z-10 w-32 py-2 mt-2 origin-top-right bg-white rounded-md shadow-lg ring-1 ring-gray-900/5 focus:outline-none">
+                  <Menu.Items className="absolute z-10 w-32 py-2 mt-2 origin-top-right bg-white rounded-md shadow-lg right-10 ring-1 ring-gray-900/5 focus:outline-none -top-9">
                     <Menu.Item>
                       {({ active }) => (
                         <Link
                           href="#"
-                          onClick={() => setOpen(true)}
+                          onClick={() => handleClickOnEdit(person.id)}
                           className={classNames(
                             active ? "bg-gray-50" : "",
                             "block px-3 py-1 text-sm leading-6 text-gray-900"
@@ -191,4 +262,5 @@ const TeamMembers = () => {
     </div>
   );
 };
+
 export default TeamMembers;

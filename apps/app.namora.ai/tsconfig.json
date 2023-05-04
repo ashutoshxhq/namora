@@ -16,9 +16,9 @@
     "incremental": true,
     "paths": {
       "@/*": ["./src/*"],
-      "design-system/*": ["./src/design-system/*"],
+      "chats/*": ["./src/pages/chats/*"],
       "settings/*": ["./src/pages/settings/*"],
-
+      "review-jobs/*": ["./src/pages/review-jobs/*"],
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
