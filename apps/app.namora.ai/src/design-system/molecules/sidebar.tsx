@@ -20,13 +20,15 @@ export const Sidebar = () => {
   return (
     <div className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-50 lg:block lg:w-20 lg:overflow-y-auto lg:bg-gray-900 lg:pb-4">
       <div className="flex items-center justify-center h-16 shrink-0">
-        <Image
-          className="w-auto h-8"
-          src="/namora.svg"
-          alt="Your Company"
-          width="100"
-          height="100"
-        />
+        <Link href="/">
+          <Image
+            className="w-auto h-8"
+            src="/namora.svg"
+            alt="Your Company"
+            width="100"
+            height="100"
+          />
+        </Link>
       </div>
       <nav className="mt-8">
         <ul role="list" className="flex flex-col items-center space-y-1">

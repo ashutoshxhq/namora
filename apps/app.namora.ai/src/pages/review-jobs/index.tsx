@@ -41,10 +41,7 @@ const Jobs = () => {
         <h3 className="text-xl font-semibold leading-6 text-gray-900">
           Review Jobs
         </h3>
-        <p className="mt-1 text-xs text-gray-500">
-          Lorem ipsum dolor sit amet consectetur adipisicing elit quam corrupti
-          consectetur.
-        </p>
+        <p className="mt-1 text-xs text-gray-500">...</p>
       </div>
       <div className="overflow-hidden bg-white shadow sm:rounded-md">
         <ul role="list" className="divide-y divide-gray-200">
@@ -109,7 +106,7 @@ const Jobs = () => {
                     leaveFrom="transform opacity-100 scale-100"
                     leaveTo="transform opacity-0 scale-95"
                   >
-                    <Menu.Items className="fixed z-10 w-32 py-2 mt-2 origin-top-right bg-white rounded-md shadow-lg right-10 ring-1 ring-gray-900/5 focus:outline-none">
+                    <Menu.Items className="absolute z-10 w-32 py-2 mt-2 origin-top-right bg-white rounded-md shadow-lg right-10 ring-1 ring-gray-900/5 focus:outline-none -top-9">
                       <Menu.Item>
                         {({ active }) => (
                           <a
@@ -120,20 +117,6 @@ const Jobs = () => {
                             )}
                           >
                             Edit
-                            <span className="sr-only">, {project.name}</span>
-                          </a>
-                        )}
-                      </Menu.Item>
-                      <Menu.Item>
-                        {({ active }) => (
-                          <a
-                            href="#"
-                            className={classNames(
-                              active ? "bg-gray-50" : "",
-                              "block px-3 py-1 text-sm leading-6 text-gray-900"
-                            )}
-                          >
-                            Move
                             <span className="sr-only">, {project.name}</span>
                           </a>
                         )}

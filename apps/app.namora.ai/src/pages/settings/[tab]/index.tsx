@@ -34,10 +34,7 @@ export default function SettingsPage() {
         <h3 className="text-xl font-semibold leading-6 text-gray-900">
           Settings
         </h3>
-        <p className="mt-1 text-xs text-gray-500">
-          Lorem ipsum dolor sit amet consectetur adipisicing elit quam corrupti
-          consectetur.
-        </p>
+        <p className="mt-1 text-xs text-gray-500">...</p>
       </div>
       <div className="pb-5 border-gray-200 sm:pb-0">
         <Tab.Group selectedIndex={_selectedIndex} onChange={handleClickOnTab}>
