@@ -44,7 +44,7 @@ const clients = [
   },
 ];
 
-const Integrations = () => {
+export const Integrations = () => {
   const [enabled, setEnabled] = useState(false);
   return (
     <div className="py-3">
@@ -157,4 +157,3 @@ const Integrations = () => {
     </div>
   );
 };
-export default Integrations;

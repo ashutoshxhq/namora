@@ -1,6 +1,5 @@
-import { withPageAuthRequired } from '@auth0/nextjs-auth0';
-import ChatInput from "chats/ui/ChatInput";
-import ChatWindow from "chats/ui/ChatWindow";
+import { withPageAuthRequired } from "@auth0/nextjs-auth0";
+import { TextInput, Window } from "@/ui/chats";
 
 const messages = [
   { message: "Hello!", sender: false },
@@ -24,8 +23,8 @@ const messages = [
   // Add more messages as needed
 ];
 
-function Chats( {user}:{user:any}) {
-  console.log(user)
+function Chats({ user }: { user: any }) {
+  console.log(user);
   return (
     <>
       <div className="pb-3 mb-3 border-b">
@@ -34,13 +33,11 @@ function Chats( {user}:{user:any}) {
         </h3>
         <p className="mt-1 text-xs text-gray-500">...</p>
       </div>
-      <div className="overflow-hidden bg-white divide-y divide-gray-200 rounded-lg shadow">
-        <div className="">
-          <ChatWindow messages={messages} />
-        </div>
-        <div className="p-2">
-          <ChatInput />
-        </div>
+      <div className="box-border overflow-hidden bg-white divide-y divide-gray-200 rounded-lg shadow h-[calc(100vh_-_220px)] mb-3">
+        <Window />
+      </div>
+      <div>
+        <TextInput />
       </div>
     </>
   );

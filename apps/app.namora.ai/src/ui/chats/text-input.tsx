@@ -12,7 +12,7 @@ const schema = yup.object().shape({
     .min(1, "Minimum one character is required"),
 });
 
-const ChatInput = () => {
+export const TextInput = () => {
   const useFormObj = useMemo(
     () => ({
       defaultValues: {
@@ -56,5 +56,3 @@ const ChatInput = () => {
     </form>
   );
 };
-
-export default ChatInput;

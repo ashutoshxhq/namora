@@ -5,9 +5,7 @@ import Link from "next/link";
 import { classNames } from "@/utils";
 import { NOT_FOUND, SETTINGS } from "@/routes/constants";
 import { settingTabList } from "@/routes/config";
-import Account from "settings/ui/account";
-import TeamMembers from "settings/ui/team-members";
-import Integrations from "settings/ui/integrations";
+import { Account, TeamMembers, Integrations } from "@/ui/settings";
 
 export default function SettingsPage() {
   const router = useRouter();

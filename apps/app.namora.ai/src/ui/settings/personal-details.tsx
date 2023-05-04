@@ -24,7 +24,7 @@ const schema = yup.object().shape({
     .min(1, "Minimum one character is required"),
 });
 
-const PersonalDetails = () => {
+export const PersonalDetails = () => {
   const [showAlert, setShowAlert] = useState(false);
   const useFormObj = useMemo(
     () => ({
@@ -197,5 +197,3 @@ const PersonalDetails = () => {
     </>
   );
 };
-
-export default PersonalDetails;

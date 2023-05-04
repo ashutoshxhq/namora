@@ -16,9 +16,7 @@
     "incremental": true,
     "paths": {
       "@/*": ["./src/*"],
-      "chats/*": ["./src/pages/chats/*"],
-      "settings/*": ["./src/pages/settings/*"],
-      "review-jobs/*": ["./src/pages/review-jobs/*"],
+      "web-sockets/*": ["./src/web-sockets/*"],
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
