@@ -166,7 +166,7 @@ pub async fn execute_action(
     if let Some(data) = message_with_context.message.additional_info.data.clone() {
         let action_to_execute = serde_json::from_value::<Action>(data)?;
 
-        let system_message = fs::read_to_string("./src/prompts/system/extract_action_input.txt")?;
+        let system_message = fs::read_to_string("./prompts/system/extract_action_input.txt")?;
         let reg = Handlebars::new();
         let system_message_with_data = reg.render_template(
             &system_message,
@@ -293,7 +293,7 @@ pub async fn generate_response(
         "User Response Handler Recieved Message: {:?}",
         message_with_context
     );
-    let system_message = fs::read_to_string("./src/prompts/system/generate_response.txt")?;
+    let system_message = fs::read_to_string("./prompts/system/generate_response.txt")?;
     let reg = Handlebars::new();
     let executed_action_outputs = message_with_context.context.execution_context.executed_actions.iter().map(|action| {
         json!({
