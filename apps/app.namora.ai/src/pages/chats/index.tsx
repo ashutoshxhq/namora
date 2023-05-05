@@ -1,3 +1,4 @@
+import { withPageAuthRequired } from '@auth0/nextjs-auth0';
 import ChatInput from "chats/ui/ChatInput";
 import ChatWindow from "chats/ui/ChatWindow";
 
@@ -23,12 +24,13 @@ const messages = [
   // Add more messages as needed
 ];
 
-function Chats() {
+function Chats( {user}:{user:any}) {
+  console.log(user)
   return (
     <>
       <div className="pb-3 mb-3 border-b">
         <h3 className="text-xl font-semibold leading-6 text-gray-900">
-          Chat GPT
+          Hi, {user?.name}
         </h3>
         <p className="mt-1 text-xs text-gray-500">...</p>
       </div>
@@ -44,3 +46,5 @@ function Chats() {
   );
 }
 export default Chats;
+
+export const getServerSideProps = withPageAuthRequired();

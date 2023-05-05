@@ -10,6 +10,7 @@ import { Menu, Transition } from "@headlessui/react";
 
 import { userNavigation } from "@/routes/config";
 import { classNames } from "@/utils";
+import Link from "next/link";
 
 export const TopBar = ({
   setSidebarOpen,
@@ -101,7 +102,7 @@ export const TopBar = ({
                   {userNavigation.map((item) => (
                     <Menu.Item key={item.name}>
                       {({ active }) => (
-                        <a
+                        <Link
                           href={item.href}
                           className={classNames(
                             active ? "bg-gray-50" : "",
@@ -109,7 +110,7 @@ export const TopBar = ({
                           )}
                         >
                           {item.name}
-                        </a>
+                        </Link>
                       )}
                     </Menu.Item>
                   ))}

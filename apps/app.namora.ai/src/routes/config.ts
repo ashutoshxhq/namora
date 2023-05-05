@@ -64,7 +64,7 @@ export const sideBarMenuList = [
 
 export const userNavigation = [
   { name: "Your profile", href: "#" },
-  { name: "Sign out", href: "#" },
+  { name: "Sign out", href: "/api/auth/logout" },
 ];
 
 export const jobTabList = [

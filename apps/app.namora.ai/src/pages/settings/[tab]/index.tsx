@@ -30,7 +30,7 @@ export default function SettingsPage() {
 
   return (
     <>
-      <div className="pb-3 border-b">
+      <div className="pb-3">
         <h3 className="text-xl font-semibold leading-6 text-gray-900">
           Settings
         </h3>
