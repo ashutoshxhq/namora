@@ -4,7 +4,7 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import * as yup from "yup";
 
 import { BASE_WS_URL } from "@/web-sockets/constants";
-import { Bubble, EmptyState, Timestamp, WaitBeforeShow } from "@/ui/chats";
+import { Bubble, EmptyState, Timestamp, WaitBeforeShow } from "@/components/chats";
 
 const messages = [
   { message: "Hello!", sender: false },

@@ -5,7 +5,7 @@ import { useRouter } from "next/router";
 import { classNames } from "@/utils";
 import { JOBS, NOT_FOUND } from "@/routes/constants";
 import { jobTabList } from "@/routes/config";
-import { Plan, Artifact } from "@/ui/review-jobs";
+import { Plan, Artifact } from "@/components/review-jobs";
 
 const JobPage = () => {
   const router = useRouter();

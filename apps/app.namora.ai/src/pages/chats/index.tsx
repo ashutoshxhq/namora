@@ -1,5 +1,5 @@
 import { withPageAuthRequired } from "@auth0/nextjs-auth0";
-import { TextInput, Window } from "@/ui/chats";
+import { TextInput, Window } from "@/components/chats";
 
 const messages = [
   { message: "Hello!", sender: false },
