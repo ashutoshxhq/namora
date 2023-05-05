@@ -93,7 +93,7 @@ const people = [
   },
 ];
 
-const TeamMembers = () => {
+export const TeamMembers = () => {
   const [open, setOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<any>({});
 
@@ -262,5 +262,3 @@ const TeamMembers = () => {
     </div>
   );
 };
-
-export default TeamMembers;

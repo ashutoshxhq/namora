@@ -1,9 +1,9 @@
 import React, { Fragment } from "react";
 import { Menu, Transition } from "@headlessui/react";
 import { EllipsisVerticalIcon } from "@/heroicons";
+import Link from "next/link";
 
 import { classNames } from "@/utils";
-import Link from "next/link";
 import { ARTIFACT, JOBS, PLAN } from "@/routes/constants";
 
 const statuses: { [key: string]: string } = {

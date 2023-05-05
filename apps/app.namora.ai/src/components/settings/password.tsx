@@ -3,8 +3,6 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 
-import { FormInputPasswordField } from "@/design-system/form";
-
 const schema = yup.object().shape({
   current_password: yup
     .string()
@@ -20,7 +18,7 @@ const schema = yup.object().shape({
     .min(1, "Minimum one character is required"),
 });
 
-const Password = () => {
+export const Password = () => {
   const useFormObj = useMemo(
     () => ({
       defaultValues: {
@@ -73,5 +71,3 @@ const Password = () => {
     </div>
   );
 };
-
-export default Password;

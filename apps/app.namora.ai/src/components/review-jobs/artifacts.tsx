@@ -31,7 +31,7 @@ const projects = [
   },
 ];
 
-const Artifact = () => {
+export const Artifact = () => {
   const [open, setOpen] = useState(false);
 
   const panelProps = {
@@ -146,5 +146,3 @@ const Artifact = () => {
     </>
   );
 };
-
-export default Artifact;

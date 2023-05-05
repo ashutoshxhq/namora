@@ -1,4 +1,4 @@
-const ChatBubble = ({
+export const Bubble = ({
   message,
   sender,
 }: {
@@ -19,5 +19,3 @@ const ChatBubble = ({
     </div>
   );
 };
-
-export default ChatBubble;

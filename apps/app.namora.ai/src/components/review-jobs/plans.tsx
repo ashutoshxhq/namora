@@ -62,7 +62,7 @@ const timeline = [
   },
 ];
 
-const Plan = () => {
+export const Plan = () => {
   const router = useRouter();
   const _selectedTab = router?.query?.tab as string;
   const _selectedIndex =
@@ -130,5 +130,3 @@ const Plan = () => {
     </>
   );
 };
-
-export default Plan;
