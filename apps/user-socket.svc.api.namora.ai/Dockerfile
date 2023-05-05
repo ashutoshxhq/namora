@@ -29,6 +29,7 @@ RUN groupadd $APP_USER \
     && mkdir -p ${APP}
 
 COPY --from=builder /apps/user-socket-service/target/release/user-socket-service ${APP}/user-socket-service
+COPY --from=builder /apps/user-socket-service/public ${APP}/public
 
 RUN chown -R $APP_USER:$APP_USER ${APP}
 
