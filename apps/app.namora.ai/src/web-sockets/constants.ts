@@ -1,2 +1,1 @@
-export const BASE_WS_URL = "wss://ws.bitstamp.net";
-// export const BIT_STAMP_WS_URL = 'wss://ws.bitstamp.net'
+export const BASE_WS_URL = "wss://user-socket.svc.api.namora.ai";

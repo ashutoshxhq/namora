@@ -4,6 +4,9 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 
 import { FormInputTextField } from "@/design-system/form";
+import { webSocket } from "@/web-sockets";
+import { useFetchAccessToken } from "@/auth0/hooks";
+import { useCurrentUser } from "@/current-user";
 
 const schema = yup.object().shape({
   message: yup
@@ -12,7 +15,12 @@ const schema = yup.object().shape({
     .min(1, "Minimum one character is required"),
 });
 
+const encoder = new TextEncoder();
+
 export const TextInput = () => {
+  const { data: accessToken } = useFetchAccessToken();
+  const { teamId, userId } = useCurrentUser();
+
   const useFormObj = useMemo(
     () => ({
       defaultValues: {
@@ -23,23 +31,30 @@ export const TextInput = () => {
     []
   );
   const hookFormProps = useForm(useFormObj);
+  const { reset } = hookFormProps;
 
   const onFormSubmit: SubmitHandler<any> = (submittedFormData) => {
     handleClickOnSendMessage(submittedFormData);
   };
   const handleClickOnSendMessage = (submittedFormData: any) => {
-    // let data = JSON.stringify({
-    //   Data: {
-    //     message_from: "USER",
-    //     message_to: "AI",
-    //     message: submittedFormData.message,
-    //   },
-    // });
-    // const encoder = new TextEncoder();
-    // const binaryData = encoder.encode(data);
-    // console.log("Sending", { data, binaryData });
-    console.log({ submittedFormData });
-    // web_socket.send(binaryData.buffer)
+    if (accessToken) {
+      let data = JSON.stringify({
+        Data: {
+          content: submittedFormData.message,
+          session_id: "8d77a6ab-975b-49c6-871e-707798a22751",
+          context: {
+            user_id: userId,
+            team_id: teamId,
+            authorization_token: accessToken,
+          },
+        },
+      });
+
+      const binaryData = encoder.encode(data);
+      console.log("Sending first hello message", data, binaryData);
+      webSocket?.send(binaryData.buffer);
+      reset();
+    }
   };
 
   const { handleSubmit } = hookFormProps;

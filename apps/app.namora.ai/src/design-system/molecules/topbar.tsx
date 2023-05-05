@@ -11,12 +11,15 @@ import { Menu, Transition } from "@headlessui/react";
 import { userNavigation } from "@/routes/config";
 import { classNames } from "@/utils";
 import Link from "next/link";
+import { useCurrentUser } from "@/current-user";
 
 export const TopBar = ({
   setSidebarOpen,
 }: {
   setSidebarOpen: (value: boolean) => void;
 }) => {
+  const { userName } = useCurrentUser();
+
   return (
     <div className="lg:pl-20">
       <div className="sticky top-0 z-40 flex items-center h-16 px-4 bg-white border-b border-gray-200 shadow-sm shrink-0 gap-x-4 sm:gap-x-6 sm:px-6 lg:px-8">
@@ -81,7 +84,7 @@ export const TopBar = ({
                     className="ml-4 text-sm font-semibold leading-6 text-gray-900"
                     aria-hidden="true"
                   >
-                    Tom Cook
+                    {userName}
                   </span>
                   <ChevronDownIcon
                     className="w-5 h-5 ml-2 text-gray-400"
