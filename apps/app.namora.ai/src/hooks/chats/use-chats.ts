@@ -82,5 +82,5 @@ export const useChats = () => {
     ];
   });
 
-  return { messageGroupData, wsData, wsError };
+  return { messageGroupData };
 };

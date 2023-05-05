@@ -2,9 +2,7 @@ import { Bubble, EmptyState, Timestamp } from "@/components/chats";
 import { useChats } from "@/hooks/chats";
 
 export const Window = () => {
-  const { wsData, messageGroupData } = useChats();
-
-  console.log("Chats", { wsData });
+  const { messageGroupData } = useChats();
 
   const isSocketError = true;
   const isSocketDisconnected = true;
@@ -14,10 +12,8 @@ export const Window = () => {
 
   if (!Object.keys(messageGroupData).length)
     return (
-      <div className="box-border overflow-hidden bg-white divide-y divide-gray-200 rounded-lg shadow h-[calc(100vh_-_220px)] mb-3">
-        <div className="flex items-center justify-center w-full h-full">
-          <EmptyState />
-        </div>
+      <div className="flex items-center justify-center w-full h-full">
+        <EmptyState />
       </div>
     );
 

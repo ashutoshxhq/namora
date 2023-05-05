@@ -10,7 +10,7 @@ function Chats({ user }: { user: any }) {
         </h3>
         <p className="mt-1 text-xs text-gray-500">...</p>
       </div>
-      <div className="box-border overflow-hidden bg-white divide-y divide-gray-200 rounded-lg shadow h-[calc(100vh_-_220px)] mb-3">
+      <div className="box-border overflow-hidden bg-white divide-y divide-gray-200 rounded-lg shadow h-[calc(100vh_-_220px)] mb-2">
         <Window />
       </div>
       <TextInput />
