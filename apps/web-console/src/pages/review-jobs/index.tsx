@@ -5,6 +5,7 @@ import Link from "next/link";
 
 import { classNames } from "@/utils";
 import { ARTIFACT, JOBS, PLAN } from "@/routes/constants";
+import { withPageSessionAuthRequired } from "@/auth0/utils";
 
 const statuses: { [key: string]: string } = {
   Complete: "text-green-700 bg-green-50 ring-green-600/20",
@@ -147,3 +148,5 @@ const Jobs = () => {
   );
 };
 export default Jobs;
+
+export const getServerSideProps = withPageSessionAuthRequired;

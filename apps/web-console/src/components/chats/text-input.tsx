@@ -5,7 +5,6 @@ import * as yup from "yup";
 
 import { FormInputTextField } from "@/design-system/form";
 import { webSocket } from "@/web-sockets";
-import { useFetchAccessToken } from "@/auth0/hooks";
 import { useCurrentUser } from "@/current-user";
 
 const schema = yup.object().shape({
@@ -17,8 +16,7 @@ const schema = yup.object().shape({
 
 const encoder = new TextEncoder();
 
-export const TextInput = () => {
-  const { data: accessToken } = useFetchAccessToken();
+export const TextInput = ({ accessToken }: { accessToken: string }) => {
   const { teamId, userId } = useCurrentUser();
 
   const useFormObj = useMemo(

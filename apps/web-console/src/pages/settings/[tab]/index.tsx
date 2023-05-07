@@ -6,6 +6,7 @@ import { classNames } from "@/utils";
 import { NOT_FOUND, SETTINGS } from "@/routes/constants";
 import { settingTabList } from "@/routes/config";
 import { Account, TeamMembers, Integrations } from "@/components/settings";
+import { withPageSessionAuthRequired } from "@/auth0/utils";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -79,3 +80,5 @@ export default function SettingsPage() {
     </>
   );
 }
+
+export const getServerSideProps = withPageSessionAuthRequired;

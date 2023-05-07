@@ -6,6 +6,7 @@ import { classNames } from "@/utils";
 import { JOBS, NOT_FOUND } from "@/routes/constants";
 import { jobTabList } from "@/routes/config";
 import { Plan, Artifact } from "@/components/review-jobs";
+import { withPageSessionAuthRequired } from "@/auth0/utils";
 
 const JobPage = () => {
   const router = useRouter();
@@ -77,3 +78,5 @@ const JobPage = () => {
   );
 };
 export default JobPage;
+
+export const getServerSideProps = withPageSessionAuthRequired;
