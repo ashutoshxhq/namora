@@ -224,6 +224,7 @@ async fn generic_agent_socket(socket: WebSocket<ServerMsg, ClientMsg>, app: Namo
                                     user_query: None,
                                 },
                                 user_id: Some(message.context.user_id),
+                                authorization_token: message.context.authorization_token,
                                 messages: Vec::new(),
                                 session_id: message.session_id,
                                 team_id: Some(message.context.team_id),

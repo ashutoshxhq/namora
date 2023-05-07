@@ -214,7 +214,7 @@ pub async fn execute_action(
             let action_data = serde_json::from_value::<ExecuteActionInputAdditionalInfo>(data)?;
             tracing::info!("Executing action: {:?}", action_to_execute);
             let action_result =
-                actions::router::route(action_to_execute.id.clone(), action_data.action_input)
+                actions::router::route(message_with_context.context.clone(), action_to_execute.id.clone(), action_data.action_input)
                     .await?;
             tracing::info!("Action result: {:?}", action_result);
 

@@ -15,6 +15,7 @@ pub struct Context {
     pub session_id: Option<Uuid>,
     pub user_id: Option<Uuid>,
     pub team_id: Option<Uuid>,
+    pub authorization_token: Option<String>,
     pub execution_context: ExecutionContext,
     pub messages: Vec<Message>,
 }
