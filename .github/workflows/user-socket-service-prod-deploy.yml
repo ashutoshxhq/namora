@@ -2,7 +2,7 @@ name: Deploy User Socket Service to Production
 on:
   push:
     paths:
-      - 'apps/user-socket.svc.api.namora.ai/**'
+      - 'apps/user-socket-service/**'
     branches:
       - main
 jobs:
@@ -48,7 +48,7 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}                                                       
           RELEASE_IMAGE: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
         with: 
-          context: "{{defaultContext}}:apps/user-socket.svc.api.namora.ai"
+          context: "{{defaultContext}}:apps/user-socket-service"
           build-contexts: |
             libs=libs
           push: true

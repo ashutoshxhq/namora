@@ -2,7 +2,7 @@ name: Deploy Task Orchestrator Service to Production
 on:
   push:
     paths:
-      - 'apps/task-orchestrator.svc.api.namora.ai/**'
+      - 'apps/task-orchestrator-service/**'
     branches:
       - main
 jobs:
@@ -48,7 +48,7 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}                                                       
           RELEASE_IMAGE: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
         with: 
-          context: "{{defaultContext}}:apps/task-orchestrator.svc.api.namora.ai"
+          context: "{{defaultContext}}:apps/task-orchestrator-service"
           build-contexts: |
             libs=libs
           push: true

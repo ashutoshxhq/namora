@@ -85,7 +85,6 @@ async fn main() {
                 )
                 .into_inner(),
         );
-
     let addr = SocketAddr::from((
         [0, 0, 0, 0],
         env::var("PORT")
