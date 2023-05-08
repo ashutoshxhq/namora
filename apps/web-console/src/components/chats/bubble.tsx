@@ -17,7 +17,7 @@ export const Bubble = ({
           sender ? fromUserBubbleClass : fromAIBubbleClass
         }`}
       >
-        <p className={`break-all`}>{message}</p>
+        <p className={`break-all text-sm`}>{message}</p>
       </div>
     </div>
   );

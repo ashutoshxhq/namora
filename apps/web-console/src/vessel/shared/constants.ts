@@ -1,0 +1,5 @@
+export const CONNECTION_STATUS_LIST = [
+  "NEW_CONNECTION",
+  "INITIAL_SYNCED",
+  "READY",
+];

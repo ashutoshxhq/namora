@@ -112,12 +112,16 @@ export const Window = (props: any) => {
     const count = messages.length + 1;
     const msg = submittedFormData?.message;
 
+    const defaultProps = {
+      id: `from-user-${count}-${nowTime}`,
+      order: count,
+      timestamp: now,
+      type: "FROM_USER",
+      sender: true,
+    };
+
     const msgWithProps = {
       Data: {
-        id: `from-user-${count}-${nowTime}`,
-        order: count,
-        timestamp: now,
-        type: "FROM_USER",
         content: msg,
         session_id: "8d77a6ab-975b-49c6-871e-707798a22751",
         context: {
@@ -136,8 +140,10 @@ export const Window = (props: any) => {
       webSocketRef?.current?.send(binaryData.buffer);
       setCount((prevValue) => prevValue + count);
       timeoutRef.current = setTimeout(scrollToBottom, 500);
-      setMessages((prev) => [...prev, msgWithProps]);
-
+      setMessages((prev) => [
+        ...prev,
+        { ...msgWithProps.Data, ...defaultProps },
+      ]);
       reset();
     }
   };
@@ -163,10 +169,6 @@ export const Window = (props: any) => {
 
         let data = JSON.stringify({
           Data: {
-            id: `from-user-${count}-${nowTime}`,
-            order: count,
-            timestamp: now,
-            type: "FROM_USER",
             content: "hello",
             context: {
               session_id: "abc",
@@ -188,11 +190,19 @@ export const Window = (props: any) => {
         let data = JSON.parse(await event.data.text());
         console.log("WebSocket message received:", data);
 
-        setMessages((prev) => [...prev, data.Data]);
+        const defaultProps = {
+          id: `from-user-${count}-${nowTime}`,
+          order: count,
+          timestamp: now,
+          type: "FROM_AI",
+          sender: false,
+        };
+
+        setMessages((prev) => [...prev, { ...data.Data, ...defaultProps }]);
         console.log("@message", { event, messageGroupData });
       };
-
       webSocket.addEventListener("message", receiveWSMessage);
+      timeoutRef.current = setTimeout(scrollToBottom, 500);
     }
 
     return () => {
@@ -206,7 +216,7 @@ export const Window = (props: any) => {
   const combined = [...messages];
   combined.forEach((messageObj: any) => {
     const groupText = getTimeInShortMinuteFormat(
-      new Date(messageObj.created_at)
+      messageObj.created_at ? new Date(messageObj.created_at) : new Date()
     );
     if (!messageGroupData[groupText]) messageGroupData[groupText] = [];
     messageGroupData[groupText] = [
@@ -240,7 +250,7 @@ export const Window = (props: any) => {
           let messages: any = messageGroupData[groupKey];
 
           return (
-            <>
+            <div key={index}>
               <Timestamp groupKey={groupKey} />
               <div key={index}>
                 {messages.map((message: any) => {
@@ -264,7 +274,7 @@ export const Window = (props: any) => {
                   );
                 })}
               </div>
-            </>
+            </div>
           );
         })}
       </div>

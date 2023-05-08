@@ -8,7 +8,16 @@ import { settingTabList } from "@/routes/config";
 import { Account, TeamMembers, Integrations } from "@/components/settings";
 import { withPageSessionAuthRequired } from "@/auth0/utils";
 
-export default function SettingsPage() {
+export default function SettingsPage(props: any) {
+  const { accessToken, user } = props;
+  const { namora_team_id, namora_user_id } = user;
+
+  const userProps = {
+    accessToken,
+    namora_team_id,
+    namora_user_id,
+  };
+
   const router = useRouter();
   const _selectedTab = router?.query?.tab as string;
   const _selectedIndex =
@@ -72,7 +81,7 @@ export default function SettingsPage() {
               <TeamMembers />
             </Tab.Panel>
             <Tab.Panel className="focus-visible:outline-0">
-              <Integrations />
+              <Integrations {...userProps} />
             </Tab.Panel>
           </Tab.Panels>
         </Tab.Group>
