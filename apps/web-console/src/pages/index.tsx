@@ -1,14 +1,5 @@
-import { useRouter } from "next/router";
-import { CHATS } from "@/routes/constants";
+import React from "react";
 
-export default function Home() {
-  const router = useRouter();
-
-  if (!router.isReady) {
-    return null;
-  }
-  if (router.isReady) {
-    router?.push(`/${CHATS}`);
-  }
+export default function Index() {
   return <></>;
 }

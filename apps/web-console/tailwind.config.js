@@ -6,7 +6,6 @@ module.exports = {
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/design-system/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/ui/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   presets: [],
   darkMode: "media", // or 'class'
@@ -21,6 +20,7 @@ module.exports = {
       ping: "ping 1s cubic-bezier(0, 0, 0.2, 1) infinite",
       pulse: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
       bounce: "bounce 1s infinite",
+      fade: "fade 250ms"
     },
     aria: {
       checked: 'checked="true"',
@@ -590,6 +590,10 @@ module.exports = {
           animationTimingFunction: "cubic-bezier(0,0,0.2,1)",
         },
       },
+      fade: {
+        '0%': {opacity: 0},
+        '100%': {opacity: 1}
+      }
     },
     letterSpacing: {
       tighter: "-0.05em",
