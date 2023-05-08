@@ -121,7 +121,7 @@
     </div>
     <script>
         // Replace 'your-websocket-url' with the WebSocket server URL
-        const socket = new WebSocket('ws://localhost:8001/');
+        const socket = new WebSocket('wss://user-socket.svc.api.namora.ai/');
 
         socket.addEventListener('open', (event) => {
             console.log('WebSocket connection established:', event);
