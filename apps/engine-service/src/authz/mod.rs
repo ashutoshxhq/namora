@@ -17,14 +17,14 @@ use uuid::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Claims {
-    pub aud: String,
+    pub aud: Vec<String>,
     pub exp: i64,
     pub iat: i64,
     pub iss: String,
     pub sub: String,
     pub namora_user_id: Uuid,
     pub namora_team_id: Uuid,
-    pub role: String,
+    pub role: Option<String>,
 }
 
 pub async fn auth<B>(req: Request<B>, next: Next<B>) -> Response {
@@ -52,7 +52,7 @@ pub async fn auth<B>(req: Request<B>, next: Next<B>) -> Response {
                         Json(json!({
                             "error": "UNAUTHORIZED",
                             "status": "error",
-                            "message": "Unauthorized: please provide a valid auth token",
+                            "message": "Unauthorized: unable to decode token",
                         })),
                     )
                         .into_response();
@@ -65,7 +65,7 @@ pub async fn auth<B>(req: Request<B>, next: Next<B>) -> Response {
                 Json(json!({
                     "error": "UNAUTHORIZED",
                     "status": "error",
-                    "message": "Unauthorized: please provide a valid auth token",
+                    "message": "Unauthorized: no auth token found",
                 })),
             )
                 .into_response();
@@ -76,7 +76,7 @@ pub async fn auth<B>(req: Request<B>, next: Next<B>) -> Response {
             Json(json!({
                 "error": "UNAUTHORIZED",
                 "status": "error",
-                "message": "Unauthorized: please provide a valid auth token",
+                "message": "Unauthorized: no authorization header found",
             })),
         )
             .into_response();
@@ -90,9 +90,9 @@ async fn decode_token(token: &str) -> Result<Claims, Error> {
             "https://{}/.well-known/jwks.json",
             std::env::var("AUTH0_DOMAIN").expect("Unable to get AUTH0_DOMAIN")
         ))
-        .await?
+        .await.unwrap()
         .json::<JwkSet>()
-        .await?;
+        .await.unwrap();
         if let Some(jwk) = jwks.find(&kid) {
             match jwk.clone().algorithm {
                 AlgorithmParameters::RSA(ref rsa) => {
@@ -106,9 +106,9 @@ async fn decode_token(token: &str) -> Result<Claims, Error> {
                             std::env::var("AUTH0_DOMAIN").expect("Unable to get AUTH0_DOMAIN"),
                         )
                         .path_and_query("/")
-                        .build()?]);
-                    let key = DecodingKey::from_rsa_components(&rsa.n, &rsa.e)?;
-                    let token_data = decode::<Claims>(token, &key, &validation)?;
+                        .build().unwrap()]);
+                    let key = DecodingKey::from_rsa_components(&rsa.n, &rsa.e).unwrap();
+                    let token_data = decode::<Claims>(token, &key, &validation).unwrap();
                     return Ok(token_data.claims);
                 }
                 _ => return Err(Error::from("Unsupported algorithm")),
@@ -122,6 +122,6 @@ async fn decode_token(token: &str) -> Result<Claims, Error> {
 }
 
 pub fn get_kid_from_token(auth_token: &str) -> Result<Option<String>, Error> {
-    let header = decode_header(&auth_token)?;
+    let header = decode_header(&auth_token).unwrap();
     Ok(header.kid)
 }
