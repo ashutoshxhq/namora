@@ -40,9 +40,11 @@ async fn main() {
         .with_reactor(tokio_reactor_trait::Tokio);
     let connection = Connection::connect(&uri, options).await.unwrap();
     let channel = connection.create_channel().await.unwrap();
+    let task_orchestrator_queue_routing_key = std::env::var("TASK_ORCHESTRATION_QUEUE")
+        .expect("Unable to get task orchestrator queue routing key");
     let _queue = channel
         .queue_declare(
-            "namora.svc.task-orchestrator",
+            &task_orchestrator_queue_routing_key,
             QueueDeclareOptions::default(),
             FieldTable::default(),
         )
@@ -50,7 +52,7 @@ async fn main() {
         .unwrap();
     let consumer = channel
         .basic_consume(
-            "namora.svc.task-orchestrator",
+            &task_orchestrator_queue_routing_key,
             &format!("namora.svc.task-orchestrator.consumer.{}", Uuid::new_v4().to_string()),
             BasicConsumeOptions::default(),
             FieldTable::default(),
@@ -78,7 +80,7 @@ async fn main() {
                 let context = worker_context_mutex.lock().await;
                 (*context).clone()
             };
-
+            tracing::info!("Received message");
             match String::from_utf8(delivery.data.clone()) {
                 Ok(message) => {
                     let message: MessageWithContext =
@@ -89,13 +91,14 @@ async fn main() {
                                 return;
                             }
                         };
-
-                    if let Err(error) = handler::message_router(worker_ctx, message).await {
-                        tracing::error!("Message handler error: {}", error);
-                    }
-
+                    tracing::info!("Message Serialised");
                     if let Err(error) = delivery.ack(BasicAckOptions::default()).await {
                         tracing::error!("Failed to ack message: {}", error);
+                    }
+                    tracing::info!("Message Acked");
+                    let res = handler::message_router(worker_ctx, message).await;
+                    if let Err(error) = res {
+                        tracing::error!("Message handler error: {}", error);
                     }
                 }
                 Err(error) => {

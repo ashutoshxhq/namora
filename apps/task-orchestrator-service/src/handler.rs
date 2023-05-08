@@ -41,11 +41,13 @@ pub async fn message_router(
 
     for response_message_with_context in response_message_with_contexts {
         if response_message_with_context.message.to == "system" {
+            let task_orchestrator_queue_routing_key = std::env::var("TASK_ORCHESTRATION_QUEUE")
+        .expect("Unable to get task orchestrator queue routing key");
             let _ = worker_context
                 .channel
                 .basic_publish(
                     "",
-                    "namora.svc.task-orchestrator",
+                    &task_orchestrator_queue_routing_key,
                     BasicPublishOptions::default(),
                     &serde_json::to_vec(&response_message_with_context)?,
                     BasicProperties::default(),

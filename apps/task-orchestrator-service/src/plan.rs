@@ -18,7 +18,7 @@ use crate::types::pinecone::PineconeQueryResponse;
 
 pub async fn initial_query_handler(message: Message) -> Result<Message, Error> {
     let initial_query_handler_system_message =
-        fs::read_to_string("./src/prompts/system/initial_query.txt")?;
+        fs::read_to_string("./prompts/system/initial_query.txt")?;
     let reg = Handlebars::new();
     let initial_query_handler_system_message_with_data =
         reg.render_template(&initial_query_handler_system_message, &json!({}))?;
@@ -105,7 +105,7 @@ pub async fn create_deterministic_plan(
     executed_actions: Vec<Action>,
 ) -> Result<HashMap<u32, Action>, Error> {
     let initial_query_handler_system_message =
-        fs::read_to_string("./src/prompts/system/create_deterministic_plan.txt")?;
+        fs::read_to_string("./system/create_deterministic_plan.txt")?;
     let reg = Handlebars::new();
     let actions = identified_actions.iter().map(|action| json!({
         "action_id": action.id,
