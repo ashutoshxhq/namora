@@ -22,8 +22,8 @@ pub struct Claims {
     pub iat: i64,
     pub iss: String,
     pub sub: String,
-    pub user_id: Uuid,
-    pub team_id: Uuid,
+    pub namora_user_id: Uuid,
+    pub namora_team_id: Uuid,
     pub role: String,
 }
 
