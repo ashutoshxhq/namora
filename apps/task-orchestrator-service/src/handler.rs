@@ -63,7 +63,7 @@ pub async fn message_router(
                         response_message_with_context.context.user_id.unwrap()
                     ),
                     BasicPublishOptions::default(),
-                    &serde_json::to_vec(&response_message_with_context).unwrap(),
+                    &serde_json::to_vec(&response_message_with_context)?,
                     BasicProperties::default(),
                 )
                 .await?;
@@ -175,7 +175,7 @@ pub async fn execute_action(
             &json!({
                 "query": message_with_context.context.execution_context.user_query,
                 "plan": message_with_context.context.execution_context.non_deterministic_plan,
-                "executed_actions": serde_json::to_value(message_with_context.context.execution_context.executed_actions.clone()).unwrap().to_string(),
+                "executed_actions": serde_json::to_value(message_with_context.context.execution_context.executed_actions.clone())?.to_string(),
                 "action": {
                     "action_id": action_to_execute.id,
                     "action_name": action_to_execute.name,
@@ -308,7 +308,7 @@ pub async fn generate_response(
         &json!({
             "query": message_with_context.context.execution_context.user_query,
             "plan": message_with_context.context.execution_context.deterministic_plan,
-            "executed_actions": serde_json::to_value(executed_action_outputs.clone()).unwrap().to_string(),
+            "executed_actions": serde_json::to_value(executed_action_outputs.clone())?.to_string(),
         }),
     )?;
 

@@ -105,7 +105,7 @@ pub async fn create_deterministic_plan(
     executed_actions: Vec<Action>,
 ) -> Result<HashMap<u32, Action>, Error> {
     let initial_query_handler_system_message =
-        fs::read_to_string("./system/create_deterministic_plan.txt")?;
+        fs::read_to_string("./prompts/system/create_deterministic_plan.txt")?;
     let reg = Handlebars::new();
     let actions = identified_actions.iter().map(|action| json!({
         "action_id": action.id,
@@ -116,7 +116,7 @@ pub async fn create_deterministic_plan(
         &json!({
             "query": query,
             "plan": non_deterministic_plan,
-            "actions": serde_json::to_value(actions).unwrap().to_string(),
+            "actions": serde_json::to_value(actions)?.to_string(),
             "executed_actions": executed_actions,
         }),
     )?;
@@ -156,14 +156,14 @@ pub async fn create_deterministic_plan(
             .unwrap()
             .clone(),
     )
-    .unwrap();
+    ?;
 
     let mut deterministic_plan: HashMap<u32, Action> = HashMap::new();
 
     for (id, action_id) in ordered_action_ids.iter() {
         for action in &identified_actions {
             if action.id == action_id.clone() {
-                deterministic_plan.insert(id.parse::<u32>().unwrap(), action.clone());
+                deterministic_plan.insert(id.parse::<u32>()?, action.clone());
             }
         }
     }

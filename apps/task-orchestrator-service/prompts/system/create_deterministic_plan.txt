@@ -44,7 +44,7 @@ Respond to SYSTEM in the format described below so SYSTEM can start executing th
 {
     "from": "ai",
     "to": "system",
-    "content": String(No message needed for system),
+    "content": String(Feedback Message for System),
     "additional_info": {
         "step": "ai:created_deterministic_plan",
         "data": {
