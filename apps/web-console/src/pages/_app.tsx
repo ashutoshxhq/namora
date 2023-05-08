@@ -9,10 +9,15 @@ import {
   ReactQueryDevtools,
 } from "@/react-query";
 import MainLayout from "@/design-system/layouts/primary";
+import { ReactElement, ReactNode } from "react";
 
 const inter = Inter({ subsets: ["latin"] });
 
-export default function App({ Component, pageProps }: AppProps) {
+type NextPageWithLayout = AppProps & {
+  Component: { getLayout?: (page: ReactElement) => ReactNode };
+};
+
+export default function App({ Component, pageProps }: NextPageWithLayout) {
   // Called for all the files that are within pages folder
   return (
     <QueryClientProvider client={queryClient}>

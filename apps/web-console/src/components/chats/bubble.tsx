@@ -5,17 +5,20 @@ export const Bubble = ({
   message: string;
   sender: boolean;
 }) => {
-  const bubbleClasses = sender
-    ? "bg-green-500 text-white"
-    : "bg-gray-300 text-black";
+  const bubbleClass =
+    "rounded-3xl flex flex-wrap justify-start items-center p-3 text-black  animate-fade";
+  const fromUserBubbleClass = `${bubbleClass} rounded-br-sm bg-gray-200 ml-auto`;
+  const fromAIBubbleClass = `${bubbleClass} rounded-bl-sm bg-blue-200 mr-auto`;
 
   return (
-    <div
-      className={`p-2 rounded-lg max-w-2xl mb-2 ${bubbleClasses} ${
-        sender ? "ml-auto" : "mr-auto"
-      }`}
-    >
-      <p>{message}</p>
+    <div className="flex">
+      <div
+        className={`max-w-[80%] mb-2 ${
+          sender ? fromUserBubbleClass : fromAIBubbleClass
+        }`}
+      >
+        <p className={`break-all`}>{message}</p>
+      </div>
     </div>
   );
 };
