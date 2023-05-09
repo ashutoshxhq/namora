@@ -1,12 +1,21 @@
-import { ChatBubbleLeftRightIcon } from "@heroicons/react/24/outline";
+import Image from "next/image";
+import { BeatLoader } from "react-spinners";
 
 export const EmptyState = () => {
   return (
     <div className="flex flex-col items-center justify-center">
-      <ChatBubbleLeftRightIcon className="w-20 stroke-gray-300" />
-      <p className="mt-1 text-sm text-gray-400">
-        Get started by sending your first message.
-      </p>
+      <div className="p-4 m-2 bg-gray-800 rounded-full">
+        <Image
+          className="w-auto h-10"
+          src="/namora.svg"
+          alt="Namora.ai"
+          width="200"
+          height="200"
+        />
+      </div>
+      <div className="my-3">
+        <BeatLoader color="#374151" size="10" />
+      </div>
     </div>
   );
 };

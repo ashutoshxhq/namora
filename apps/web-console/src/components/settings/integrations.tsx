@@ -1,6 +1,6 @@
+import React from "react";
 import { Switch } from "@headlessui/react";
-import React, { useEffect, useState } from "react";
-import { useVesselCRMIntegration } from "@/vessel/ui/VesselCRMIntegration/useVesselCRMIntegration";
+import { useVesselCRMIntegration } from "@/hooks/settings/useVesselCRMIntegration";
 import { Alert } from "@/design-system/molecules/alert";
 import { UserGroupIcon } from "@heroicons/react/24/outline";
 
@@ -109,8 +109,9 @@ export const Integrations = (props: any) => {
                 <div
                   className={`${
                     statuses["Connected"]
-                  } rounded-md py-1 px-2 text-xs font-medium ring-1 ring-inset 
-                  ${isConnectionEnabled ? "" : "hidden"}}`}
+                  } rounded-md py-1 px-2 text-xs font-medium ring-1 ring-inset ${
+                    isConnectionEnabled ? "" : "hidden"
+                  }`}
                 >
                   Connected
                 </div>

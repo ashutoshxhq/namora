@@ -2,6 +2,7 @@ import { useVesselLink } from "@vesselapi/react-vessel-link";
 import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@/react-query";
 
+import { AxiosError, AxiosResponse } from "@/axios";
 import {
   useDisconnectVesselCRMConnection,
   useExchangeVesselCRMToken,
@@ -9,13 +10,11 @@ import {
   useLinkVesselCRMToken,
 } from "@/vessel/shared/hooks";
 import { QUERY_KEY_VESSEL_CRM_CONNECTION_STATUS } from "@/vessel/constants";
-import { AxiosError, AxiosResponse } from "axios";
 import { useGetTeamData } from "@/current-team/hooks";
 
-const TIMEOUT_MS = 5000;
+const TIMEOUT_MS = 7000;
 
 export const useVesselCRMIntegration = (props: any) => {
-  const [publicToken, setPublicToken] = useState("");
   const queryClient = useQueryClient();
   const [showAlert, setShowAlert] = useState(false);
   const [alertContent, setAlertContent] = useState({
@@ -25,7 +24,6 @@ export const useVesselCRMIntegration = (props: any) => {
   });
   const accessToken = props.accessToken;
   const teamId = props.namora_team_id;
-  const userId = props.namora_user_id;
   const alertTimeoutRef = useRef<NodeJS.Timeout>();
   const [isConnectionEnabled, setIsConnectionEnabled] = useState(false);
 
@@ -80,7 +78,6 @@ export const useVesselCRMIntegration = (props: any) => {
         teamId,
         accessToken,
       });
-      setPublicToken(publicToken);
     }
   };
 
