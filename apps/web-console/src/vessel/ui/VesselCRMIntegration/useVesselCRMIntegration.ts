@@ -8,7 +8,7 @@ import {
   useGetVesselCRMConnectionStatus,
   useLinkVesselCRMToken,
 } from "@/vessel/shared/hooks";
-import { QUERY_KEY_VESSEL } from "@/vessel/constants";
+import { QUERY_KEY_VESSEL_CRM_CONNECTION_STATUS } from "@/vessel/constants";
 import { AxiosError, AxiosResponse } from "axios";
 import { useGetTeamData } from "@/current-team/hooks";
 
@@ -27,6 +27,7 @@ export const useVesselCRMIntegration = (props: any) => {
   const teamId = props.namora_team_id;
   const userId = props.namora_user_id;
   const alertTimeoutRef = useRef<NodeJS.Timeout>();
+  const [isConnectionEnabled, setIsConnectionEnabled] = useState(false);
 
   const alertProps = {
     ...alertContent,
@@ -42,21 +43,21 @@ export const useVesselCRMIntegration = (props: any) => {
   const disconnectVesselCRMConnectionMutationOptions = {
     onSuccess: () => {
       setAlertContent({
-        title: "Connection Disconnected",
-        description: "...",
-        status: "",
+        title: "Success",
+        description: "Disconnected from CRM",
+        status: "success",
       });
       alertProps.setShow(true);
       alertTimeoutRef.current = setTimeout(
         () => alertProps.setShow(false),
         TIMEOUT_MS
       );
-      queryClient.invalidateQueries(QUERY_KEY_VESSEL);
+      queryClient.invalidateQueries(QUERY_KEY_VESSEL_CRM_CONNECTION_STATUS);
     },
     onError: () => {
       setAlertContent({
-        title: "Unable to disconnect",
-        description: "...",
+        title: "Failed",
+        description: "Unable to disconnect",
         status: "error",
       });
       alertProps.setShow(true);
@@ -89,10 +90,9 @@ export const useVesselCRMIntegration = (props: any) => {
 
   const exchangeVesselCRMTokenMutationOptions = {
     onSuccess: (data: any) => {
-      console.log("exchange", { data });
       setAlertContent({
-        title: "Integration Successful",
-        description: "...",
+        title: "Success",
+        description: "Connected with CRM",
         status: "success",
       });
       alertProps.setShow(true);
@@ -100,16 +100,15 @@ export const useVesselCRMIntegration = (props: any) => {
         () => alertProps.setShow(false),
         TIMEOUT_MS
       );
-      queryClient.invalidateQueries(QUERY_KEY_VESSEL);
+      queryClient.invalidateQueries(QUERY_KEY_VESSEL_CRM_CONNECTION_STATUS);
     },
     onError: (error: AxiosError) => {
-      console.log("exchange", { error });
       const response: AxiosResponse = error?.response!;
       const data: { message: string; statusCode: number } = response?.data;
       const message = data?.message || "Unable to connect with CRM";
       setAlertContent({
-        title: message,
-        description: "...",
+        title: "Failed",
+        description: message,
         status: "error",
       });
       alertProps.setShow(true);
@@ -117,7 +116,7 @@ export const useVesselCRMIntegration = (props: any) => {
         () => alertProps.setShow(false),
         TIMEOUT_MS
       );
-      queryClient.invalidateQueries(QUERY_KEY_VESSEL);
+      queryClient.invalidateQueries(QUERY_KEY_VESSEL_CRM_CONNECTION_STATUS);
     },
   };
   const exchangeVesselCRMTokenMutation = useExchangeVesselCRMToken(
@@ -130,15 +129,15 @@ export const useVesselCRMIntegration = (props: any) => {
       open({
         linkToken,
       });
-      queryClient.invalidateQueries(QUERY_KEY_VESSEL);
+      queryClient.invalidateQueries(QUERY_KEY_VESSEL_CRM_CONNECTION_STATUS);
     },
     onError: (error: AxiosError) => {
       const response: AxiosResponse = error?.response!;
       const data: { message: string; statusCode: number } = response?.data;
       const message = data?.message || "Unable to initiate connection with CRM";
       setAlertContent({
-        title: message,
-        description: "...",
+        title: "Failed",
+        description: message,
         status: "error",
       });
       alertProps.setShow(true);
@@ -158,24 +157,25 @@ export const useVesselCRMIntegration = (props: any) => {
     });
   const handleClickOnDisconnect = () =>
     disconnectVesselCRMConnectionMutation.mutate({
+      connectionId,
       accessToken,
       teamId,
     });
 
   const { data } = useGetTeamData(props);
   const connectionId = data?.data?.vessel_connection_id ?? "";
-  const { isCRMConnected, connectionText, connectionStatusText } =
-    useGetVesselCRMConnectionStatus({ connectionId, accessToken, teamId });
-
-  console.log("useVesselCRMIntegration", {
+  const { isCRMConnected } = useGetVesselCRMConnectionStatus({
     connectionId,
-    isCRMConnected,
-    connectionText,
-    connectionStatusText,
+    accessToken,
+    teamId,
   });
 
+  useEffect(() => {
+    setIsConnectionEnabled(isCRMConnected);
+  }, [isCRMConnected]);
+
   return {
-    isCRMConnected,
+    isConnectionEnabled,
     alertProps,
     handleClickOnConnect,
     handleClickOnDisconnect,
