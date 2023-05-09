@@ -1,0 +1,7 @@
+User Query: {{query}}
+
+You have access to the following applications:
+- CRM
+- LinkedIn
+
+Objective: Create a step-by-step plan to interact with third-party tools to execute actions or gather context to answer the user query.

@@ -17,15 +17,16 @@ use uuid::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Claims {
-    pub aud: String,
+    pub aud: Vec<String>,
     pub exp: i64,
     pub iat: i64,
     pub iss: String,
     pub sub: String,
-    pub user_id: Uuid,
-    pub team_id: Uuid,
-    pub role: String,
+    pub namora_user_id: Uuid,
+    pub namora_team_id: Uuid,
+    pub role: Option<String>,
 }
+
 pub async fn auth<B>(req: Request<B>, next: Next<B>) -> Response {
     let (parts, body) = req.into_parts();
     let headers = parts.headers.clone();
@@ -82,7 +83,7 @@ pub async fn auth<B>(req: Request<B>, next: Next<B>) -> Response {
     }
 }
 
-async fn decode_token(token: &str) -> Result<Claims, Error> {
+pub async fn decode_token(token: &str) -> Result<Claims, Error> {
     let kid = get_kid_from_token(token)?;
     if let Some(kid) = kid {
         let jwks = reqwest::get(format!(

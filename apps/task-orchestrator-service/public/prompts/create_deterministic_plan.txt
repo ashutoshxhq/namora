@@ -1,0 +1,13 @@
+User Query: {{query}}
+
+Identified Actions: 
+```
+{{identified_actions}}
+```
+
+Plan: 
+```
+{{plan}}
+```
+
+Your task is to filter and arrange the `Identified Actions` to create a deterministic plan based on the query requirements and the plan(its only a guideline to pick right action from `Identified Actions`) so that the user's query can be achieved.

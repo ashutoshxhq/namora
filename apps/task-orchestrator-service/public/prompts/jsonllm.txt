@@ -1,0 +1,21 @@
+Past Conversation:
+```
+{{past_conversation}}
+```
+
+Prompt:
+```
+{{prompt}}
+```
+
+Output JSON Schema:
+```
+{{json_schema}}
+```
+
+Please generate a JSON output that fulfils the given JSON schema requirements based on the provided prompt. Ensure that the output:
+
+1. Is a perfectly serialisable JSON object.
+2. Requires no additional user feedback, unless specified.
+
+Output JSON:

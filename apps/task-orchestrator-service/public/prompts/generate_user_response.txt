@@ -1,0 +1,12 @@
+We have developed a plan, executed actions, and obtained action outputs. Your goal is to examine the query, plan, and action outputs to produce the best possible response for the user.
+
+User Query:
+```
+{{query}}
+```
+Executed Action Outputs:
+```
+{{executed_actions}}
+```
+
+Please provide the optimal user response

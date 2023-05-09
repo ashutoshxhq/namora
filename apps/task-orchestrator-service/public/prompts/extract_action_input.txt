@@ -1,0 +1,13 @@
+User Query: {{query}}
+
+Previous Action Outputs:
+```
+{{action_outputs}}
+```
+
+Current Action: 
+```
+{{current_action}}
+```
+
+Your task is to provide input for the current action using the query data and the outputs of the previous actions, or user queries in the action input format described in the current action.

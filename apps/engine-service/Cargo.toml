@@ -26,3 +26,4 @@ diesel = { version = "2.0.0", features = ["postgres", "r2d2", "uuid", "serde_jso
 namora_core = { path = "../../libs/namora_core"}
 engine_db_repository = { path = "../../libs/engine_db_repository"}
 jsonwebtoken = "8.1.1"
+urlencoding = "2.1.2"

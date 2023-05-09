@@ -1,24 +1,27 @@
 mod actions;
 mod db;
-mod handler;
+mod jsonllm;
+mod orchestrator;
 mod types;
-mod plan;
 use std::sync::Arc;
 
 use dotenvy::dotenv;
 use lapin::{
     message::DeliveryResult,
-    options::{BasicAckOptions, BasicConsumeOptions, QueueDeclareOptions},
+    options::{BasicAckOptions, BasicConsumeOptions, BasicPublishOptions, QueueDeclareOptions},
     types::FieldTable,
-    Connection, ConnectionProperties,
+    BasicProperties, Connection, ConnectionProperties,
 };
-use namora_core::types::{ worker::WorkerContext, message::MessageWithContext};
+use namora_core::types::{
+    message::{Message, MessageWithContext},
+    worker::WorkerContext,
+};
 use tokio::sync::Mutex;
 use tracing::Level;
 use tracing_subscriber::FmtSubscriber;
 use uuid::Uuid;
 
-use crate::db::create_pool;
+use crate::{db::create_pool, orchestrator::TaskOrchestrator};
 
 #[tokio::main]
 async fn main() {
@@ -53,7 +56,10 @@ async fn main() {
     let consumer = channel
         .basic_consume(
             &task_orchestrator_queue_routing_key,
-            &format!("namora.svc.task-orchestrator.consumer.{}", Uuid::new_v4().to_string()),
+            &format!(
+                "namora.svc.task-orchestrator.consumer.{}",
+                Uuid::new_v4().to_string()
+            ),
             BasicConsumeOptions::default(),
             FieldTable::default(),
         )
@@ -83,7 +89,7 @@ async fn main() {
             tracing::info!("Received message");
             match String::from_utf8(delivery.data.clone()) {
                 Ok(message) => {
-                    let message: MessageWithContext =
+                    let message_with_context: MessageWithContext =
                         match serde_json::from_str(&(message)) {
                             Ok(message) => message,
                             Err(error) => {
@@ -96,10 +102,106 @@ async fn main() {
                         tracing::error!("Failed to ack message: {}", error);
                     }
                     tracing::info!("Message Acked");
-                    let res = handler::message_router(worker_ctx, message).await;
-                    if let Err(error) = res {
-                        tracing::error!("Message handler error: {}", error);
-                    }
+                    let orchestrator = TaskOrchestrator::new();
+
+                    let response = orchestrator.orchestrate(message_with_context.clone()).await;
+                    match response {
+                        Ok(response) => {
+                            tracing::info!("Message Orchestrated");
+                            for response_message_with_context in response {
+                                let message_json =
+                                    serde_json::to_vec(&response_message_with_context);
+                                if let Err(error) = message_json {
+                                    tracing::error!(
+                                        "Failed to serialize response message: {}",
+                                        error
+                                    );
+                                    return;
+                                }
+                                if response_message_with_context.message.reciever == "system" {
+                                    tracing::info!("Publishing message to system");
+                                    let task_orchestrator_queue_routing_key = std::env::var(
+                                        "TASK_ORCHESTRATION_QUEUE",
+                                    )
+                                    .expect("Unable to get task orchestrator queue routing key");
+                                    tracing::info!(
+                                        "Publishing message to {}",
+                                        task_orchestrator_queue_routing_key
+                                    );
+                                    let res = worker_ctx
+                                        .channel
+                                        .basic_publish(
+                                            "",
+                                            &task_orchestrator_queue_routing_key,
+                                            BasicPublishOptions::default(),
+                                            &message_json.unwrap(),
+                                            BasicProperties::default(),
+                                        )
+                                        .await;
+                                    if let Err(error) = res {
+                                        tracing::error!("Failed to publish message: {}", error);
+                                    }
+                                    tracing::info!("Published message to system");
+                                } else if response_message_with_context.message.reciever == "user" {
+                                    tracing::info!("Publishing message to routing_key: {}", &format!(
+                                        "namora.user.{}",
+                                        response_message_with_context
+                                            .context
+                                            .user_id
+                                    ));
+                                    let res = worker_ctx
+                                        .channel
+                                        .basic_publish(
+                                            "",
+                                            &format!(
+                                                "namora.user.{}",
+                                                response_message_with_context
+                                                    .context
+                                                    .user_id
+                                            ),
+                                            BasicPublishOptions::default(),
+                                            &message_json.unwrap(),
+                                            BasicProperties::default(),
+                                        )
+                                        .await;
+                                    if let Err(error) = res {
+                                        tracing::error!("Failed to publish message: {}", error);
+                                    }
+                                    tracing::info!("Published message to user");
+                                }
+                            }
+                        }
+                        Err(error) => {
+                            tracing::error!("Failed to orchestrate message: {}", error);
+                            let context = message_with_context.context.clone();
+                            let response_message_with_context = MessageWithContext {
+                                message: Message {
+                                    message_type: "response".to_string(),
+                                    reciever: "user".to_string(),
+                                    content: "My apologies, something went wrong executing actions. Please try again or refine the prompt.".to_string(),
+                                    additional_info: None,
+                                    created_at: chrono::Utc::now().into(),
+                                },
+                                context,
+                            };
+                            let res = worker_ctx
+                                .channel
+                                .basic_publish(
+                                    "",
+                                    &format!(
+                                        "namora.user.{}",
+                                        response_message_with_context.context.user_id
+                                    ),
+                                    BasicPublishOptions::default(),
+                                    &serde_json::to_vec(&response_message_with_context).unwrap(),
+                                    BasicProperties::default(),
+                                )
+                                .await;
+                            if let Err(error) = res {
+                                tracing::error!("Failed to publish message: {}", error);
+                            }
+                        }
+                    };
                 }
                 Err(error) => {
                     tracing::error!("Failed to convert message to string: {}", error);

@@ -8,6 +8,7 @@ use engine_db_repository::{
 use hyper::{header};
 use namora_core::types::{db::DbPool, error::Error};
 use serde_json::{json, Value};
+use urlencoding::decode;
 use uuid::Uuid;
 
 #[derive(Clone)]
@@ -124,6 +125,7 @@ impl CRMIntegrationService {
         connection_id: String,
         _team_id: Uuid,
     ) -> Result<Value, Error> {
+        let connection_id_str = decode(&connection_id)?;
         let vessel_api_token = env::var("VESSEL_API_TOKEN")?;
         let client = reqwest::Client::new();
         let res = client
@@ -132,7 +134,7 @@ impl CRMIntegrationService {
                 header::HeaderName::from_static("vessel-api-token"),
                 vessel_api_token,
             )
-            .json(&json!({ "connectionId": connection_id }))
+            .json(&json!({ "connectionId": connection_id_str.to_string() }))
             .send()
             .await?;
         let res_body: Value = res.json().await?;

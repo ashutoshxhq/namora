@@ -29,7 +29,7 @@ RUN groupadd $APP_USER \
     && mkdir -p ${APP}
 
 COPY --from=builder /apps/task-orchestrator-service/target/release/task-orchestrator-service ${APP}/task-orchestrator-service
-COPY --from=builder /apps/task-orchestrator-service/prompts ${APP}/prompts
+COPY --from=builder /apps/task-orchestrator-service/public ${APP}/public
 
 RUN chown -R $APP_USER:$APP_USER ${APP}
 

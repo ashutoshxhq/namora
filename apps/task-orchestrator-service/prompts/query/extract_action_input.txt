@@ -1,1 +1,0 @@
-generate action input based on the given data

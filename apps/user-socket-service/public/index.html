@@ -121,31 +121,15 @@
     </div>
     <script>
         // Replace 'your-websocket-url' with the WebSocket server URL
-        const socket = new WebSocket('wss://user-socket.svc.api.namora.ai/');
+        const socket = new WebSocket('wss://user-socket.svc.api.namora.ai?token=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IkhRQzVEVmh0QzY1NjlmVkd1SHowSSJ9.eyJuYW1vcmFfdXNlcl9pZCI6IjllYzJhODY2LWE5NTMtNDkyYi1hYTNiLThmNzBmZjM2YjVhOCIsIm5hbW9yYV90ZWFtX2lkIjoiZDgzMDkxOWMtMDczNS00MGE0LTk5OTItMTFlMGZlMzk5MTQ2IiwiaXNzIjoiaHR0cHM6Ly9uYW1vcmEudXMuYXV0aDAuY29tLyIsInN1YiI6ImF1dGgwfDY0NTQ2ZWJmNTJkZDY5NDE2NzM1NzU4NSIsImF1ZCI6WyJodHRwczovL2FwaS5uYW1vcmEuYWkiLCJodHRwczovL25hbW9yYS51cy5hdXRoMC5jb20vdXNlcmluZm8iXSwiaWF0IjoxNjgzNjQ5MTg2LCJleHAiOjE2ODM3MzU1ODYsImF6cCI6ImplVWpRYm44ZTZyZHBtckdSRzkwVUxwdVZKSEdRYXFWIiwic2NvcGUiOiJvcGVuaWQgcHJvZmlsZSBlbWFpbCJ9.Y1KdC0orsuc-rJ1FpT73mWQ0cbjdDIg1ucPluuoazpSCRFj4_UifJbju_eDN9sFrm0ZmhZ3TktQBBULSWZK1cou2KpZv3WKZc8WSsciYIb9iCjbrCvN_SjvTEhs5UYcKfnmzVa8CE91nyVayirrIFuaX4jfKI3obE-P0VhY2fPxGMkUCT6IUS-WJFS4eNer-35xCM7ym1iHNEGogfQJeEaU3x75VpJ80lq7RTBP6_eQpYFtMhM2-OXhCPBNilh5RncRGey-NTfmeGgf4RTo1DexPAL-MTfqw7Ts0SaZlJwpBot51bLGOlwRi_LeNaIO0OkMsUnL2_YX6JUpRUgL-Zw');
+        // const socket = new WebSocket('ws://localhost:8001?token=eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6IkhRQzVEVmh0QzY1NjlmVkd1SHowSSJ9.eyJuYW1vcmFfdXNlcl9pZCI6IjllYzJhODY2LWE5NTMtNDkyYi1hYTNiLThmNzBmZjM2YjVhOCIsIm5hbW9yYV90ZWFtX2lkIjoiZDgzMDkxOWMtMDczNS00MGE0LTk5OTItMTFlMGZlMzk5MTQ2IiwiaXNzIjoiaHR0cHM6Ly9uYW1vcmEudXMuYXV0aDAuY29tLyIsInN1YiI6ImF1dGgwfDY0NTQ2ZWJmNTJkZDY5NDE2NzM1NzU4NSIsImF1ZCI6WyJodHRwczovL2FwaS5uYW1vcmEuYWkiLCJodHRwczovL25hbW9yYS51cy5hdXRoMC5jb20vdXNlcmluZm8iXSwiaWF0IjoxNjgzNjQ5MTg2LCJleHAiOjE2ODM3MzU1ODYsImF6cCI6ImplVWpRYm44ZTZyZHBtckdSRzkwVUxwdVZKSEdRYXFWIiwic2NvcGUiOiJvcGVuaWQgcHJvZmlsZSBlbWFpbCJ9.Y1KdC0orsuc-rJ1FpT73mWQ0cbjdDIg1ucPluuoazpSCRFj4_UifJbju_eDN9sFrm0ZmhZ3TktQBBULSWZK1cou2KpZv3WKZc8WSsciYIb9iCjbrCvN_SjvTEhs5UYcKfnmzVa8CE91nyVayirrIFuaX4jfKI3obE-P0VhY2fPxGMkUCT6IUS-WJFS4eNer-35xCM7ym1iHNEGogfQJeEaU3x75VpJ80lq7RTBP6_eQpYFtMhM2-OXhCPBNilh5RncRGey-NTfmeGgf4RTo1DexPAL-MTfqw7Ts0SaZlJwpBot51bLGOlwRi_LeNaIO0OkMsUnL2_YX6JUpRUgL-Zw');
 
         socket.addEventListener('open', (event) => {
             console.log('WebSocket connection established:', event);
-            let data = JSON.stringify({
-                Data: {
-                    content: "hello",
-                    session_id: "8d77a6ab-975b-49c6-871e-707798a22751",
-                    context: {
-                        user_id: "cc65c76d-ce85-41ae-9713-9083adb45d79",
-                        team_id: "44aaf2de-f48d-4053-a849-ffdc068c4c17",
-                        authorization_token: "f4261fb1-65d2-4a42-9eea-af22cb7baa20"
-                    },
-                }
-            })
-
-            const encoder = new TextEncoder();
-            const binaryData = encoder.encode(data);
-            console.log("Sending first hello message", data, binaryData);
-            socket.send(binaryData.buffer);
-            console.log("Sent first hello message");
         });
 
         socket.addEventListener('message', async (event) => {
-            let data = JSON.parse(await event.data.text());
+            let data = JSON.parse(await event.data);
             console.log('WebSocket message received:', data);
             removeThinkingBubble();
             addReceivedMessage(data);
@@ -179,7 +163,7 @@
             message.classList.add('message');
             console.log(messageData)
 
-            message.innerHTML = messageData.Data.content.replaceAll("\n", `<br/>`);
+            message.innerHTML = messageData.content.replaceAll("\n", `<br/>`);
             messageWrapper.appendChild(message);
             chatWindow.appendChild(messageWrapper);
             chatWindow.scrollTop = chatWindow.scrollHeight;
@@ -205,22 +189,12 @@
             if (messageData.trim() !== '') {
 
                 let data = JSON.stringify({
-                    Data: {
-                        content: messageData,
-                        session_id: "8d77a6ab-975b-49c6-871e-707798a22751",
-                        context: {
-                            user_id: "cc65c76d-ce85-41ae-9713-9083adb45d79",
-                            team_id: "44aaf2de-f48d-4053-a849-ffdc068c4c17",
-                            authorization_token: "f4261fb1-65d2-4a42-9eea-af22cb7baa20"
-                        },
-                    }
+                    "reciever": "system",
+                    "message_type": "query",
+                    "content": messageData
                 })
-
-                const encoder = new TextEncoder();
-                const binaryData = encoder.encode(data);
-                console.log("Sending", data, binaryData);
-                socket.send(binaryData.buffer);
-                console.log("Sent message", binaryData)
+                socket.send(data);
+                console.log("Sent message", data)
                 addSentMessage(messageData);
                 textarea.value = '';
 
