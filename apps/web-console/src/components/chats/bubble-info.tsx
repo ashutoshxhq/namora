@@ -11,7 +11,7 @@ export default function BubbleInfo({
 }) {
   const now = new Date();
   const isMessageOwnerUser = sender;
-  const messageOwnerNameText = sender ? `${userName}` : "Namora Bot";
+  const messageOwnerNameText = sender ? `${userName}` : "Namora AI";
 
   if (isMessageOwnerUser) {
     return (

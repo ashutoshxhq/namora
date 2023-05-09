@@ -174,13 +174,11 @@ export const Window = (props: any) => {
         });
 
         const binaryData = encoder.encode(data);
-        console.log("Sending first hello message", data);
         webSocket?.send(binaryData.buffer);
       });
 
       const receiveWSMessage = async (event: any) => {
         let data = JSON.parse(await event.data.text());
-        console.log("WebSocket message received:", data);
 
         const defaultProps = {
           id: `from-user-${count}-${nowTime}`,
@@ -227,7 +225,7 @@ export const Window = (props: any) => {
 
   if (!Object.keys(messageGroupData).length)
     return (
-      <div className="box-border overflow-auto bg-white  divide-gray-200 rounded-lg shadow h-[calc(100vh_-_180px)] mb-2 p-2">
+      <div className="box-border overflow-auto bg-white  divide-gray-200 rounded-lg shadow h-[calc(100vh_-_140px)] mb-2 p-2">
         <div className="flex items-center justify-center w-full h-full">
           <EmptyState />
         </div>
@@ -237,41 +235,38 @@ export const Window = (props: any) => {
   return (
     <>
       <div
-        className="box-border overflow-auto bg-white  divide-gray-200 rounded-lg shadow h-[calc(100vh_-_180px)] mb-2 p-2"
+        className="box-border overflow-auto bg-white  divide-gray-200 rounded-lg  h-[calc(100vh_-_140px)] mb-2 p-2 pb-40 shadow-inset border-black"
         ref={divRef}
       >
-        {Object.keys(messageGroupData).map((groupKey: string, index) => {
-          let messages: any = messageGroupData[groupKey];
+        {Object.keys(messageGroupData).map(
+          (groupKey: string, index: number) => {
+            let messages: any = messageGroupData[groupKey];
+            const outerKey = `msg-group-${index}`;
+            const innerKey = `thread-${groupKey}-${index}`;
 
-          return (
-            <div key={index}>
-              <Timestamp groupKey={groupKey} />
-              <div key={index}>
-                {messages.map((message: any) => {
-                  // const waitBeforeHide = message.waitBeforeHide;
-                  // const waitBeforeShow = message.waitBeforeShow;
-
-                  // if (message.componentType === "chat-loader") {
-                  //   return <></>;
-                  // }
-                  return (
-                    // <WaitBeforeShow
-                    //   key={message.id}
-                    //   waitBeforeShow={waitBeforeShow}
-                    // >
-                    <Bubble
-                      key={message.id}
-                      message={message.content}
-                      sender={message.sender}
-                      userName={userName}
-                    />
-                    // </WaitBeforeShow>
-                  );
-                })}
+            return (
+              <div key={outerKey}>
+                <Timestamp groupKey={groupKey} />
+                <div key={innerKey}>
+                  {messages.map((message: any, index: number) => {
+                    const isLastMsg = messages.length === index + 1;
+                    return (
+                      <div key={`${message.id}`}>
+                        <Bubble
+                          key={message.id}
+                          message={message.content}
+                          sender={message.sender}
+                          userName={userName}
+                          isLastMsg={isLastMsg}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          }
+        )}
       </div>
       <form onSubmit={handleSubmit(onFormSubmit)}>
         <FormInputTextField
