@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { SWRSubscription, useSWRSubscription } from "@/swr";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -87,7 +87,7 @@ const isBrowser = typeof window !== "undefined";
 
 export const Window = (props: any) => {
   const { accessToken, user } = props;
-  const { namora_team_id, namora_user_id } = user;
+  const { namora_team_id, namora_user_id, name: userName } = user;
   const webSocketRef = useRef<any>(null);
   const [messages, setMessages] = useState<any[]>([]);
   const [count, setCount] = useState(1);
@@ -136,7 +136,6 @@ export const Window = (props: any) => {
       let data = JSON.stringify(msgWithProps);
 
       const binaryData = encoder.encode(data);
-      console.log("Sending first hello message", data);
       webSocketRef?.current?.send(binaryData.buffer);
       setCount((prevValue) => prevValue + count);
       timeoutRef.current = setTimeout(scrollToBottom, 500);
@@ -157,16 +156,11 @@ export const Window = (props: any) => {
     const nowTime = now.getTime();
     const webSocket = isBrowser ? new WebSocket(BASE_WS_URL) : null;
     webSocketRef.current = webSocket;
-    console.log("subscribeWS", { key, webSocket });
     if (webSocket) {
       // webSocket.addEventListener("message", (event) => next(null, event.data));
       // webSocket.addEventListener("error", (event: any) => next(event.error));
 
       webSocket.addEventListener("open", (event: any) => {
-        console.log("@open", { event });
-
-        console.log({ user });
-
         let data = JSON.stringify({
           Data: {
             content: "hello",
@@ -179,16 +173,12 @@ export const Window = (props: any) => {
           },
         });
 
-        console.log({ data });
-
         const binaryData = encoder.encode(data);
-        console.log("Sending first hello message", data, binaryData);
         webSocket?.send(binaryData.buffer);
       });
 
       const receiveWSMessage = async (event: any) => {
         let data = JSON.parse(await event.data.text());
-        console.log("WebSocket message received:", data);
 
         const defaultProps = {
           id: `from-user-${count}-${nowTime}`,
@@ -199,7 +189,6 @@ export const Window = (props: any) => {
         };
 
         setMessages((prev) => [...prev, { ...data.Data, ...defaultProps }]);
-        console.log("@message", { event, messageGroupData });
       };
       webSocket.addEventListener("message", receiveWSMessage);
       timeoutRef.current = setTimeout(scrollToBottom, 500);
@@ -211,6 +200,11 @@ export const Window = (props: any) => {
   };
 
   useSWRSubscription(BASE_WS_URL, subscribeWS);
+
+  useEffect(() => {
+    const timeout = timeoutRef.current;
+    return () => clearTimeout(timeout);
+  }, [timeoutRef]);
 
   let messageGroupData: { [key: string]: any } = {};
   const combined = [...messages];
@@ -229,11 +223,9 @@ export const Window = (props: any) => {
   const isSocketDisconnected = true;
   const isSocketConnectionAvailable = !(isSocketError || isSocketDisconnected);
 
-  console.log({ messages, messageGroupData, count });
-
   if (!Object.keys(messageGroupData).length)
     return (
-      <div className="box-border overflow-auto bg-white  divide-gray-200 rounded-lg shadow h-[calc(100vh_-_210px)] mb-2 p-2">
+      <div className="box-border overflow-auto bg-white  divide-gray-200 rounded-lg shadow h-[calc(100vh_-_140px)] mb-2 p-2">
         <div className="flex items-center justify-center w-full h-full">
           <EmptyState />
         </div>
@@ -243,40 +235,38 @@ export const Window = (props: any) => {
   return (
     <>
       <div
-        className="box-border overflow-auto bg-white  divide-gray-200 rounded-lg shadow h-[calc(100vh_-_210px)] mb-2 p-2"
+        className="box-border overflow-auto bg-white  divide-gray-200 rounded-lg  h-[calc(100vh_-_140px)] mb-2 p-2 pb-40 shadow-inset border-black"
         ref={divRef}
       >
-        {Object.keys(messageGroupData).map((groupKey: string, index) => {
-          let messages: any = messageGroupData[groupKey];
+        {Object.keys(messageGroupData).map(
+          (groupKey: string, index: number) => {
+            let messages: any = messageGroupData[groupKey];
+            const outerKey = `msg-group-${index}`;
+            const innerKey = `thread-${groupKey}-${index}`;
 
-          return (
-            <div key={index}>
-              <Timestamp groupKey={groupKey} />
-              <div key={index}>
-                {messages.map((message: any) => {
-                  // const waitBeforeHide = message.waitBeforeHide;
-                  // const waitBeforeShow = message.waitBeforeShow;
-
-                  // if (message.componentType === "chat-loader") {
-                  //   return <></>;
-                  // }
-                  return (
-                    // <WaitBeforeShow
-                    //   key={message.id}
-                    //   waitBeforeShow={waitBeforeShow}
-                    // >
-                    <Bubble
-                      key={message.id}
-                      message={message.content}
-                      sender={message.sender}
-                    />
-                    // </WaitBeforeShow>
-                  );
-                })}
+            return (
+              <div key={outerKey}>
+                <Timestamp groupKey={groupKey} />
+                <div key={innerKey}>
+                  {messages.map((message: any, index: number) => {
+                    const isLastMsg = messages.length === index + 1;
+                    return (
+                      <div key={`${message.id}`}>
+                        <Bubble
+                          key={message.id}
+                          message={message.content}
+                          sender={message.sender}
+                          userName={userName}
+                          isLastMsg={isLastMsg}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          }
+        )}
       </div>
       <form onSubmit={handleSubmit(onFormSubmit)}>
         <FormInputTextField

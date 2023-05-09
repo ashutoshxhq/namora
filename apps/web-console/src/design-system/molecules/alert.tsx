@@ -6,14 +6,22 @@ import { Fragment } from "react";
 export const Alert = ({
   show,
   title,
+  status,
   description,
   setShow,
 }: {
   show: boolean;
   title: string;
+  status: string;
   description: string;
   setShow: (value: boolean) => void;
 }) => {
+  let statusColor = "";
+  if (status === "error") {
+    statusColor = "text-red-400";
+  } else if (status === "success") {
+    statusColor = "text-green-400";
+  }
   return (
     <div
       aria-live="assertive"
@@ -35,7 +43,7 @@ export const Alert = ({
               <div className="flex items-start">
                 <div className="flex-shrink-0">
                   <CheckCircleIcon
-                    className="w-6 h-6 text-red-400"
+                    className={`w-6 h-6 ${statusColor}`}
                     aria-hidden="true"
                   />
                 </div>

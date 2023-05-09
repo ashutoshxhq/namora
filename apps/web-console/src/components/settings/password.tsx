@@ -45,8 +45,6 @@ export const Password = () => {
     // });
     // const encoder = new TextEncoder();
     // const binaryData = encoder.encode(data);
-    // console.log("Sending", { data, binaryData });
-    console.log({ submittedFormData });
     // web_socket.send(binaryData.buffer)
   };
 

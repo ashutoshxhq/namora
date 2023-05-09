@@ -53,8 +53,6 @@ export const PersonalDetails = () => {
     // });
     // const encoder = new TextEncoder();
     // const binaryData = encoder.encode(data);
-    // console.log("Sending", { data, binaryData });
-    console.log({ submittedFormData });
     // web_socket.send(binaryData.buffer)
     setShowAlert(true);
   };
@@ -63,6 +61,7 @@ export const PersonalDetails = () => {
     title: "Account/Profile",
     description: "something...",
     show: showAlert,
+    status: "",
     setShow: setShowAlert,
   };
   const { handleSubmit } = hookFormProps;
