@@ -23,8 +23,6 @@ export default function SettingsPage(props: any) {
   const _selectedIndex =
     settingTabList.map((tab) => tab.id).indexOf(_selectedTab) ?? 0;
 
-  // console.log("@[tab]", { router, _selectedTab, _selectedIndex });
-
   if (router.isReady && (!_selectedTab || _selectedIndex === -1)) {
     router?.replace(`/${SETTINGS}/${NOT_FOUND}`, undefined, {
       shallow: true,

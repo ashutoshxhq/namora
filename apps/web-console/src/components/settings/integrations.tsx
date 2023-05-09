@@ -1,6 +1,5 @@
 import { Switch } from "@headlessui/react";
-import React, { useState } from "react";
-import { classNames } from "@/utils";
+import React, { useEffect, useState } from "react";
 import { useVesselCRMIntegration } from "@/vessel/ui/VesselCRMIntegration/useVesselCRMIntegration";
 import { Alert } from "@/design-system/molecules/alert";
 import { UserGroupIcon } from "@heroicons/react/24/outline";
@@ -12,12 +11,11 @@ const statuses = {
 
 export const Integrations = (props: any) => {
   const {
-    isCRMConnected,
+    isConnectionEnabled,
     alertProps,
     handleClickOnConnect,
     handleClickOnDisconnect,
   } = useVesselCRMIntegration(props);
-  const connectionEnabled = isCRMConnected;
 
   const handleClickOnConnectionChange = (checked: boolean) => {
     if (checked) {
@@ -35,43 +33,44 @@ export const Integrations = (props: any) => {
       >
         <div
           className={`overflow-hidden border border-gray-200 bg-neutral-50 rounded-xl bg-gradient-to-r from-blue-50 via-gray-100 ${
-            connectionEnabled ? "to-green-50" : "to-red-50"
+            isConnectionEnabled ? "to-green-50" : "to-red-50"
           }`}
         >
           <div className="flex items-center justify-between p-6 bg-white border-b gap-x-4 border-gray-900/2">
             <div className="flex items-center gap-x-4">
-              <UserGroupIcon
-                className="w-8 h-8 text-black-400"
-                aria-hidden="true"
-              />
-              <p className="text-sm font-medium leading-6 text-gray-900">CRM</p>
+              <div className="p-2 border rounded-lg">
+                <UserGroupIcon
+                  className="w-8 h-8 text-black-400"
+                  aria-hidden="true"
+                />
+              </div>
+              <p className="text-lg font-semibold leading-6 text-gray-900">
+                CRM
+              </p>
             </div>
             <Switch
-              checked={connectionEnabled}
+              checked={isConnectionEnabled}
               onChange={handleClickOnConnectionChange}
-              className={classNames(
-                connectionEnabled ? "bg-indigo-600" : "bg-gray-200",
-                "relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2"
-              )}
+              className={`${
+                isConnectionEnabled ? "bg-indigo-600" : "bg-gray-200"
+              } relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2`}
             >
               <span className="sr-only">Use setting</span>
               <span
-                className={classNames(
-                  connectionEnabled ? "translate-x-5" : "translate-x-0",
-                  "pointer-events-none relative inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
-                )}
+                className={`${
+                  isConnectionEnabled ? "translate-x-5" : "translate-x-0"
+                } pointer-events-none relative inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`}
               >
                 <span
-                  className={classNames(
-                    connectionEnabled
+                  className={`${
+                    isConnectionEnabled
                       ? "opacity-0 duration-100 ease-out"
-                      : "opacity-100 duration-200 ease-in",
-                    "absolute inset-0 flex h-full w-full items-center justify-center transition-opacity"
-                  )}
+                      : "opacity-100 duration-200 ease-in"
+                  } absolute inset-0 flex h-full w-full items-center justify-center transition-opacity`}
                   aria-hidden="true"
                 >
                   <svg
-                    className="w-3 h-3 text-gray-400"
+                    className={`w-3 h-3 text-gray-400`}
                     fill="none"
                     viewBox="0 0 12 12"
                   >
@@ -85,16 +84,15 @@ export const Integrations = (props: any) => {
                   </svg>
                 </span>
                 <span
-                  className={classNames(
-                    connectionEnabled
+                  className={`${
+                    isConnectionEnabled
                       ? "opacity-100 duration-200 ease-in"
-                      : "opacity-0 duration-100 ease-out",
-                    "absolute inset-0 flex h-full w-full items-center justify-center transition-opacity"
-                  )}
+                      : "opacity-0 duration-100 ease-out"
+                  } absolute inset-0 flex h-full w-full items-center justify-center transition-opacity`}
                   aria-hidden="true"
                 >
                   <svg
-                    className="w-3 h-3 text-indigo-600"
+                    className="w-3 h-3 text-indigo-600 "
                     fill="currentColor"
                     viewBox="0 0 12 12"
                   >
@@ -109,22 +107,19 @@ export const Integrations = (props: any) => {
               <dt className="text-gray-500">Status</dt>
               <div className="flex items-start gap-x-2">
                 <div
-                  className={classNames(
-                    statuses["Connected"],
-                    `rounded-md py-1 px-2 text-xs font-medium ring-1 ring-inset ${
-                      connectionEnabled ? "" : "hidden"
-                    }`
-                  )}
+                  className={`${
+                    statuses["Connected"]
+                  } rounded-md py-1 px-2 text-xs font-medium ring-1 ring-inset 
+                  ${isConnectionEnabled ? "" : "hidden"}}`}
                 >
                   Connected
                 </div>
                 <div
-                  className={classNames(
-                    statuses["Disconnected"],
-                    `rounded-md py-1 px-2 text-xs font-medium ring-1 ring-inset ${
-                      connectionEnabled ? "hidden" : ""
-                    }`
-                  )}
+                  className={`${
+                    statuses["Disconnected"]
+                  } rounded-md py-1 px-2 text-xs font-medium ring-1 ring-inset ${
+                    isConnectionEnabled ? "hidden" : ""
+                  }`}
                 >
                   Disconnected
                 </div>
