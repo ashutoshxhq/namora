@@ -1,4 +1,4 @@
-import { AxiosError } from "axios";
+import { AxiosError, AxiosResponse } from "@/axios";
 
 export type TVesselCRMConnection = {
   connectionId: string;
@@ -11,6 +11,6 @@ export type TVesselCRMConnection = {
 };
 
 export type TMutationOptionProps = {
-  onSuccess: (data: any) => void;
+  onSuccess: (data: AxiosResponse) => void;
   onError: (error: AxiosError) => void;
 };

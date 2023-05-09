@@ -9,7 +9,10 @@ import {
 
 import { CONNECTION_STATUS_LIST } from "@/vessel/shared/constants";
 import { QUERY_KEY_VESSEL_CRM_CONNECTION_STATUS } from "@/vessel/constants";
-import { TMutationOptionProps, TVesselCRMConnection } from "./types";
+import {
+  TMutationOptionProps,
+  TVesselCRMConnection,
+} from "@/vessel/shared/types";
 
 export const useLinkVesselCRMToken = (
   linkVesselCRMTokenMutationOptions: TMutationOptionProps
