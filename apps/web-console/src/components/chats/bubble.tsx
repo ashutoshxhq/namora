@@ -25,14 +25,17 @@ export const Bubble = ({
             sender ? fromUserBubbleClass : fromAIBubbleClass
           }`}
         >
-          <p className={`break-all text-sm`}>{message}</p>
+          <div
+            className={`break-all text-sm`}
+            dangerouslySetInnerHTML={{ __html: message }}
+          />
         </div>
-        <BubbleInfo message={message} sender={sender} userName={userName} />
+        <BubbleInfo sender={sender} userName={userName} />
       </div>
       <div className={`relative flex ${sender && isLastMsg ? "" : "hidden"} `}>
         <div className={` px-5 ${fromAIBubbleClass} `}>
           <Loader />
-          <BubbleInfo message={message} sender={false} userName={userName} />
+          <BubbleInfo sender={false} userName={userName} />
         </div>
       </div>
     </>
