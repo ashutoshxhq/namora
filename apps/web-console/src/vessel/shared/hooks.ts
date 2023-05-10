@@ -86,6 +86,7 @@ export const useGetVesselCRMConnectionStatus = ({
 
   return {
     isCRMConnected,
+    connectionStatus,
     vesselCRMConnectionAPIData,
     isVesselCRMConnectionAPILoading,
   };
