@@ -63,7 +63,7 @@ export const sideBarMenuList = [
 ];
 
 export const userNavigation = [
-  { name: "Your profile", href: "#" },
+  { name: "Your profile", href: `/${SETTINGS}/${ACCOUNT}` },
   { name: "Sign out", href: "/api/auth/logout" },
 ];
 
