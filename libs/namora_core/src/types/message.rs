@@ -35,7 +35,6 @@ pub struct Action {
     pub description: String,
     pub input_json_schema: Value,
     pub sample_queries: Vec<String>,
-    pub additional_info: Option<String>,
     pub acion_result: Option<Value>,
 }
 

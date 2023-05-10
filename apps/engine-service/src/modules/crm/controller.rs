@@ -152,18 +152,29 @@ pub async fn search_object_records(
     }
     let team_id = team_id_res.unwrap();
     let filter = if let Some(filter) = query.filter {
-        let filter_decoded_res = &general_purpose::STANDARD_NO_PAD.decode(filter.as_bytes());
+        let filter_decoded_res = general_purpose::STANDARD.decode(filter.as_bytes());
+        tracing::info!("filter_decoded_res: {:?}", filter_decoded_res);
         match filter_decoded_res {
             Ok(filter_decoded) => match String::from_utf8(filter_decoded.clone()) {
-                Ok(message) => serde_json::from_str(&message).unwrap(),
-                Err(_err) => json!({}),
+                Ok(message) => {
+                    tracing::info!("filter_decoded: {:?}", filter_decoded);
+                    serde_json::from_str(&message).unwrap()
+                }
+                Err(_err) => {
+                    tracing::error!("filter_decoded_error: {:?}", _err);
+                    json!({})
+                },
             },
-            Err(_err) => json!({}),
+            Err(_err) => {
+                tracing::error!("filter_decoded_error: {:?}", _err);
+                json!({})
+            }
         }
     } else {
+        tracing::info!("no filter");
         json!({})
     };
-    
+
     let limit = query.limit.unwrap_or(10);
     let cursor = query.cursor.unwrap_or("".to_string());
     let all_fields = query.all_fields.unwrap_or(false);

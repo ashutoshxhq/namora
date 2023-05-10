@@ -155,6 +155,7 @@ impl CRMIntegrationService {
         if let Some(access_token) = team.vessel_access_token {
             let vessel_api_token = env::var("VESSEL_API_TOKEN")?;
             let client = reqwest::Client::new();
+            tracing::info!("Filter: {:?}", filter);
             let res = client
                 .post(format!(
                     "https://api.vessel.land/crm/{}/search?cursor={}&limit={}&allFields={}",

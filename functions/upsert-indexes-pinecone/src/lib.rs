@@ -55,8 +55,7 @@ pub async fn handler() -> Json<Value> {
         metadata.insert("id".to_string(), action.id.clone());
         metadata.insert("name".to_string(), action.name.clone());
         metadata.insert("description".to_string(), action.description.clone());
-        metadata.insert("input_format".to_string(), action.input_json_schema.to_string().clone());
-        metadata.insert("additional_info".to_string(), action.additional_info.clone().unwrap_or("".to_string()));
+        metadata.insert("input_json_schema".to_string(), action.input_json_schema.to_string().clone());
         metadata.insert("sample_queries".to_string(), action.sample_queries.clone().join(", "));
         
         documents_with_embeddings.push(DocumentWithEmbeddings {

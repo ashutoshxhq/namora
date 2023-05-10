@@ -12,7 +12,7 @@ pub async fn get_object_records_from_crm_with_filter(
     if let Some(filters) = data.get("filters") {
         let filter_str = filters.to_string();
         let filter_bytes = filter_str.as_bytes();
-        let encoded_filter: String = general_purpose::STANDARD_NO_PAD.encode(filter_bytes);
+        let encoded_filter: String = general_purpose::STANDARD.encode(filter_bytes);
         let res = client
             .get(format!(
                 "https://engine.svc.api.namora.ai/teams/{}/integrations/crm/objects/{}/search?filter={}",
