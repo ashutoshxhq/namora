@@ -1,5 +1,4 @@
 use std::sync::Arc;
-
 use crate::{authz::Claims, state::NamoraAIState};
 use axum::extract::ws::{Message as WSMessage, WebSocket};
 use futures::{sink::SinkExt, stream::StreamExt};
@@ -91,6 +90,33 @@ pub async fn generic_agent_socket(
         tracing::error!("Failed to send first message, error: {}", e);
     }
 
+    // Create a worker to Health check ping message every 2 second
+    let socket_health_check_worker_session_context_mutex = session_context_mutex.clone();
+    let socket_health_check_worker_worker_tx: mpsc::Sender<MessageWithContext> = tx.clone();
+    let mut socket_health_check_worker = tokio::spawn(async move {
+        loop {
+            tokio::time::sleep(tokio::time::Duration::from_secs(2)).await;
+            let context = {
+                let context = socket_health_check_worker_session_context_mutex.lock().await;
+                context.clone()
+            };
+            let message_with_context = MessageWithContext {
+                message: Message {
+                    reciever: "user_ping".to_string(),
+                    message_type: "ping".to_string(),
+                    content: "Hello".to_string(),
+                    additional_info: None,
+                    created_at: Some(chrono::Utc::now()),
+                },
+                context,
+            };
+            let res = socket_health_check_worker_worker_tx.send(message_with_context).await;
+            if let Err(e) = res {
+                tracing::error!("Failed to send message to worker, error: {}", e);
+            }
+        }
+    });
+
     let message_router_worker_channel = channel.clone();
     let mut message_router_worker = tokio::spawn(async move {
         while let Some(message_with_context) = rx.recv().await {
@@ -140,11 +166,16 @@ pub async fn generic_agent_socket(
                 } else {
                     tracing::error!("Failed to serialize message to json");
                 }
+            } else if message_with_context.message.reciever == "user_ping" {
+                let res = socket_tx.send(WSMessage::Ping(vec![])).await;
+                if let Err(e) = res {
+                    tracing::error!("unable to send ping, error: {}", e);
+                }
             }
         }
     });
 
-    let socket_reciever_worker_tx = tx.clone();
+    let socket_reciever_worker_tx: mpsc::Sender<MessageWithContext> = tx.clone();
     let socket_reciever_worker_session_context_mutex = session_context_mutex.clone();
     let mut socket_reciever_worker = tokio::spawn(async move {
         while let Some(Ok(msg)) = socket_rx.next().await {
@@ -205,20 +236,30 @@ pub async fn generic_agent_socket(
         _ = (&mut message_router_worker) => {
             tracing::info!("User worker finished");
             socket_reciever_worker.abort();
+            socket_health_check_worker.abort();
             task_orchestrator_reciever_worker.abort();
-            tracing::info!("Aborted socket_reciever_worker and task_orchestrator_reciever_worker workers");
+            tracing::info!("Aborted socket_reciever_worker, socket_health_check_worker and task_orchestrator_reciever_worker workers");
         }
         _ = (&mut socket_reciever_worker) => {
             tracing::info!("Socket worker finished");
             message_router_worker.abort();
             task_orchestrator_reciever_worker.abort();
-            tracing::info!("Aborted message_router_worker and task_orchestrator_reciever_worker workers");
+            socket_health_check_worker.abort();
+            tracing::info!("Aborted message_router_worker, socket_health_check_worker and task_orchestrator_reciever_worker workers");
         }
         _ = (&mut task_orchestrator_reciever_worker) => {
             tracing::info!("Health worker finished");
             message_router_worker.abort();
             socket_reciever_worker.abort();
-            tracing::info!("Aborted message_router_worker and socket_reciever_worker workers");
+            socket_health_check_worker.abort();
+            tracing::info!("Aborted message_router_worker, socket_health_check_worker and socket_reciever_worker workers");
+        }
+        _ = (&mut socket_health_check_worker) => {
+            tracing::info!("Health worker finished");
+            message_router_worker.abort();
+            socket_reciever_worker.abort();
+            task_orchestrator_reciever_worker.abort();
+            tracing::info!("Aborted message_router_worker, socket_reciever_worker and task_orchestrator_reciever_worker workers");
         }
     };
 
@@ -267,11 +308,11 @@ async fn process_socket_message(msg: WSMessage) -> Result<Option<Message>, Error
         }
 
         WSMessage::Pong(v) => {
-            tracing::info!("Reecieved pong with data: {:?}", v);
+            tracing::info!("Recieved pong with data: {:?}", v);
             return Ok(None);
         }
         WSMessage::Ping(v) => {
-            tracing::info!("Reecieved ping with data: {:?}", v);
+            tracing::info!("Recieved ping with data: {:?}", v);
             return Ok(None);
         }
     };
