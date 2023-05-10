@@ -33,7 +33,7 @@ pub struct Action {
     pub id: String,
     pub name: String,
     pub description: String,
-    pub input_json_schema: Value,
+    pub input_json_schema: String,
     pub sample_queries: Vec<String>,
     pub acion_result: Option<Value>,
 }

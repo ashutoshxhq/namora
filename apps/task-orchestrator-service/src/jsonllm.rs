@@ -50,14 +50,14 @@ impl JsonLLM {
             &jsonllm_message,
             &json!({
                 "prompt": self.prompt(),
-                "json_schema": self.json_schema().to_string(),
+                "json_schema": format!("{:?}", self.json_schema().to_string()),
                 "past_conversation": past_conversation
             }),
         )?;
 
         let client: Client = Client::new().with_api_key(std::env::var("OPENAI_API_KEY")?);
         let mut messages: Vec<ChatCompletionRequestMessage> = Vec::new();
-        tracing::info!("Prompt: {}", jsonllm_message_with_data);
+        tracing::info!("Prompt: {:?}", jsonllm_message_with_data);
         messages.push(
             ChatCompletionRequestMessageArgs::default()
                 .role(Role::User)

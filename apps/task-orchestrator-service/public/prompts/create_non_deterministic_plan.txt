@@ -1,7 +1,20 @@
 User Query: {{query}}
 
+Identified Actions: 
+```
+{{identified_actions}}
+```
+
 You have access to the following applications:
 - CRM
 - LinkedIn
 
-Objective: Create a step-by-step plan to interact with third-party tools to execute actions or gather context to answer the user query.
+Objective: Create a step-by-step action execution plan to interact with third-party tools to execute actions or gather context to answer the user query.
+Rules to create an action execution plan:
+1. Use the identified actions as a guide as what actions look like to create an action plan.
+2. Each step should be to execute an action which will help in interations with third party tools.
+3. The action execution plan should be in the order of execution.
+4. The action execution plan should be in the form of an array of string.
+5. The action execution plan should select minimum number of actions required to achieve the query.
+6. If there are multiple ways to achieve the query, the action execution plan should select the one with minimum number of actions.
+7. If removing an action from the action execution plan does not affect the query, then the action should be removed from the action execution plan.

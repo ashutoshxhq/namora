@@ -21,7 +21,7 @@ pub async fn get_object_records_from_crm_with_filter(
                 encoded_filter
             ))
             .header(
-                header::HeaderName::from_static("Authorization"),
+                "Authorization",
                 format!("Bearer {}", context.authorization_token),
             )
             .send()
@@ -34,7 +34,7 @@ pub async fn get_object_records_from_crm_with_filter(
     }
 }
 
-pub async fn create_object_record_in_crm(
+pub async fn _create_object_record_in_crm(
     context: Context,
     object: String,
     data: Value,
@@ -62,7 +62,7 @@ pub async fn create_object_record_in_crm(
     }
 }
 
-pub async fn update_object_record_in_crm_by_id(
+pub async fn _update_object_record_in_crm_by_id(
     context: Context,
     object: String,
     data: Value,

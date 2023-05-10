@@ -10,33 +10,43 @@ use serde_json::{json, Value};
 
 use crate::{jsonllm::JsonLLM, types::pinecone::PineconeQueryResponse};
 
-pub async fn is_more_context_required(
+pub async fn is_action_execution_plan_required(
     query: String,
     executed_actions: Vec<Action>,
-    messages: Vec<Message>
+    messages: Vec<Message>,
 ) -> Result<bool, Error> {
-    let prompt = fs::read_to_string("./public/prompts/is_more_context_required.txt")?;
+    let prompt = fs::read_to_string("./public/prompts/is_action_execution_plan_required.txt")?;
     let reg = Handlebars::new();
-    let executed_actions_string = serde_json::to_string(&executed_actions)?;
+    let executed_actions = executed_actions
+        .iter()
+        .map(|action| {
+            let action_output = format!("{:?}", action.clone().acion_result.unwrap_or(json!({})));
+            json!({
+                "action_id": action.id,
+                "action_output": format!("{:?}", action_output)
+            })
+        })
+        .collect::<Vec<Value>>();
+
     let prompt_with_data = reg.render_template(
         &prompt,
         &json!({
             "query": query,
-            "executed_actions": executed_actions_string
+            "executed_actions": format!("{:?}", executed_actions)
         }),
     )?;
 
     let json_schema = serde_json::from_str(&fs::read_to_string(
-        "./public/schemas/is_more_context_required_response.txt",
+        "./public/schemas/is_action_execution_plan_required_response.txt",
     )?)?;
 
     let jsonllm = JsonLLM::new(prompt_with_data, json_schema, messages);
     let jsonllm_result = jsonllm.generate().await.unwrap();
-    let can_answer_without_third_party_app_interaction = jsonllm_result.get("can_answer_without_third_party_app_interaction");
-    if let Some(can_answer_without_third_party_app_interaction) = can_answer_without_third_party_app_interaction {
-        match can_answer_without_third_party_app_interaction.as_bool() {
-            Some(can_answer_without_third_party_app_interaction) => {
-                return Ok(can_answer_without_third_party_app_interaction);
+    let is_action_execution_plan_required = jsonllm_result.get("is_action_execution_plan_required");
+    if let Some(is_action_execution_plan_required) = is_action_execution_plan_required {
+        match is_action_execution_plan_required.as_bool() {
+            Some(is_action_execution_plan_required) => {
+                return Ok(is_action_execution_plan_required);
             }
             None => {
                 return Err(Error::from(
@@ -54,28 +64,43 @@ pub async fn is_more_context_required(
 pub async fn create_non_deterministic_plan(
     query: String,
     messages: Vec<Message>,
+    identified_actions: Vec<Action>,
 ) -> Result<String, Error> {
+    let actions = identified_actions
+        .iter()
+        .map(|action| {
+            json!({
+                "action_id": action.id,
+                "action_name": action.name,
+            })
+        })
+        .collect::<Vec<Value>>();
     let prompt = fs::read_to_string("./public/prompts/create_non_deterministic_plan.txt")?;
     let reg = Handlebars::new();
-    let prompt_with_data = reg.render_template(&prompt, &json!({ "query": query }))?;
+    let prompt_with_data = reg.render_template(
+        &prompt,
+        &json!({ "query": query, "identified_actions": format!("{:?}", actions) }),
+    )?;
 
-    let json_schema = serde_json::to_value(fs::read_to_string(
+    let json_schema = serde_json::from_str(&fs::read_to_string(
         "./public/schemas/create_non_deterministic_plan_response.txt",
     )?)?;
 
     let jsonllm = JsonLLM::new(prompt_with_data, json_schema, messages);
     let jsonllm_result = jsonllm.generate().await?;
 
-    let plan = jsonllm_result.get("plan");
+    let plan: Option<&Value> = jsonllm_result.get("plan");
 
     if let Some(plan) = plan {
-        return Ok(plan.to_string());
+        let plan: Vec<String> = serde_json::from_value(plan.clone())?;
+        let plan_string = plan.join(", ");
+        return Ok(plan_string.to_string());
     } else {
         return Err(Error::from("Unable to create a plan"));
     }
 }
 
-pub async fn identify_actions(non_deterministic_plan: String) -> Result<Vec<Action>, Error> {
+pub async fn identify_actions(non_deterministic_plan: String, top_k: u32) -> Result<Vec<Action>, Error> {
     let mut actions: Vec<Action> = Vec::new();
 
     let client = Client::new();
@@ -97,7 +122,7 @@ pub async fn identify_actions(non_deterministic_plan: String) -> Result<Vec<Acti
         .post(format!("https://{}/query", pinecone_index_host))
         .json(&json!({
             "vector": embedding,
-            "topK": 5,
+            "topK": top_k,
             "includeMetadata": true,
             "includeValues": false,
             "namespace": "actions",
@@ -122,7 +147,7 @@ pub async fn create_deterministic_plan(
     query: String,
     non_deterministic_plan: String,
     identified_actions: Vec<Action>,
-    messages: Vec<Message>
+    messages: Vec<Message>,
 ) -> Result<HashMap<u32, Action>, Error> {
     let prompt = fs::read_to_string("./public/prompts/create_deterministic_plan.txt")?;
     let reg = Handlebars::new();
@@ -140,12 +165,12 @@ pub async fn create_deterministic_plan(
         &prompt,
         &json!({
             "query": query,
-            "identified_actions": serde_json::to_value(actions)?.to_string(),
+            "identified_actions": format!("{:?}", actions),
             "plan": non_deterministic_plan
         }),
     )?;
 
-    let json_schema = serde_json::to_value(fs::read_to_string(
+    let json_schema = serde_json::from_str(&fs::read_to_string(
         "./public/schemas/create_deterministic_plan_response.txt",
     )?)?;
 

@@ -26,7 +26,7 @@ pub async fn generate_user_response(
         &prompt,
         &json!({
             "query": query,
-            "executed_actions": actions
+            "executed_actions": format!("{:?}", actions)
         }),
     )?;
     let json_schema = serde_json::from_str(&fs::read_to_string(

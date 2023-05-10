@@ -15,9 +15,10 @@ pub async fn extract_action_input(
     let actions = executed_actions
         .iter()
         .map(|action| {
+            let action_output = format!("{:?}", action.clone().acion_result.unwrap_or(json!({})));
             json!({
                 "action_id": action.id,
-                "action_output": action.acion_result,
+                "action_output": action_output,
             })
         })
         .collect::<Vec<Value>>();
@@ -28,11 +29,10 @@ pub async fn extract_action_input(
         &prompt,
         &json!({
             "query": query,
-            "executed_actions": actions
+            "executed_actions": format!("{:?}", actions)
         }),
     )?;
-
-    let json_schema = action.input_json_schema;
+    let json_schema: Value = serde_json::from_str(&action.input_json_schema)?;
 
     let jsonllm = JsonLLM::new(prompt_with_data, json_schema, messages);
     let jsonllm_result = jsonllm.generate().await?;

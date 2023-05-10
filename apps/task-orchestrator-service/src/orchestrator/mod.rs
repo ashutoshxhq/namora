@@ -36,7 +36,8 @@ impl TaskOrchestrator {
         message_with_context: MessageWithContext,
     ) -> Result<Vec<MessageWithContext>, Error> {
         let query = message_with_context.message.content.clone();
-        let can_answer_without_third_party_app_interaction = query::is_more_context_required(
+        let identified_actions = query::identify_actions(query.clone(), 10).await?;
+        let is_action_execution_plan_required = query::is_action_execution_plan_required(
             query.clone(),
             message_with_context
                 .context
@@ -46,13 +47,14 @@ impl TaskOrchestrator {
             message_with_context.context.messages.clone(),
         )
         .await?;
-        if !can_answer_without_third_party_app_interaction {
+        if is_action_execution_plan_required {
             let non_deterministic_plan = query::create_non_deterministic_plan(
                 query.clone(),
                 message_with_context.context.messages.clone(),
+                identified_actions.clone(),
             )
             .await?;
-            let idntified_actions = query::identify_actions(non_deterministic_plan.clone()).await?;
+            let idntified_actions = query::identify_actions(non_deterministic_plan.clone(), 5).await?;
             let deterministic_plan = query::create_deterministic_plan(
                 query.clone(),
                 non_deterministic_plan.clone(),
@@ -70,7 +72,7 @@ impl TaskOrchestrator {
                     content: "Message to execute the provided action".to_string(),
                     reciever: "system".to_string(),
                     additional_info: Some(json!({
-                        "action": deterministic_plan[&0].clone(),
+                        "action": deterministic_plan[&1].clone(),
                     })),
                     created_at: chrono::Utc::now().into(),
                 },
@@ -107,7 +109,6 @@ impl TaskOrchestrator {
             .unwrap()
             .clone();
         let current_action: Action = serde_json::from_value(current_action)?;
-
         let action_input = execute::extract_action_input(
             message_with_context
                 .context
@@ -121,7 +122,7 @@ impl TaskOrchestrator {
                 .executed_actions
                 .clone(),
             current_action.clone(),
-            message_with_context.context.messages.clone()
+            message_with_context.context.messages.clone(),
         )
         .await?;
 
@@ -222,7 +223,7 @@ impl TaskOrchestrator {
                 .execution_context
                 .executed_actions
                 .clone(),
-                message_with_context.context.messages.clone()
+            message_with_context.context.messages.clone(),
         )
         .await?;
         tracing::info!("User Response: {:?}", user_response_message);

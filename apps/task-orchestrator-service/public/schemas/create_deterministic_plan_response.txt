@@ -6,7 +6,8 @@
       "type": "object",
       "patternProperties": {
         "^([1-9][0-9]*)$": {
-          "type": "string"
+          "type": "string",
+          "description": "action_id of one of the identified actions"
         }
       },
       "additionalProperties": false

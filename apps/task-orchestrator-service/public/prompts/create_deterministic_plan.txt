@@ -11,3 +11,10 @@ Plan:
 ```
 
 Your task is to filter and arrange the `Identified Actions` to create a deterministic plan based on the query requirements and the plan(its only a guideline to pick right action from `Identified Actions`) so that the user's query can be achieved.
+Rules to create an action execution plan:
+1. The action execution plan should be a key value pair of number to action_id.
+2. The action_id should be the id of the action in the `Identified Actions` list.
+3. The action execution plan should be in the order of execution.
+4. The action execution plan should select absolute minimum number of actions to achieve the query.
+5. If there are multiple ways to achieve the query, the action execution plan should select the one with minimum number of actions.
+6. If removing an action from the action execution plan does not affect the query, then the action should be removed from the action execution plan.

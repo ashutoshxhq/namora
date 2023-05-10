@@ -19,7 +19,7 @@ pub struct Document {
 #[derive(Serialize, Deserialize, JsonSchema, Debug)]
 pub struct DocumentWithEmbeddings {
     pub id: String,
-    pub metadata: HashMap<String, String>,
+    pub metadata: HashMap<String, Value>,
     pub values: Vec<f32>,
 }
 
@@ -52,16 +52,32 @@ pub async fn handler() -> Json<Value> {
 
     for (action, embedding) in actions.iter().zip(response.data.iter()) {
         let mut metadata = HashMap::new();
-        metadata.insert("id".to_string(), action.id.clone());
-        metadata.insert("name".to_string(), action.name.clone());
-        metadata.insert("description".to_string(), action.description.clone());
-        metadata.insert("input_json_schema".to_string(), action.input_json_schema.to_string().clone());
-        metadata.insert("sample_queries".to_string(), action.sample_queries.clone().join(", "));
-        
+        metadata.insert(
+            "id".to_string(),
+            serde_json::to_value(action.id.clone()).unwrap(),
+        );
+        metadata.insert(
+            "name".to_string(),
+            serde_json::to_value(action.name.clone()).unwrap(),
+        );
+        metadata.insert(
+            "description".to_string(),
+            serde_json::to_value(action.description.clone()).unwrap(),
+        );
+        metadata.insert(
+            "input_json_schema".to_string(),
+            serde_json::to_value(serde_json::to_string(&action.input_json_schema.clone()).unwrap())
+                .unwrap(),
+        );
+        metadata.insert(
+            "sample_queries".to_string(),
+            serde_json::to_value(action.sample_queries.clone()).unwrap(),
+        );
+
         documents_with_embeddings.push(DocumentWithEmbeddings {
             id: action.id.clone(),
             values: embedding.embedding.clone(),
-            metadata
+            metadata,
         });
     }
 
