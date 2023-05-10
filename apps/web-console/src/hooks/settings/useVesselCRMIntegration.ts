@@ -161,7 +161,7 @@ export const useVesselCRMIntegration = (props: any) => {
 
   const { data } = useGetTeamData(props);
   const connectionId = data?.data?.vessel_connection_id ?? "";
-  const { isCRMConnected } = useGetVesselCRMConnectionStatus({
+  const { isCRMConnected, connectionStatus } = useGetVesselCRMConnectionStatus({
     connectionId,
     accessToken,
     teamId,
@@ -173,6 +173,7 @@ export const useVesselCRMIntegration = (props: any) => {
 
   return {
     isConnectionEnabled,
+    connectionStatus,
     alertProps,
     handleClickOnConnect,
     handleClickOnDisconnect,

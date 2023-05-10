@@ -12,6 +12,7 @@ const statuses = {
 export const Integrations = (props: any) => {
   const {
     isConnectionEnabled,
+    connectionStatus,
     alertProps,
     handleClickOnConnect,
     handleClickOnDisconnect,
@@ -32,7 +33,7 @@ export const Integrations = (props: any) => {
         className="grid grid-cols-1 gap-x-6 gap-y-8 lg:grid-cols-[repeat(auto-fill,_minmax(400px,_1fr))] xl:gap-x-8"
       >
         <div
-          className={`overflow-hidden border border-gray-200 bg-neutral-50 rounded-xl bg-gradient-to-r from-blue-50 via-gray-100 ${
+          className={`overflow-hidden border border-gray-200 bg-neutral-50 rounded-xl bg-gradient-to-r from-blue-50 ${
             isConnectionEnabled ? "to-green-50" : "to-red-50"
           }`}
         >
@@ -105,7 +106,7 @@ export const Integrations = (props: any) => {
           <div className="px-6 py-4 -my-3 text-sm leading-6 divide-y divide-gray-100 ">
             <div className="flex justify-between py-3 gap-x-4 ">
               <dt className="text-gray-500">Status</dt>
-              <div className="flex items-start gap-x-2">
+              <div className="flex items-center gap-x-2">
                 <div
                   className={`${
                     statuses["Connected"]
@@ -113,7 +114,16 @@ export const Integrations = (props: any) => {
                     isConnectionEnabled ? "" : "hidden"
                   }`}
                 >
-                  Connected
+                  <p className="text-xs font-medium text-green-700 capitalize">{`${connectionStatus?.toLocaleLowerCase()}`}</p>
+                </div>
+                <div
+                  className={`${
+                    statuses["Connected"]
+                  } rounded-md py-1 px-2 text-xs font-medium ring-1 ring-inset ${
+                    isConnectionEnabled ? "" : "hidden"
+                  }`}
+                >
+                  <p className="font-medium text-green-700">Connected</p>
                 </div>
                 <div
                   className={`${
@@ -122,7 +132,7 @@ export const Integrations = (props: any) => {
                     isConnectionEnabled ? "hidden" : ""
                   }`}
                 >
-                  Disconnected
+                  <p className="font-medium text-red-700">Disconnected</p>
                 </div>
               </div>
             </div>
