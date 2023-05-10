@@ -1,8 +1,14 @@
 import { withPageSessionAuthRequired } from "@/auth0/utils";
 import { Window } from "@/components/chats";
+import Head from "next/head";
 
 function Chats(props: any) {
-  return <Window {...props} />;
+  return <>
+    <Head>
+      <title>Namora | AI Chat</title>
+    </Head>
+    <Window {...props} />
+  </>;
 }
 export default Chats;
 
