@@ -1,12 +1,12 @@
+use crate::state::NamoraAIState;
 use axum::{
     extract::{Extension, Json, Path, Query},
     http::StatusCode,
     response::IntoResponse,
 };
+use base64::{engine::general_purpose, Engine as _};
 use serde_json::{json, Value};
 use uuid::Uuid;
-
-use crate::state::NamoraAIState;
 
 use super::types::{ExchangeTokenRequest, SearchObjectRecordsRequest};
 
@@ -151,14 +151,19 @@ pub async fn search_object_records(
         );
     }
     let team_id = team_id_res.unwrap();
-    let filter_res = serde_json::to_value(query.filter.unwrap_or("{}".to_string()));
-    if filter_res.is_err() {
-        return (
-            StatusCode::BAD_REQUEST,
-            Json(json!({ "error":"bad filter in url"})),
-        );
-    }
-    let filter = filter_res.unwrap();
+    let filter = if let Some(filter) = query.filter {
+        let filter_decoded_res = &general_purpose::STANDARD_NO_PAD.decode(filter.as_bytes());
+        match filter_decoded_res {
+            Ok(filter_decoded) => match String::from_utf8(filter_decoded.clone()) {
+                Ok(message) => serde_json::from_str(&message).unwrap(),
+                Err(_err) => json!({}),
+            },
+            Err(_err) => json!({}),
+        }
+    } else {
+        json!({})
+    };
+    
     let limit = query.limit.unwrap_or(10);
     let cursor = query.cursor.unwrap_or("".to_string());
     let all_fields = query.all_fields.unwrap_or(false);
@@ -247,8 +252,10 @@ pub async fn update_object_record(
     }
     let team_id = team_id_res.unwrap();
     let results = namora
-    .services
-    .crm_integration.update_object_record(object, record_id, data, team_id).await;
+        .services
+        .crm_integration
+        .update_object_record(object, record_id, data, team_id)
+        .await;
 
     match results {
         Ok(results) => (StatusCode::OK, Json(results)),
