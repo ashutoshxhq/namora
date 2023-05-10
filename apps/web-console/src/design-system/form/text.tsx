@@ -3,6 +3,10 @@ import React from "react";
 import { Control, Controller, UseControllerProps } from "react-hook-form";
 import { ExclamationCircleIcon } from "@heroicons/react/24/outline";
 
+const heightMap: { [key: string]: string } = {
+  chat_message_input: "h-12",
+};
+
 export const FormInputTextField = ({
   id = "",
   name = "",
@@ -37,8 +41,8 @@ export const FormInputTextField = ({
               type="text"
               className={`${
                 isError
-                  ? "block w-full rounded-md border-0 px-2 py-1.5 pr-10 text-red-900 ring-1 ring-inset ring-red-300 placeholder:text-red-300 focus:ring-1 focus:ring-inset focus:outline-0 focus:ring-red-500 sm:text-sm sm:leading-6"
-                  : "block w-full rounded-md border-0 px-2 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-1 focus:outline-0 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  ? `block w-full rounded-md border-0 px-2 py-1.5 pr-10 text-red-900 ring-1 ring-inset ring-red-300 placeholder:text-red-300 focus:ring-1 focus:ring-inset focus:outline-0 focus:ring-red-500 sm:text-sm sm:leading-6 ${heightMap[contextId]}`
+                  : `block w-full rounded-md border-0 px-2 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-1 focus:outline-0 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 ${heightMap[contextId]}`
               }`}
               placeholder={errMessage || placeholder}
               aria-invalid="true"

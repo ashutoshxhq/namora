@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 
 import { sideBarMenuList } from "@/routes/config";
+import { CHATS } from "@/routes/constants";
 import { classNames } from "@/utils";
 
 export const SidebarMobile = ({
@@ -69,14 +70,17 @@ export const SidebarMobile = ({
               </Transition.Child>
 
               <div className="flex flex-col px-6 pb-2 overflow-y-auto bg-gray-900 grow gap-y-5 ring-1 ring-white/10">
-                <div className="flex items-center h-16 shrink-0">
-                  <Image
-                    className="w-auto h-8"
-                    src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=500"
-                    alt="Your Company"
-                    width="100"
-                    height="100"
-                  />
+                <div className="flex items-center justify-start h-16 shrink-0">
+                  <Link href={`/${CHATS}`}>
+                    <Image
+                      className="w-auto h-8"
+                      src="/namora.svg"
+                      title="Namora.ai"
+                      alt="Your Company"
+                      width="100"
+                      height="100"
+                    />
+                  </Link>
                 </div>
                 <nav className="flex flex-col flex-1">
                   <ul role="list" className="flex-1 -mx-2 space-y-1">

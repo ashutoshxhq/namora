@@ -24,6 +24,7 @@ export const Sidebar = () => {
           <Image
             className="w-auto h-8"
             src="/namora.svg"
+            title="Namora.ai"
             alt="Your Company"
             width="100"
             height="100"
