@@ -2,12 +2,7 @@ import { withPageSessionAuthRequired } from "@/auth0/utils";
 import { Window } from "@/components/chats";
 
 function Chats(props: any) {
-  const { user } = props;
-  return (
-    <>
-      <Window {...props} />
-    </>
-  );
+  return <Window {...props} />;
 }
 export default Chats;
 

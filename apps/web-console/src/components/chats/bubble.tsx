@@ -29,20 +29,12 @@ export const Bubble = ({
         </div>
         <BubbleInfo message={message} sender={sender} userName={userName} />
       </div>
-      {/* <WaitBeforeShow waitBeforeShow={6000}> */}
-      {/* <WaitBeforeHide waitBeforeHide={5000}> */}
-      <div className="relative flex">
-        <div
-          className={` px-5 ${fromAIBubbleClass} ${
-            sender && isLastMsg ? "" : "hidden"
-          } `}
-        >
+      <div className={`relative flex ${sender && isLastMsg ? "" : "hidden"} `}>
+        <div className={` px-5 ${fromAIBubbleClass} `}>
           <Loader />
           <BubbleInfo message={message} sender={false} userName={userName} />
         </div>
       </div>
-      {/* </WaitBeforeHide> */}
-      {/* </WaitBeforeShow> */}
     </>
   );
 };
