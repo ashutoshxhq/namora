@@ -5,7 +5,6 @@ export default function BubbleInfo({
   sender,
   userName,
 }: {
-  message: string;
   sender: boolean;
   userName: string;
 }) {
