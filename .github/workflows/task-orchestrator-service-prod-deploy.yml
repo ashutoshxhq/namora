@@ -79,7 +79,23 @@ jobs:
         with:
           payload: |
             {
-              "message": "Task Orchestrator Service has been successfully deployed to production."
+              "message": "Task Orchestrator Service has been successfully deployed to production.",
+              "service": "Task Orchestrator Service",
+              "status": "Success"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Post Deployment Failure Slack Notification
+        if: failure()
+        id: slack-failure
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          payload: |
+            {
+              "message": "Task Orchestrator Service deployment failed.",
+              "service": "Task Orchestrator Service",
+              "status": "Failure"
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

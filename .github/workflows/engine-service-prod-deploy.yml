@@ -79,7 +79,23 @@ jobs:
         with:
           payload: |
             {
-              "message": "Engine Service has been successfully deployed to production."
+              "message": "Engine Service has been successfully deployed to production.",
+              "service": "Engine Service",
+              "status": "Success"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Post Deployment Failure Slack Notification
+        if: failure()
+        id: slack-failure
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          payload: |
+            {
+              "message": "Engine Service deployment failed.",
+              "service": "Engine Service",
+              "status": "Failed"
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

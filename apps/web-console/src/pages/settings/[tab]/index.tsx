@@ -7,6 +7,7 @@ import { NOT_FOUND, SETTINGS } from "@/routes/constants";
 import { settingTabList } from "@/routes/config";
 import { Account, TeamMembers, Integrations } from "@/components/settings";
 import { withPageSessionAuthRequired } from "@/auth0/utils";
+import Head from "next/head";
 
 export default function SettingsPage(props: any) {
   const { accessToken, user } = props;
@@ -36,6 +37,9 @@ export default function SettingsPage(props: any) {
 
   return (
     <>
+      <Head>
+        <title>Namora | Setting</title>
+      </Head>
       <div className="pb-3 border-b">
         <h3 className="text-xl font-semibold leading-6 text-gray-900">
           Settings

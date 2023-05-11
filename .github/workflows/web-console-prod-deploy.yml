@@ -73,13 +73,30 @@ jobs:
         with:                                                            
           args: rollout status deploy web-console-deployment -n $KUBE_NAMESPACE
       
-      - name: Post Deployment Slack Notification
-        id: slack
+      - name: Post Deployment Success Slack Notification
+        if: success()
+        id: slack-success
         uses: slackapi/slack-github-action@v1.23.0
         with:
           payload: |
             {
-              "message": "Web Console has been successfully deployed to production."
+              "message": "Web Console has been successfully deployed to production.",
+              "service": "web-console",
+              "status": "success"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Post Deployment Failure Slack Notification
+        if: failure()
+        id: slack-failure
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          payload: |
+            {
+              "message": "Web Console deployment failed.",
+              "service": "web-console",
+              "status": "failure"
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

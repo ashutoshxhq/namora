@@ -73,13 +73,29 @@ jobs:
         with:                                                            
           args: rollout status deploy user-socket-service-deployment -n $KUBE_NAMESPACE
       
-      - name: Post Deployment Slack Notification
+      - name: Post Deployment Success Slack Notification
         id: slack
         uses: slackapi/slack-github-action@v1.23.0
         with:
           payload: |
             {
-              "message": "User Socket Service has been successfully deployed to production."
+              "message": "User Socket Service has been successfully deployed to production.",
+              "service": "User Socket Service",
+              "status": "success"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Post Deployment Failure Slack Notification
+        if: failure()
+        id: slack-failure
+        uses: slackapi/slack-github-action@v1.23.0
+        with:
+          payload: |
+            {
+              "message": "User Socket Service deployment failed.",
+              "service": "User Socket Service",
+              "status": "failure"
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
