@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-console-deployment
+  labels:
+    name: web-console-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: web-console-pod
+  template:
+    metadata:
+      name: web-console-pod
+      labels:
+        name: web-console-pod
+    spec:
+      containers:
+        - name: web-console-pod
+          image: 538780007699.dkr.ecr.us-west-2.amazonaws.com/web-console:latest
+          ports:
+            - containerPort: 3000
+          env:
+          - name: PORT
+            value: "3000"
+          envFrom:
+          - secretRef:
+              name: namora-secrets
