@@ -31,6 +31,9 @@ async fn main() {
         .with_level(true)
         .with_line_number(true)
         .with_file(true)
+        .with_thread_ids(true)
+        .json()
+        .with_ansi(false)
         .finish();
     tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
     tracing::info!("Creating database pool");

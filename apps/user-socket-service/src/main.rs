@@ -5,8 +5,8 @@ use axum::body::{boxed, BoxBody};
 use axum::routing::get;
 use axum::{error_handling::HandleErrorLayer, http::StatusCode, BoxError, Extension, Router};
 use dotenvy::dotenv;
-use hyper::{Response, Uri, Request, Body};
-use lapin::{ConnectionProperties, Connection};
+use hyper::{Body, Request, Response, Uri};
+use lapin::{Connection, ConnectionProperties};
 use modules::*;
 use state::NamoraAIState;
 use std::{env, net::SocketAddr, time::Duration};
@@ -14,12 +14,11 @@ use tower::ServiceBuilder;
 use tower::ServiceExt;
 use tower_http::{
     cors::{Any, CorsLayer},
-    services::{ServeDir},
+    services::ServeDir,
     trace::TraceLayer,
 };
 use tracing::Level;
 use tracing_subscriber::FmtSubscriber;
-
 
 pub async fn file_handler(uri: Uri) -> Result<Response<BoxBody>, (StatusCode, String)> {
     let res = get_static_file(uri.clone()).await?;
@@ -51,6 +50,12 @@ async fn main() {
     dotenv().ok();
     let subscriber = FmtSubscriber::builder()
         .with_max_level(Level::DEBUG)
+        .with_level(true)
+        .with_line_number(true)
+        .with_file(true)
+        .with_thread_ids(true)
+        .json()
+        .with_ansi(false)
         .finish();
     tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
     let uri = std::env::var("TASK_ORCHESTRATION_BROKER_URI").unwrap();
