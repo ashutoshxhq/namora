@@ -12,23 +12,26 @@ use tower_http::{
     trace::TraceLayer,
 };
 use tracing::Level;
-use tracing_subscriber::FmtSubscriber;
+use tracing_subscriber::{FmtSubscriber, fmt::format::FmtSpan};
 
 use crate::{db::create_pool, state::NamoraAIState};
 
 #[tokio::main]
 async fn main() {
     dotenv().ok();
+
     let subscriber = FmtSubscriber::builder()
-        .with_max_level(Level::DEBUG)
-        .with_level(true)
-        .with_line_number(true)
-        .with_file(true)
-        .with_thread_ids(true)
-        .json()
-        .with_ansi(false)
-        .finish();
+    .with_max_level(Level::DEBUG)
+    .with_level(true)
+    .with_line_number(true)
+    .with_file(true)
+    .with_thread_ids(true)
+    .json()
+    .with_ansi(false)
+    .with_span_events(FmtSpan::CLOSE)
+    .finish();
     tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
+
     let db_url = std::env::var("ENGINE_SERVICE_DATABASE_URL").expect("Unable to get database url");
     let pool = create_pool(db_url).await.unwrap();
     let app = Router::new().merge(router::router()).layer(

@@ -18,7 +18,7 @@ use namora_core::types::{
 };
 use tokio::sync::Mutex;
 use tracing::Level;
-use tracing_subscriber::FmtSubscriber;
+use tracing_subscriber::{FmtSubscriber, fmt::format::FmtSpan};
 use uuid::Uuid;
 
 use crate::{db::create_pool, orchestrator::TaskOrchestrator};
@@ -33,6 +33,7 @@ async fn main() {
         .with_file(true)
         .with_thread_ids(true)
         .json()
+        .with_span_events(FmtSpan::CLOSE)
         .with_ansi(false)
         .finish();
     tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");

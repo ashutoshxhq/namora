@@ -18,6 +18,7 @@ use tower_http::{
     trace::TraceLayer,
 };
 use tracing::Level;
+use tracing_subscriber::fmt::format::FmtSpan;
 use tracing_subscriber::FmtSubscriber;
 
 pub async fn file_handler(uri: Uri) -> Result<Response<BoxBody>, (StatusCode, String)> {
@@ -54,6 +55,7 @@ async fn main() {
         .with_line_number(true)
         .with_file(true)
         .with_thread_ids(true)
+        .with_span_events(FmtSpan::CLOSE)
         .json()
         .with_ansi(false)
         .finish();
