@@ -7,6 +7,7 @@ import {
   ACCOUNT,
   TEAM_MEMBERS,
   INTEGRATIONS,
+  ROOT,
 } from "./constants";
 
 import {
@@ -16,7 +17,7 @@ import {
 } from "@/heroicons";
 
 const routeNameMap = {
-  [CHATS]: "Chats",
+  [ROOT]: "",
   [JOBS]: "Review Jobs",
   [SETTINGS]: "Settings",
   [TEAM_MEMBERS]: "Team Members",
@@ -28,11 +29,11 @@ const routeNameMap = {
 
 export const sideBarMenuList = [
   {
-    id: CHATS,
-    name: routeNameMap[CHATS],
-    path: CHATS,
+    id: ROOT,
+    name: routeNameMap[ROOT],
+    path: ROOT,
     href: {
-      pathname: `/${CHATS}`,
+      pathname: `/${ROOT}`,
       query: {},
     },
     icon: ChatBubbleBottomCenterIcon,

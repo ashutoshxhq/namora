@@ -1,3 +1,4 @@
+const ROOT = "";
 const CHATS = "chats";
 const NOT_FOUND = "404";
 const JOBS = "review-jobs";
@@ -9,6 +10,7 @@ const TEAM_MEMBERS = "team-members";
 const INTEGRATIONS = "integrations";
 
 export {
+  ROOT,
   JOBS,
   PLAN,
   ARTIFACT,

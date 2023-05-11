@@ -2,15 +2,6 @@
 const nextConfig = {
   reactStrictMode: true,
   output: 'standalone',
-  redirects: async () => {
-    return [
-      {
-        source: "/",
-        destination: "/chats",
-        permanent: true,
-      },
-    ];
-  },
   images: {
     dangerouslyAllowSVG: true,
     remotePatterns: [

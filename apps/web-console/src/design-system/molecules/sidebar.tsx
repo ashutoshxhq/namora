@@ -20,14 +20,14 @@ export const Sidebar = () => {
   return (
     <div className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-50 lg:block lg:w-20 lg:overflow-y-auto lg:bg-gray-900 lg:pb-4">
       <div className="flex items-center justify-center h-16 shrink-0">
-        <Link href={`/${CHATS}`}>
+        <Link href={`/`}>
           <Image
-            className="w-auto h-8"
+            className="w-auto h-7"
             src="/namora.svg"
             title="Namora.ai"
-            alt="Your Company"
-            width="100"
-            height="100"
+            alt="company logo"
+            width="80"
+            height="80"
           />
         </Link>
       </div>
