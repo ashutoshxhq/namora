@@ -12,7 +12,7 @@ use engine_db_repository::{
 };
 use namora_core::types::{db::DbPool, error::Error};
 use serde_json::{json, Value};
-use std::collections::HashMap;
+use std::{collections::HashMap, fs};
 use uuid::Uuid;
 
 use super::types::{RegisterWebhookRequest, RegisterWebhookResponse};
@@ -48,11 +48,20 @@ impl AuthNService {
         // Split the email to extract the domain and query database to find a single user with the same domain
         let email_parts: Vec<&str> = data.email.split('@').collect();
         let domain = email_parts[1];
-        // use a like serach to find a user with the same domain as the email
-        let existing_user: Option<User> = users_dsl::users
-            .filter(users_dsl::email.ilike(format!("%@{}%", domain)))
-            .first::<User>(&mut conn)
-            .optional()?;
+
+        let email_providers: Vec<String> =
+            serde_json::from_str(&fs::read_to_string("./public/email_providers.json")?)?;
+
+        let mut existing_user: Option<User> = None;
+
+        if email_providers.contains(&domain.to_string()) {
+            tracing::info!("Common email provider, ignoring team linking");
+        } else {
+            existing_user = users_dsl::users
+                .filter(users_dsl::email.ilike(format!("%@{}%", domain)))
+                .first::<User>(&mut conn)
+                .optional()?;
+        }
 
         if let Some(user) = existing_user {
             tracing::info!(

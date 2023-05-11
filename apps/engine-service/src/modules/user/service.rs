@@ -28,22 +28,16 @@ impl UserService {
 
     pub fn get_users(
         &self,
-        query: String,
         offset: Option<i64>,
         limit: Option<i64>,
+        team_id: Uuid,
     ) -> Result<Vec<User>, Error> {
         let mut conn = self.pool.clone().get()?;
         let offset = if let Some(offset) = offset { offset } else { 0 };
         let limit = if let Some(limit) = limit { limit } else { 10 };
 
         let results: Vec<User> = dsl::users
-            .filter(
-                dsl::username
-                    .ilike(format!("%{}%", query.clone()))
-                    .or(dsl::email.ilike(format!("%{}%", query.clone())))
-                    .or(dsl::firstname.ilike(format!("%{}%", query.clone())))
-                    .or(dsl::lastname.ilike(format!("%{}%", query.clone()))),
-            )
+            .filter(dsl::team_id.eq(team_id))
             .offset(offset)
             .limit(limit)
             .load(&mut conn)?;
