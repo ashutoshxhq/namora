@@ -10,6 +10,8 @@ pub async fn generate_user_response(
     executed_actions: Vec<Action>,
     messages: Vec<Message>
 ) -> Result<String, Error> {
+    tracing::info!("Generating user response");
+
     let actions = executed_actions
         .iter()
         .map(|action| {
@@ -33,24 +35,31 @@ pub async fn generate_user_response(
         "./public/schemas/generate_user_response.txt",
     )?)?;
 
+    tracing::info!("Prompt with schema created");
+
     let jsonllm = JsonLLM::new(prompt_with_data, json_schema, messages);
     let jsonllm_result = jsonllm.generate().await?;
+    tracing::info!("User response generated");
 
     let message = jsonllm_result.get("message");
     if let Some(message) = message {
+        tracing::info!("User response message found");
         match message.as_str() {
             Some(message) => {
+                tracing::info!("User response message converted to string");
                 return Ok(message.to_string());
             }
             None => {
+                tracing::error!("Deserialization to string failes, Unable to generate user response");
                 return Err(Error::from(
-                    "Serialization to string failes, Unable to generate user response",
+                    "Deserialization to string failes, Unable to generate user response",
                 ));
             }
         }
     } else {
+        tracing::error!("No user response message found, Unable to generate user response");
         return Err(Error::from(
-            "Unable to generate user response",
+            "No user response message found, Unable to generate user response",
         ));
     }
 }

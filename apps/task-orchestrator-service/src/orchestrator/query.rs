@@ -15,6 +15,8 @@ pub async fn is_action_execution_plan_required(
     executed_actions: Vec<Action>,
     messages: Vec<Message>,
 ) -> Result<bool, Error> {
+    tracing::info!("Checking if action execution plan is required");
+
     let prompt = fs::read_to_string("./public/prompts/is_action_execution_plan_required.txt")?;
     let reg = Handlebars::new();
     let executed_actions = executed_actions
@@ -40,12 +42,15 @@ pub async fn is_action_execution_plan_required(
         "./public/schemas/is_action_execution_plan_required_response.txt",
     )?)?;
 
+    tracing::info!("Prompt with schema created");
+
     let jsonllm = JsonLLM::new(prompt_with_data, json_schema, messages);
     let jsonllm_result = jsonllm.generate().await.unwrap();
     let is_action_execution_plan_required = jsonllm_result.get("is_action_execution_plan_required");
     if let Some(is_action_execution_plan_required) = is_action_execution_plan_required {
         match is_action_execution_plan_required.as_bool() {
             Some(is_action_execution_plan_required) => {
+                tracing::info!("Action execution plan required: {}", is_action_execution_plan_required);
                 return Ok(is_action_execution_plan_required);
             }
             None => {
@@ -66,6 +71,7 @@ pub async fn create_non_deterministic_plan(
     messages: Vec<Message>,
     identified_actions: Vec<Action>,
 ) -> Result<String, Error> {
+    tracing::info!("Creating non deterministic plan");
     let actions = identified_actions
         .iter()
         .map(|action| {
@@ -85,9 +91,12 @@ pub async fn create_non_deterministic_plan(
     let json_schema = serde_json::from_str(&fs::read_to_string(
         "./public/schemas/create_non_deterministic_plan_response.txt",
     )?)?;
+    tracing::info!("Prompt with schema created");
 
     let jsonllm = JsonLLM::new(prompt_with_data, json_schema, messages);
     let jsonllm_result = jsonllm.generate().await?;
+
+    tracing::info!("Non deterministic plan generated");
 
     let plan: Option<&Value> = jsonllm_result.get("plan");
 
@@ -101,6 +110,7 @@ pub async fn create_non_deterministic_plan(
 }
 
 pub async fn identify_actions(non_deterministic_plan: String, top_k: u32) -> Result<Vec<Action>, Error> {
+    tracing::info!("Identifying actions");
     let mut actions: Vec<Action> = Vec::new();
 
     let client = Client::new();
@@ -113,11 +123,11 @@ pub async fn identify_actions(non_deterministic_plan: String, top_k: u32) -> Res
     tracing::info!("recieved openai embeddings response");
 
     let embedding = response.data[0].embedding.clone();
-
     let client = reqwest::Client::new();
     let pinecone_api_key = env::var("PINECONE_API_KEY")?;
     let pinecone_index_host = env::var("PINECONE_INDEX_HOST")?;
 
+    tracing::info!("sending pinecone request to find actions");
     let response = client
         .post(format!("https://{}/query", pinecone_index_host))
         .json(&json!({
@@ -135,10 +145,10 @@ pub async fn identify_actions(non_deterministic_plan: String, top_k: u32) -> Res
     let response_data: PineconeQueryResponse = response.json().await?;
 
     for doc in &response_data.matches {
-        tracing::info!("Actions: {:?}", doc.metadata);
         let action: Action = serde_json::from_value(doc.metadata.clone())?;
         actions.push(action);
     }
+    tracing::info!("serialised actions");
 
     Ok(actions)
 }
@@ -149,6 +159,8 @@ pub async fn create_deterministic_plan(
     identified_actions: Vec<Action>,
     messages: Vec<Message>,
 ) -> Result<HashMap<u32, Action>, Error> {
+    tracing::info!("Creating deterministic plan");
+
     let prompt = fs::read_to_string("./public/prompts/create_deterministic_plan.txt")?;
     let reg = Handlebars::new();
     let actions = identified_actions
@@ -169,13 +181,16 @@ pub async fn create_deterministic_plan(
             "plan": non_deterministic_plan
         }),
     )?;
+    tracing::info!("Prompt with data created");
 
     let json_schema = serde_json::from_str(&fs::read_to_string(
         "./public/schemas/create_deterministic_plan_response.txt",
     )?)?;
 
+    tracing::info!("Prompt with schema created");
     let jsonllm = JsonLLM::new(prompt_with_data, json_schema, messages);
     let jsonllm_result = jsonllm.generate().await?;
+    tracing::info!("Deterministic plan generated");
 
     let deterministic_plan = jsonllm_result.get("deterministic_plan");
     if let Some(deterministic_plan) = deterministic_plan {
@@ -189,8 +204,10 @@ pub async fn create_deterministic_plan(
                 }
             }
         }
+        tracing::info!("Deterministic action plan deserialised");
         Ok(deterministic_action_plan)
     } else {
-        return Err(Error::from("Unable to create a deterministic plan"));
+        tracing::error!("No deterministic plan found");
+        return Err(Error::from("No deterministic plan found"));
     }
 }

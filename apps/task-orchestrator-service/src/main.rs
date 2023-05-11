@@ -74,21 +74,28 @@ async fn main() {
     consumer.set_delegate(move |delivery: DeliveryResult| {
         let worker_context_mutex = Arc::clone(&worker_context);
         async move {
+            tracing::info!("Recieved a message from queue");
             let delivery = match delivery {
                 Ok(Some(delivery)) => delivery,
-                Ok(None) => return,
+                Ok(None) => {
+                    tracing::info!("No message in delivery");
+                    return
+                },
                 Err(error) => {
                     tracing::error!("Failed to consume queue message {}", error);
                     return;
                 }
             };
+            tracing::info!("Successfully consumed queue message");
             let worker_ctx = {
                 let context = worker_context_mutex.lock().await;
                 (*context).clone()
             };
-            tracing::info!("Received message");
+            tracing::info!("Worker context created");
+            tracing::info!("Trying to parse message");
             match String::from_utf8(delivery.data.clone()) {
                 Ok(message) => {
+                    tracing::info!("Message parsed");
                     let message_with_context: MessageWithContext =
                         match serde_json::from_str(&(message)) {
                             Ok(message) => message,
@@ -97,18 +104,23 @@ async fn main() {
                                 return;
                             }
                         };
-                    tracing::info!("Message Serialised");
+                    tracing::info!("Message Serialised ti MessageWithContext");
+                    tracing::info!("Trying to ack message");
                     if let Err(error) = delivery.ack(BasicAckOptions::default()).await {
                         tracing::error!("Failed to ack message: {}", error);
                     }
                     tracing::info!("Message Acked");
-                    let orchestrator = TaskOrchestrator::new();
 
+                    tracing::info!("Trying to orchestrate message");
+                    let orchestrator = TaskOrchestrator::new();
+                    tracing::info!("Orchestrator created");
                     let response = orchestrator.orchestrate(message_with_context.clone()).await;
                     match response {
                         Ok(response) => {
-                            tracing::info!("Message Orchestrated");
+                            tracing::info!("Message Orchestrated and response recieved");
+                            tracing::info!("Trying to publish response");
                             for response_message_with_context in response {
+                                tracing::info!("Trying to serialize response message");
                                 let message_json =
                                     serde_json::to_vec(&response_message_with_context);
                                 if let Err(error) = message_json {
@@ -118,6 +130,7 @@ async fn main() {
                                     );
                                     return;
                                 }
+                                tracing::info!("Response message serialized to json");
                                 if response_message_with_context.message.reciever == "system" {
                                     tracing::info!("Publishing message to system");
                                     let task_orchestrator_queue_routing_key = std::env::var(
@@ -173,12 +186,13 @@ async fn main() {
                         }
                         Err(error) => {
                             tracing::error!("Failed to orchestrate message: {}", error);
+                            tracing::info!("Trying to publish error message to user");
                             let context = message_with_context.context.clone();
                             let response_message_with_context = MessageWithContext {
                                 message: Message {
                                     message_type: "response".to_string(),
                                     reciever: "user".to_string(),
-                                    content: "My apologies, something went wrong executing actions. Please try again or refine the prompt.".to_string(),
+                                    content: "My apologies, something went wrong. Please try again or refine your query.".to_string(),
                                     additional_info: None,
                                     created_at: chrono::Utc::now().into(),
                                 },
@@ -200,6 +214,7 @@ async fn main() {
                             if let Err(error) = res {
                                 tracing::error!("Failed to publish message: {}", error);
                             }
+                            tracing::info!("Published message to user");
                         }
                     };
                 }

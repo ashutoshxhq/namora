@@ -25,7 +25,11 @@ pub async fn generic_agent_socket(
     claims: Claims,
     auth_token: String,
 ) -> Result<(), Error> {
+    tracing::info!("Starting generic agent socket");
+
+    tracing::info!("Splitting socket into tx and rx");
     let (mut socket_tx, mut socket_rx) = socket.split();
+    tracing::info!("Creating channel to send messages to task orchestrator or user");
     let (tx, mut rx) = mpsc::channel::<MessageWithContext>(32);
 
     let channel = app.channel.clone();
@@ -46,6 +50,7 @@ pub async fn generic_agent_socket(
         }
     };
 
+    tracing::info!("Binding queue to recieve messages from task orchestrator");
     let mut consumer = match channel
         .basic_consume(
             &format!("namora.user.{}", user_id.to_string()),
@@ -66,6 +71,7 @@ pub async fn generic_agent_socket(
         }
     };
 
+    tracing::info!("Creating a message context to store session data");
     let session_context_mutex = Arc::new(Mutex::new(Context {
         user_id: claims.namora_user_id,
         team_id: claims.namora_team_id,
@@ -79,6 +85,7 @@ pub async fn generic_agent_socket(
             executed_actions: Vec::new(),
         },
     }));
+
     tracing::info!("Sending first message to User");
     let message = json!({
         "reciever": "user",
@@ -91,6 +98,7 @@ pub async fn generic_agent_socket(
     }
 
     // Create a worker to Health check ping message every 2 second
+    tracing::info!("Creating a worker to send ping message every 2 seconds");
     let socket_health_check_worker_session_context_mutex = session_context_mutex.clone();
     let socket_health_check_worker_worker_tx: mpsc::Sender<MessageWithContext> = tx.clone();
     let mut socket_health_check_worker = tokio::spawn(async move {
@@ -110,6 +118,7 @@ pub async fn generic_agent_socket(
                 },
                 context,
             };
+            tracing::info!("Sending ping message to client");
             let res = socket_health_check_worker_worker_tx.send(message_with_context).await;
             if let Err(e) = res {
                 tracing::error!("Failed to send message to worker, error: {}", e);
@@ -117,25 +126,30 @@ pub async fn generic_agent_socket(
         }
     });
 
+    tracing::info!("Creating a worker to send messages to User and Task Orchestrator");
     let message_router_worker_channel = channel.clone();
     let mut message_router_worker = tokio::spawn(async move {
+        tracing::info!("Listening for messages from User and Task Orchestrator");
         while let Some(message_with_context) = rx.recv().await {
+            tracing::info!("Message recieved");
             if message_with_context.message.reciever == "user" {
+                tracing::info!("Sending message to User");
                 let user_message = serde_json::to_string(&message_with_context.message);
                 match user_message {
                     Ok(user_message) => {
                         let res = socket_tx.send(WSMessage::Text(user_message)).await;
                         if let Err(e) = res {
-                            tracing::error!("generic_agent_socket: websocket error: {}", e);
+                            tracing::error!("Error: {}", e);
                         }
+                        tracing::info!("Message sent to User");
                     }
                     Err(e) => {
-                        tracing::error!("generic_agent_socket: websocket error: {}", e);
+                        tracing::error!("Error: {}", e);
                     }
                 }
             } else if message_with_context.message.reciever == "system" {
+                tracing::info!("Sending message to Task Orchestrator");
                 if let Ok(message_with_context) = serde_json::to_value(message_with_context) {
-                    tracing::info!("Sending message to Task Orchestrator");
                     if let Ok(message_with_context) = serde_json::to_vec(&message_with_context) {
                         let task_orchestrator_queue_routing_key =
                             std::env::var("TASK_ORCHESTRATION_QUEUE")
@@ -175,30 +189,39 @@ pub async fn generic_agent_socket(
         }
     });
 
+    tracing::info!("Creating a worker to recieve messages from User");
     let socket_reciever_worker_tx: mpsc::Sender<MessageWithContext> = tx.clone();
     let socket_reciever_worker_session_context_mutex = session_context_mutex.clone();
     let mut socket_reciever_worker = tokio::spawn(async move {
+        tracing::info!("Listening for messages from User");
         while let Some(Ok(msg)) = socket_rx.next().await {
+            tracing::info!("Message recieved from User");
             let res = process_socket_message(msg).await;
             match res {
                 Ok(Some(message)) => {
+                    tracing::info!("Sending message to task orchestrator");
                     let mut context = {
                         let context = socket_reciever_worker_session_context_mutex.lock().await;
                         context.clone()
                     };
                     context.messages.push(message.clone());
-                    let message_with_context = MessageWithContext { message, context };
+                    let message_with_context: MessageWithContext = MessageWithContext { message, context };
                     if let Err(e) = socket_reciever_worker_tx.send(message_with_context).await {
-                        tracing::error!("generic_agent_socket: websocket error: {}", e);
+                        tracing::error!("Error: {}", e);
                     }
+                    tracing::info!("Message sent to task orchestrator");
                 }
-                Ok(None) => {}
+                Ok(None) => {
+                    tracing::info!("No message to send to task orchestrator");
+                }
                 Err(e) => {
-                    tracing::error!("generic_agent_socket: websocket error: {}", e);
+                    tracing::error!("Error: {}", e);
                 }
             }
         }
     });
+
+    tracing::info!("Creating a worker to recieve messages from Task Orchestrator");
     let mut task_orchestrator_reciever_worker = tokio::spawn(async move {
         let tx = tx.clone();
         let session_context_mutex = session_context_mutex.clone();
@@ -209,6 +232,7 @@ pub async fn generic_agent_socket(
                     let res = process_task_orchestrator_message(delivery).await;
                     match res {
                         Ok(message_with_context) => {
+                            tracing::info!("Sending message to User");
                             {
                                 let mut context = session_context_mutex.lock().await;
                                 context.messages = message_with_context.context.messages.clone();
@@ -218,14 +242,15 @@ pub async fn generic_agent_socket(
                             if let Err(e) = tx.send(message_with_context).await {
                                 tracing::error!("generic_agent_socket: {}", e);
                             }
+                            tracing::info!("Message sent to User");
                         }
                         Err(e) => {
-                            tracing::error!("generic_agent_socket: websocket error: {}", e);
+                            tracing::error!("Error: {}", e);
                         }
                     }
                 }
                 Err(e) => {
-                    tracing::error!("generic_agent_socket: websocket error: {}", e);
+                    tracing::error!("Error: {}", e);
                 }
             }
         }

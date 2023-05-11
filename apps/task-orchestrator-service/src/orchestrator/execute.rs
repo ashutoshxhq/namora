@@ -12,6 +12,8 @@ pub async fn extract_action_input(
     action: Action,
     messages: Vec<Message>,
 ) -> Result<Value, Error> {
+    tracing::info!("Extracting action input for action: {}", action.id);
+
     let actions = executed_actions
         .iter()
         .map(|action| {
@@ -34,8 +36,10 @@ pub async fn extract_action_input(
     )?;
     let json_schema: Value = serde_json::from_str(&action.input_json_schema)?;
 
+    tracing::info!("Prompt with schema created");
     let jsonllm = JsonLLM::new(prompt_with_data, json_schema, messages);
     let jsonllm_result = jsonllm.generate().await?;
-
+    tracing::info!("Action input generated");
+    
     Ok(jsonllm_result)
 }
