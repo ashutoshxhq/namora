@@ -5,6 +5,8 @@ import {
   useQuery,
   useQueries,
   useMutation,
+  dehydrate,
+  Hydrate,
 } from "@tanstack/react-query";
 import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persister";
 import {
@@ -45,4 +47,6 @@ export {
   useMutation,
   useQueryClient,
   ReactQueryDevtools,
+  dehydrate,
+  Hydrate,
 };
