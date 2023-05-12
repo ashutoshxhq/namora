@@ -10,11 +10,7 @@ pub async fn register_webhook(
     Extension(namora): Extension<NamoraAIState>,
     Json(data): Json<RegisterWebhookRequest>,
 ) -> impl IntoResponse {
-    let res = namora
-        .services
-        .authn
-        .register_webhook(data)
-        .await;
+    let res = namora.services.authn.register_webhook(data).await;
     match res {
         Ok(res) => (
             StatusCode::OK,
@@ -23,12 +19,15 @@ pub async fn register_webhook(
                 "data": res
             })),
         ),
-        Err(err) => (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            Json(json!({
-                "status": "error",
-                "error": err.to_string()
-            })),
-        ),
+        Err(err) => {
+            tracing::error!("Error registering webhook: {}", err);
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({
+                    "status": "error",
+                    "error": err.to_string()
+                })),
+            )
+        }
     }
 }
