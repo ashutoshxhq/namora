@@ -3,7 +3,6 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize)]
 pub struct GetUsersByQuery {
-    pub query: String,
     pub offset: Option<i64>,
     pub limit: Option<i64>,
 }
