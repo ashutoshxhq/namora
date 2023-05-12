@@ -1,5 +1,41 @@
 [
     {
+        "id": "create_contact",
+        "name": "Create a new contact in the CRM system",
+        "description": "Create a new contact in the CRM system with comprehensive information such as name, email, phone number, job title, company, and custom fields. This function ensures the contact is accurately added to the CRM database, enabling associations with deals, tasks, and other CRM objects. It also performs validation checks and deduplication strategies to maintain data integrity.",
+        "sample_queries": [
+            "Can you add a contact named John Smith with john@email.com?",
+            "Add Jane Doe to our contacts, her number is 555-1234.",
+            "I just met Mike Johnson, can you save his info? His email is mike.johnson@company.com.",
+            "Please create a new contact for Sarah Parker, sarahp@domain.com, and she's a Marketing Manager.",
+            "Add a contact: Alice Cooper, phone: 555-6789, email: a.cooper@website.com.",
+            "Store the contact info for Tom Harris, tom.harris@workemail.com.",
+            "Include Linda Green in our contact list, her email is lindagreen@companyxyz.com.",
+            "Save the info for Peter Brown, his email is peter.brown@bizmail.com.",
+            "I need you to store a new contact, Emma Wilson, her email is emma@emailexample.com.",
+            "Add a new contact for David Martin, david.martin@hisemail.com, and he's a Sales Director."
+        ],
+        "input_format": ""
+    },
+    {
+        "id": "update_contact",
+        "name": "Update an existing contact's information within the CRM system",
+        "description": "Update an existing contact's information within the CRM system, including name, email, phone number, job title, company, and custom fields. This function maintains accuracy and up-to-date information in the CRM database by reflecting contact detail changes or corrections. It also handles validation checks and updates related CRM objects (e.g., associated deals, tasks).",
+        "sample_queries": [
+            "Can you change John Smith's email to johnsmith@newemail.com?",
+            "Update Jane Doe's phone number to 555-9876.",
+            "Please change Mike Johnson's job title to Project Manager.",
+            "I need Sarah Parker's company name updated to ABC Corporation.",
+            "Change Alice Cooper's phone number to 555-2468 and her job title to HR Manager.",
+            "Update Tom Harris' email to tom.harris@newworkemail.com.",
+            "Modify Linda Green's contact information, her new phone number is 555-1357.",
+            "Change Peter Brown's job title to Senior Consultant.",
+            "Update Emma Wilson's contact info, her new email is emma@newemailexample.com.",
+            "David Martin got promoted, please update his job title to Senior Sales Director."
+        ],
+        "input_format": "{\r\n    \"id\": string(required: id of the string),\r\n    \"contact\": {\r\n        \"accountId\": string(optional: The Id of the account to associate this contact with),\r\n        \"additional\": object(optional: Create any property in the downstream CRM, such as a custom or native property. For a list of all properties see \/details.),\r\n        \"email\": string(optional),\r\n        \"firstName\": string(optional),\r\n        \"jobTitle\": string(optional),\r\n        \"lastName\": string(optional),\r\n        \"mobilePhone\": string(optional),\r\n        \"ownerUserId\": string(optional)\r\n    }\r\n}"
+    },
+    {
         "id": "search_contact",
         "name": "Search for contacts in the CRM system",
         "description": "Search for contacts in the CRM system using various criteria, including name, email, phone number, and a wide range of date-related filters (e.g., created time, updated time, last email opened, last contacted, and activity timestamps). This function supports advanced filtering and sorting options for efficient and targeted search results.",
