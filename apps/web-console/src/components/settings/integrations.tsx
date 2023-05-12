@@ -1,8 +1,9 @@
 import React from "react";
 import { Switch } from "@headlessui/react";
+import { UserGroupIcon } from "@heroicons/react/24/outline";
+
 import { useVesselCRMIntegration } from "@/hooks/settings/useVesselCRMIntegration";
 import { Alert } from "@/design-system/molecules/alert";
-import { UserGroupIcon } from "@heroicons/react/24/outline";
 
 const statuses = {
   Connected: "text-green-700 bg-green-50 ring-green-600/20",
@@ -10,13 +11,11 @@ const statuses = {
 };
 
 export const Integrations = (props: any) => {
-  const {
-    isConnectionEnabled,
-    connectionStatus,
-    alertProps,
-    handleClickOnConnect,
-    handleClickOnDisconnect,
-  } = useVesselCRMIntegration(props);
+  const connectionStatus = props?.connectionStatus;
+  const isCRMConnected = props?.isCRMConnected;
+
+  const { alertProps, handleClickOnConnect, handleClickOnDisconnect } =
+    useVesselCRMIntegration(props);
 
   const handleClickOnConnectionChange = (checked: boolean) => {
     if (checked) {
@@ -34,7 +33,7 @@ export const Integrations = (props: any) => {
       >
         <div
           className={`overflow-hidden border border-gray-200 bg-neutral-50 rounded-xl bg-gradient-to-r from-blue-50 ${
-            isConnectionEnabled ? "to-green-50" : "to-red-50"
+            isCRMConnected ? "to-green-50" : "to-red-50"
           }`}
         >
           <div className="flex items-center justify-between p-6 bg-white border-b gap-x-4 border-gray-900/2">
@@ -50,21 +49,20 @@ export const Integrations = (props: any) => {
               </p>
             </div>
             <Switch
-              checked={isConnectionEnabled}
+              checked={isCRMConnected}
               onChange={handleClickOnConnectionChange}
               className={`${
-                isConnectionEnabled ? "bg-indigo-600" : "bg-gray-200"
+                isCRMConnected ? "bg-indigo-600" : "bg-gray-200"
               } relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2`}
             >
-              <span className="sr-only">Use setting</span>
               <span
                 className={`${
-                  isConnectionEnabled ? "translate-x-5" : "translate-x-0"
+                  isCRMConnected ? "translate-x-5" : "translate-x-0"
                 } pointer-events-none relative inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`}
               >
                 <span
                   className={`${
-                    isConnectionEnabled
+                    isCRMConnected
                       ? "opacity-0 duration-100 ease-out"
                       : "opacity-100 duration-200 ease-in"
                   } absolute inset-0 flex h-full w-full items-center justify-center transition-opacity`}
@@ -86,7 +84,7 @@ export const Integrations = (props: any) => {
                 </span>
                 <span
                   className={`${
-                    isConnectionEnabled
+                    isCRMConnected
                       ? "opacity-100 duration-200 ease-in"
                       : "opacity-0 duration-100 ease-out"
                   } absolute inset-0 flex h-full w-full items-center justify-center transition-opacity`}
@@ -111,7 +109,7 @@ export const Integrations = (props: any) => {
                   className={`${
                     statuses["Connected"]
                   } rounded-md py-1 px-2 text-xs font-medium ring-1 ring-inset ${
-                    isConnectionEnabled ? "" : "hidden"
+                    isCRMConnected ? "" : "hidden"
                   }`}
                 >
                   <p className="text-xs font-medium text-green-700 capitalize">{`${connectionStatus?.toLocaleLowerCase()}`}</p>
@@ -120,7 +118,7 @@ export const Integrations = (props: any) => {
                   className={`${
                     statuses["Connected"]
                   } rounded-md py-1 px-2 text-xs font-medium ring-1 ring-inset ${
-                    isConnectionEnabled ? "" : "hidden"
+                    isCRMConnected ? "" : "hidden"
                   }`}
                 >
                   <p className="font-medium text-green-700">Connected</p>
@@ -129,7 +127,7 @@ export const Integrations = (props: any) => {
                   className={`${
                     statuses["Disconnected"]
                   } rounded-md py-1 px-2 text-xs font-medium ring-1 ring-inset ${
-                    isConnectionEnabled ? "hidden" : ""
+                    isCRMConnected ? "hidden" : ""
                   }`}
                 >
                   <p className="font-medium text-red-700">Disconnected</p>

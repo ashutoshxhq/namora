@@ -5,7 +5,7 @@ import Link from "next/link";
 import { sideBarMenuList } from "@/routes/config";
 import { classNames } from "@/utils";
 import { useRouter } from "next/router";
-import { CHATS, SETTINGS } from "@/routes/constants";
+import { SETTINGS } from "@/routes/constants";
 
 export const Sidebar = () => {
   const router = useRouter();
@@ -33,22 +33,26 @@ export const Sidebar = () => {
       </div>
       <nav className="mt-8">
         <ul role="list" className="flex flex-col items-center space-y-1">
-          {sideBarMenuList.map((item, index) => (
-            <li key={item.id}>
-              <Link
-                href={item.href}
-                className={classNames(
-                  _selectedIndex === index
-                    ? "bg-gray-800 text-white"
-                    : "text-gray-400 hover:text-white hover:bg-gray-800",
-                  "group flex gap-x-3 rounded-md p-3 text-sm leading-6 font-semibold"
-                )}
-              >
-                <item.icon className="w-6 h-6 shrink-0" aria-hidden="true" />
-                <span className="sr-only">{item.name}</span>
-              </Link>
-            </li>
-          ))}
+          {sideBarMenuList.map((item, index) => {
+            const decodedURI = decodeURIComponent(item.href.pathname);
+
+            return (
+              <li key={item.id}>
+                <Link
+                  href={decodedURI}
+                  className={classNames(
+                    _selectedIndex === index
+                      ? "bg-gray-800 text-white"
+                      : "text-gray-400 hover:text-white hover:bg-gray-800",
+                    "group flex gap-x-3 rounded-md p-3 text-sm leading-6 font-semibold"
+                  )}
+                >
+                  <item.icon className="w-6 h-6 shrink-0" aria-hidden="true" />
+                  <span className="sr-only">{item.name}</span>
+                </Link>
+              </li>
+            );
+          })}
         </ul>
       </nav>
     </div>

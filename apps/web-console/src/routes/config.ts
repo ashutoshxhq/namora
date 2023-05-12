@@ -1,5 +1,4 @@
 import {
-  CHATS,
   JOBS,
   SETTINGS,
   PLAN,
@@ -55,7 +54,7 @@ export const sideBarMenuList = [
     name: routeNameMap[SETTINGS],
     path: SETTINGS,
     href: {
-      pathname: `/${SETTINGS}/${ACCOUNT}`,
+      pathname: decodeURIComponent(`/${SETTINGS}?${ACCOUNT}=true`),
       query: {},
     },
     icon: Cog8ToothIcon,
@@ -64,7 +63,10 @@ export const sideBarMenuList = [
 ];
 
 export const userNavigation = [
-  { name: "Your profile", href: `/${SETTINGS}/${ACCOUNT}` },
+  {
+    name: "Your profile",
+    href: decodeURIComponent(`/${SETTINGS}?${ACCOUNT}=true`),
+  },
   { name: "Sign out", href: "/api/auth/logout" },
 ];
 
@@ -97,7 +99,7 @@ export const settingTabList = [
     name: routeNameMap[ACCOUNT],
     path: ACCOUNT,
     href: {
-      pathname: `${SETTINGS}/${ACCOUNT}`,
+      pathname: decodeURIComponent(`${SETTINGS}?${ACCOUNT}=true`),
       query: {},
     },
     current: false,
@@ -107,7 +109,7 @@ export const settingTabList = [
     name: routeNameMap[TEAM_MEMBERS],
     path: TEAM_MEMBERS,
     href: {
-      pathname: `${SETTINGS}/${TEAM_MEMBERS}`,
+      pathname: decodeURIComponent(`${SETTINGS}?${TEAM_MEMBERS}=true`),
       query: {},
     },
     current: false,
@@ -117,7 +119,7 @@ export const settingTabList = [
     name: routeNameMap[INTEGRATIONS],
     path: INTEGRATIONS,
     href: {
-      pathname: `${SETTINGS}/${INTEGRATIONS}`,
+      pathname: decodeURIComponent(`${SETTINGS}?${INTEGRATIONS}=true`),
       query: {},
     },
     current: false,

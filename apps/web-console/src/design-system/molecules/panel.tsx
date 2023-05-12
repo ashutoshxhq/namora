@@ -68,7 +68,7 @@ export function NamoraPanel({
                     </div>
                     <div className="relative flex-1 px-4 mt-6 sm:px-6">
                       {/* Your content */}
-                      {data?.name ?? "No data"}
+                      {data?.username ?? "No data"}
                     </div>
                   </div>
                 </Dialog.Panel>

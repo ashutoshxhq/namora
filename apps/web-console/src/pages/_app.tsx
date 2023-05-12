@@ -4,9 +4,10 @@ import { Inter } from "next/font/google";
 import { UserProvider } from "@/auth0";
 
 import {
-  queryClient,
   QueryClientProvider,
   ReactQueryDevtools,
+  Hydrate,
+  QueryClient,
 } from "@/react-query";
 import MainLayout from "@/design-system/layouts/primary";
 import { ReactElement, ReactNode } from "react";
@@ -18,16 +19,18 @@ type NextPageWithLayout = AppProps & {
 };
 
 export default function App({ Component, pageProps }: NextPageWithLayout) {
-  // Called for all the files that are within pages folder
+  const queryClient = new QueryClient();
   return (
     <QueryClientProvider client={queryClient}>
       <ReactQueryDevtools />
       <UserProvider>
-        <div className={`${inter.className}`}>
-          <MainLayout>
-            <Component {...pageProps.session} />
-          </MainLayout>
-        </div>
+        <Hydrate state={pageProps.dehydratedState}>
+          <div className={`${inter.className}`}>
+            <MainLayout>
+              <Component {...pageProps.session} />
+            </MainLayout>
+          </div>
+        </Hydrate>
       </UserProvider>
     </QueryClientProvider>
   );
