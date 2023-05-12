@@ -2,6 +2,7 @@
 
 members = [
     "apps/engine-service",
+    "apps/memory-service",
     "apps/task-orchestrator-service",
     "apps/user-socket-service",
     "libs/engine_db_repository",
