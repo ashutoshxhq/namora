@@ -50,7 +50,7 @@ impl AuthNService {
         let domain = email_parts[1];
 
         let email_providers: Vec<String> =
-            serde_json::from_str(&fs::read_to_string("./public/email_providers.json")?)?;
+            serde_json::from_str(&fs::read_to_string("./public/email-providers.json")?)?;
 
         let mut existing_user: Option<User> = None;
 
