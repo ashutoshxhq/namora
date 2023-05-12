@@ -1,4 +1,4 @@
-use std::env;
+use std::{env, collections::HashMap};
 
 use diesel::prelude::*;
 use engine_db_repository::{
@@ -60,7 +60,7 @@ impl CRMIntegrationService {
             .send()
             .await?;
 
-        let res_data: Value = res.json().await?;
+        let res_data: HashMap<String, String> = res.json().await?;
         let access_token = res_data.get("accessToken");
         let connection_id = res_data.get("connectionId");
 
@@ -123,11 +123,12 @@ impl CRMIntegrationService {
     pub async fn delete_connection(
         &self,
         connection_id: String,
-        _team_id: Uuid,
+        team_id: Uuid,
     ) -> Result<Value, Error> {
         let connection_id_str = decode(&connection_id)?;
         let vessel_api_token = env::var("VESSEL_API_TOKEN")?;
         let client = reqwest::Client::new();
+        tracing::info!("Deleting connection with id {}", connection_id_str);
         let res = client
             .get("https://api.vessel.land/connection/connection")
             .header(
@@ -138,6 +139,30 @@ impl CRMIntegrationService {
             .send()
             .await?;
         let res_body: Value = res.json().await?;
+
+        let mut conn = self.pool.clone().get()?;
+        let _team: Team = diesel::update(dsl::teams.find(team_id))
+        .set(&UpdateTeam {
+            company_name: None,
+            company_website: None,
+            company_description: None,
+            company_address: None,
+            company_email: None,
+            company_phone: None,
+            metadata: None,
+            no_of_seats: None,
+            plan: None,
+            stripe_customer_id: None,
+            stripe_subscription_id: None,
+            subscription_status: None,
+            vessel_access_token: Some(None),
+            vessel_connection_id: Some(None),
+            trial_started_at: None,
+            created_at: None,
+            deleted_at: None,
+            updated_at: None,
+        })
+        .get_result::<Team>(&mut conn)?;
         Ok(res_body)
     }
 
