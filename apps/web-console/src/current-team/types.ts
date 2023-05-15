@@ -3,5 +3,5 @@ export type TTeamMember = {
   firstname: string;
   lastname: string;
   email: string;
-  role: string;
+  company_position: string;
 };

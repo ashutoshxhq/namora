@@ -141,7 +141,9 @@ export const Artifact = () => {
             </li>
           ))}
         </ul>
-        <NamoraPanel {...panelProps} />
+        <NamoraPanel {...panelProps}>
+          <p>Artifacts</p>
+        </NamoraPanel>
       </div>
     </>
   );

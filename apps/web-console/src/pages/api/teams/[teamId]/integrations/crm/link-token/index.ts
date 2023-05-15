@@ -12,10 +12,13 @@ export default async function handler(
   const { query, body } = req;
   const teamId = query.teamId;
 
-  let response = await getAxiosClient(accessToken).post(
-    `/teams/${teamId}/integrations/crm/connections/link-token`,
-    { body }
-  );
-
-  res.json(response?.data);
+  let response;
+  try {
+    response = await getAxiosClient(accessToken).post(
+      `/teams/${teamId}/integrations/crm/connections/link-token`
+    );
+    res.json(response);
+  } catch (error: any) {
+    res.json(error);
+  }
 }
