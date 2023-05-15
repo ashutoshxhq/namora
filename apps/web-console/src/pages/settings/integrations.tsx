@@ -2,7 +2,7 @@ import React from "react";
 import { GetServerSideProps } from "next";
 
 import { Integrations as IntegrationsClientOnly } from "@/components/settings";
-import { QueryClient, dehydrate } from "@/react-query";
+import { dehydrate, queryClient } from "@/react-query";
 import { QUERY_KEY_VESSEL_CRM_CONNECTION_STATUS } from "@/vessel/constants";
 import { QUERY_KEY_TEAMS } from "@/current-team/constants";
 import { teamUsersFetcher, useGetAllTeam } from "@/current-team/hooks";
@@ -32,8 +32,6 @@ export default function Integrations(props: any) {
     isCRMConnected,
   };
 
-  if (isLoading) return <p>Loading...</p>;
-
   return (
     <ClientOnly>
       <IntegrationsClientOnly {...integrationPageProps} />
@@ -42,8 +40,6 @@ export default function Integrations(props: any) {
 }
 
 export const getServerSideProps: GetServerSideProps = async (props: any) => {
-  const queryClient = new QueryClient();
-
   const teamId = props?.user?.namora_team_id;
   await queryClient.prefetchQuery(QUERY_KEY_TEAMS, () =>
     teamUsersFetcher(teamId)

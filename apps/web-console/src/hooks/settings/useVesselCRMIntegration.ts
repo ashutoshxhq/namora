@@ -1,6 +1,6 @@
 import { useVesselLink } from "@vesselapi/react-vessel-link";
 import { useEffect, useRef, useState } from "react";
-import { useQueryClient } from "@/react-query";
+import { queryClient } from "@/react-query";
 
 import { AxiosError, AxiosResponse } from "@/axios";
 import {
@@ -14,8 +14,6 @@ import { QUERY_KEY_TEAMS } from "@/current-team/constants";
 const TIMEOUT_MS = 7000;
 
 export const useVesselCRMIntegration = (props: any) => {
-  const queryClient = useQueryClient();
-
   const accessToken = props?.accessToken;
   const teamId = props?.teamId;
   const connectionId = props?.connectionId;
