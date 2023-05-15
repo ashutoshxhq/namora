@@ -4,12 +4,12 @@ import { Dialog, Transition } from "@headlessui/react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 
 export function NamoraPanel({
-  data,
   open,
+  children,
   setOpen,
 }: {
-  data: any;
   open: boolean;
+  children: JSX.Element;
   setOpen: (value: boolean) => void;
 }) {
   return (
@@ -67,8 +67,7 @@ export function NamoraPanel({
                       </Dialog.Title>
                     </div>
                     <div className="relative flex-1 px-4 mt-6 sm:px-6">
-                      {/* Your content */}
-                      {data?.username ?? "No data"}
+                      {children}
                     </div>
                   </div>
                 </Dialog.Panel>

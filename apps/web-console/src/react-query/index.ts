@@ -15,7 +15,7 @@ import {
 } from "@tanstack/react-query-persist-client";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
-export const queryClient = new QueryClient({
+const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       cacheTime: 1000 * 60 * 60 * 24, // 24 hours
@@ -40,6 +40,7 @@ persistQueryClient({
 });
 
 export {
+  queryClient,
   QueryClient,
   QueryClientProvider,
   useQuery,

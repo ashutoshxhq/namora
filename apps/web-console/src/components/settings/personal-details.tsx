@@ -9,19 +9,10 @@ import { Alert } from "@/design-system/molecules/alert";
 import { FormInputTextField, FormInputEmailField } from "@/design-system/form";
 
 const schema = yup.object().shape({
-  first_name: yup
-    .string()
-    .required("Required")
-    .min(1, "Minimum one character is required"),
-  last_name: yup
-    .string()
-    .required("Required")
-    .min(1, "Minimum one character is required"),
+  first_name: yup.string(),
+  last_name: yup.string(),
   email: yup.string().email().required("Required"),
-  username: yup
-    .string()
-    .required("Required")
-    .min(1, "Minimum one character is required"),
+  username: yup.string(),
 });
 
 export const PersonalDetails = () => {
@@ -33,6 +24,7 @@ export const PersonalDetails = () => {
         last_name: "",
         email: "",
         username: "",
+        company_position: "",
       },
       resolver: yupResolver(schema),
     }),
@@ -101,6 +93,24 @@ export const PersonalDetails = () => {
                   <FormInputTextField
                     id="last-name"
                     name="last_name"
+                    contextId="last-name"
+                    placeholder="..."
+                    {...hookFormProps}
+                  />
+                </div>
+              </div>
+
+              <div className="col-span-full">
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium leading-6 text-black"
+                >
+                  Email
+                </label>
+                <div className="mt-2">
+                  <FormInputEmailField
+                    id="email"
+                    name="email"
                     contextId="email"
                     placeholder="..."
                     {...hookFormProps}
@@ -110,16 +120,16 @@ export const PersonalDetails = () => {
 
               <div className="col-span-full">
                 <label
-                  htmlFor="company-name"
+                  htmlFor="username"
                   className="block text-sm font-medium leading-6 text-black"
                 >
-                  Company name
+                  Username
                 </label>
                 <div className="mt-2">
                   <FormInputTextField
-                    id="company-name"
-                    name="company_name"
-                    contextId="company-name"
+                    id="username"
+                    name="username"
+                    contextId="username"
                     placeholder="..."
                     {...hookFormProps}
                   />
@@ -138,42 +148,6 @@ export const PersonalDetails = () => {
                     id="company-position"
                     name="company_position"
                     contextId="company-position"
-                    placeholder="..."
-                    {...hookFormProps}
-                  />
-                </div>
-              </div>
-
-              <div className="col-span-full">
-                <label
-                  htmlFor="what-do-you-do"
-                  className="block text-sm font-medium leading-6 text-black"
-                >
-                  What do you do?
-                </label>
-                <div className="mt-2">
-                  <FormInputTextField
-                    id="what-do-you-do"
-                    name="what_do_you_do"
-                    contextId="what-do-you-do"
-                    placeholder="..."
-                    {...hookFormProps}
-                  />
-                </div>
-              </div>
-
-              <div className="col-span-full">
-                <label
-                  htmlFor="what-does-your-company-do"
-                  className="block text-sm font-medium leading-6 text-black"
-                >
-                  What does your company do?
-                </label>
-                <div className="mt-2">
-                  <FormInputTextField
-                    id="what-does-your-company-do"
-                    name="what_does_your_company_do"
-                    contextId="what-does-your-company-do"
                     placeholder="..."
                     {...hookFormProps}
                   />

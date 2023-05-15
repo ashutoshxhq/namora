@@ -7,7 +7,7 @@ import {
   QueryClientProvider,
   ReactQueryDevtools,
   Hydrate,
-  QueryClient,
+  queryClient,
 } from "@/react-query";
 import MainLayout from "@/design-system/layouts/primary";
 import { ReactElement, ReactNode } from "react";
@@ -19,7 +19,6 @@ type NextPageWithLayout = AppProps & {
 };
 
 export default function App({ Component, pageProps }: NextPageWithLayout) {
-  const queryClient = new QueryClient();
   return (
     <QueryClientProvider client={queryClient}>
       <ReactQueryDevtools />

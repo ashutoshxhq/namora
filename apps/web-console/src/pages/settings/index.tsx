@@ -39,6 +39,7 @@ export default function SettingsPage(props: any) {
 
   const appProps = {
     teamId: props.user.namora_team_id,
+    userId: props.user.namora_user_id,
     accessToken: props.accessToken,
   };
 

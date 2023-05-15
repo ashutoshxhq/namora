@@ -2,68 +2,19 @@ import { Fragment, useState, useMemo } from "react";
 import { Menu, Transition } from "@headlessui/react";
 import { EllipsisVerticalIcon } from "@heroicons/react/20/solid";
 import Link from "next/link";
-import { useForm, SubmitHandler } from "react-hook-form";
-import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 
 import { classNames } from "@/utils";
 import { NamoraPanel } from "@/design-system/molecules";
 import { getAllFirstChars } from "@/utils/string";
 import { TTeamMember } from "@/current-team/types";
-
-const schema = yup.object().shape({
-  first_name: yup
-    .string()
-    .required("Required")
-    .min(1, "Minimum one character is required"),
-  last_name: yup
-    .string()
-    .required("Required")
-    .min(1, "Minimum one character is required"),
-  email: yup.string().email().required("Required"),
-  username: yup
-    .string()
-    .required("Required")
-    .min(1, "Minimum one character is required"),
-});
+import { FormUpdateUser } from "@/components/settings/form-update-user";
 
 export const TeamMembers = (props: any) => {
   const [open, setOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<any>({});
 
   const teamMembers = props?.data ?? [];
-
-  const [showAlert, setShowAlert] = useState(false);
-  const useFormObj = useMemo(
-    () => ({
-      defaultValues: {
-        first_name: "",
-        last_name: "",
-        email: "",
-        username: "",
-      },
-      resolver: yupResolver(schema),
-    }),
-    []
-  );
-  const hookFormProps = useForm(useFormObj);
-
-  const onFormSubmit: SubmitHandler<any> = (submittedFormData) => {
-    handleClickOnSendMessage(submittedFormData);
-  };
-  const handleClickOnSendMessage = (submittedFormData: any) => {
-    // let data = JSON.stringify({
-    //   Data: {
-    //     message_from: "USER",
-    //     message_to: "AI",
-    //     message: submittedFormData.message,
-    //   },
-    // });
-    // const encoder = new TextEncoder();
-    // const binaryData = encoder.encode(data);
-    // web_socket.send(binaryData.buffer)
-    setShowAlert(true);
-  };
 
   const handleClickOnEdit = (id: string) => {
     setOpen(true);
@@ -75,7 +26,6 @@ export const TeamMembers = (props: any) => {
 
   const panelProps = {
     open,
-    data: selectedMember,
     setOpen,
   };
 
@@ -180,7 +130,13 @@ export const TeamMembers = (props: any) => {
           );
         })}
       </ul>
-      <NamoraPanel {...panelProps} />
+      <NamoraPanel {...panelProps}>
+        <FormUpdateUser
+          selectedMember={selectedMember}
+          {...props}
+          {...panelProps}
+        />
+      </NamoraPanel>
     </div>
   );
 };

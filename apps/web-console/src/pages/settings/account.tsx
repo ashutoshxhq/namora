@@ -4,9 +4,14 @@ import { ParsedUrlQuery } from "querystring";
 
 import { Account as AccountClientOnly } from "@/components/settings";
 import { getSession } from "@/auth0";
+import { ClientOnly } from "@/components/shared/client-only";
 
 export default function Account(props: any) {
-  return <AccountClientOnly {...props} />;
+  return (
+    <ClientOnly>
+      <AccountClientOnly {...props} />
+    </ClientOnly>
+  );
 }
 
 export const getServerSideProps = async (
