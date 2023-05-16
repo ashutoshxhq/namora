@@ -26,7 +26,7 @@ export default function App({ Component, pageProps }: NextPageWithLayout) {
         <Hydrate state={pageProps.dehydratedState}>
           <div className={`${inter.className}`}>
             <MainLayout>
-              <Component {...pageProps.session} />
+              <Component {...pageProps} />
             </MainLayout>
           </div>
         </Hydrate>

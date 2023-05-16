@@ -1,10 +1,8 @@
 import React from "react";
-import { GetServerSidePropsContext, PreviewData } from "next";
-import { ParsedUrlQuery } from "querystring";
 
 import { Account as AccountClientOnly } from "@/components/settings";
-import { getSession } from "@/auth0";
 import { ClientOnly } from "@/components/shared/client-only";
+import { withPageSessionAuthRequired } from "@/auth0/utils";
 
 export default function Account(props: any) {
   return (
@@ -14,14 +12,4 @@ export default function Account(props: any) {
   );
 }
 
-export const getServerSideProps = async (
-  props: GetServerSidePropsContext<ParsedUrlQuery, PreviewData>
-) => {
-  const session = await getSession(props.req, props.res);
-
-  return {
-    props: {
-      session: JSON.parse(JSON.stringify(session)),
-    },
-  };
-};
+export const getServerSideProps = withPageSessionAuthRequired;

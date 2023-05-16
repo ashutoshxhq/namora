@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 
 import { getAccessToken, getSession } from "@/auth0";
-import { getAxiosClient } from "@/axios";
+import { AxiosResponse, getAxiosClient } from "@/axios";
 
 export default async function handler(
   req: NextApiRequest,
@@ -13,6 +13,14 @@ export default async function handler(
   const accessToken = data?.accessToken ?? "";
   const teamId = session?.user?.namora_team_id;
 
-  const response = await getAxiosClient(accessToken).get(`/teams/${teamId}`);
-  res.json(response?.data?.data);
+  try {
+    const response: AxiosResponse = await getAxiosClient(accessToken).get(
+      `/teams/${teamId}`
+    );
+    const status = response?.status;
+    res.status(status).json(response?.data);
+  } catch (error: any) {
+    const status = error?.status;
+    res.status(status).json(error);
+  }
 }

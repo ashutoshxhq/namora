@@ -9,12 +9,14 @@ import { NamoraPanel } from "@/design-system/molecules";
 import { getAllFirstChars } from "@/utils/string";
 import { TTeamMember } from "@/current-team/types";
 import { FormUpdateUser } from "@/components/settings/form-update-user";
+import { useGetTeamUsers } from "@/current-team/hooks";
 
 export const TeamMembers = (props: any) => {
   const [open, setOpen] = useState(false);
   const [selectedMember, setSelectedMember] = useState<any>({});
 
-  const teamMembers = props?.data ?? [];
+  const { data = [] } = useGetTeamUsers(props);
+  const teamMembers = data;
 
   const handleClickOnEdit = (id: string) => {
     setOpen(true);
