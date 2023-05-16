@@ -49,8 +49,11 @@ export const useVesselCRMIntegration = (props: any) => {
         () => alertProps.setShow(false),
         TIMEOUT_MS
       );
-      queryClient.invalidateQueries(QUERY_KEY_VESSEL_CRM_CONNECTION_STATUS);
-      queryClient.invalidateQueries(QUERY_KEY_TEAMS);
+      queryClient.invalidateQueries([
+        ...QUERY_KEY_VESSEL_CRM_CONNECTION_STATUS,
+        teamId,
+      ]);
+      queryClient.invalidateQueries([...QUERY_KEY_TEAMS, teamId]);
     },
     onError: () => {
       setAlertContent({
@@ -63,8 +66,11 @@ export const useVesselCRMIntegration = (props: any) => {
         () => alertProps.setShow(false),
         TIMEOUT_MS
       );
-      queryClient.invalidateQueries(QUERY_KEY_VESSEL_CRM_CONNECTION_STATUS);
-      queryClient.invalidateQueries(QUERY_KEY_TEAMS);
+      queryClient.invalidateQueries([
+        ...QUERY_KEY_VESSEL_CRM_CONNECTION_STATUS,
+        teamId,
+      ]);
+      queryClient.invalidateQueries([...QUERY_KEY_TEAMS, teamId]);
     },
   };
   const disconnectVesselCRMConnectionMutation =
@@ -98,8 +104,11 @@ export const useVesselCRMIntegration = (props: any) => {
         () => alertProps.setShow(false),
         TIMEOUT_MS
       );
-      queryClient.invalidateQueries(QUERY_KEY_VESSEL_CRM_CONNECTION_STATUS);
-      queryClient.invalidateQueries(QUERY_KEY_TEAMS);
+      queryClient.invalidateQueries([
+        ...QUERY_KEY_VESSEL_CRM_CONNECTION_STATUS,
+        teamId,
+      ]);
+      queryClient.invalidateQueries([...QUERY_KEY_TEAMS, teamId]);
     },
     onError: (error: AxiosError) => {
       const response: AxiosResponse = error?.response!;
@@ -115,8 +124,11 @@ export const useVesselCRMIntegration = (props: any) => {
         () => alertProps.setShow(false),
         TIMEOUT_MS
       );
-      queryClient.invalidateQueries(QUERY_KEY_VESSEL_CRM_CONNECTION_STATUS);
-      queryClient.invalidateQueries(QUERY_KEY_TEAMS);
+      queryClient.invalidateQueries([
+        ...QUERY_KEY_VESSEL_CRM_CONNECTION_STATUS,
+        teamId,
+      ]);
+      queryClient.invalidateQueries([...QUERY_KEY_TEAMS, teamId]);
     },
   };
   const exchangeVesselCRMTokenMutation = useExchangeVesselCRMToken(
@@ -129,8 +141,6 @@ export const useVesselCRMIntegration = (props: any) => {
       open({
         linkToken,
       });
-      queryClient.invalidateQueries(QUERY_KEY_VESSEL_CRM_CONNECTION_STATUS);
-      queryClient.invalidateQueries(QUERY_KEY_TEAMS);
     },
     onError: (error: AxiosError) => {
       const response: AxiosResponse = error?.response!;
@@ -146,8 +156,6 @@ export const useVesselCRMIntegration = (props: any) => {
         () => alertProps.setShow(false),
         TIMEOUT_MS
       );
-      queryClient.invalidateQueries(QUERY_KEY_VESSEL_CRM_CONNECTION_STATUS);
-      queryClient.invalidateQueries(QUERY_KEY_TEAMS);
     },
   };
   const linkVesselCRMTokenMutation = useLinkVesselCRMToken(
@@ -162,6 +170,7 @@ export const useVesselCRMIntegration = (props: any) => {
     disconnectVesselCRMConnectionMutation.mutate({
       connectionId,
       teamId,
+      accessToken,
     });
 
   return {

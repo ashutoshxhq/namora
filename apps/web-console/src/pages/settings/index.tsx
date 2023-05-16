@@ -6,7 +6,6 @@ import Integrations from "@/pages/settings/integrations";
 import Account from "@/pages/settings/account";
 import TeamMembers from "@/pages/settings/team-members";
 
-import { withPageSessionAuthRequired } from "@/auth0/utils";
 import { settingTabList } from "@/routes/config";
 import { classNames } from "@/utils";
 import {
@@ -15,6 +14,14 @@ import {
   TEAM_MEMBERS,
   INTEGRATIONS,
 } from "@/routes/constants";
+import { QUERY_KEY_TEAMS } from "@/current-team/constants";
+import { dehydrate, queryClient } from "@/react-query";
+import { getSession } from "@auth0/nextjs-auth0";
+import { QUERY_KEY_VESSEL_CRM_CONNECTION_STATUS } from "@/vessel/constants";
+import { ENGINE_SERVICE_API_URL } from "@/axios/constants";
+import { vesselCRMConnectionStatusFetcher } from "@/vessel/shared/fetchers";
+import { teamUsersFetcher, teamsFetcher } from "@/current-team/fetchers";
+import { withPageSessionAuthRequired } from "@/auth0/utils";
 
 const TabLink = ({ href, isSelected, title }: any) => {
   return (
@@ -37,10 +44,12 @@ export default function SettingsPage(props: any) {
   const router = useRouter();
   const { query } = router;
 
-  const appProps = {
-    teamId: props.user.namora_team_id,
-    userId: props.user.namora_user_id,
-    accessToken: props.accessToken,
+  const session = { ...props.session };
+  const settingPageProps = {
+    ...props,
+    teamId: session.user.namora_team_id,
+    userId: session.user.namora_user_id,
+    accessToken: session.accessToken,
   };
 
   const isAccountPageSelected = !!query[ACCOUNT];
@@ -79,12 +88,73 @@ export default function SettingsPage(props: any) {
         </div>
       </div>
       <section>
-        {isAccountPageSelected && <Account {...appProps} />}
-        {isTeamMembersPageSelected && <TeamMembers {...appProps} />}
-        {isIntegrationPageSelected && <Integrations {...appProps} />}
+        {isAccountPageSelected && <Account {...settingPageProps} />}
+        {isTeamMembersPageSelected && <TeamMembers {...settingPageProps} />}
+        {isIntegrationPageSelected && <Integrations {...settingPageProps} />}
       </section>
     </>
   );
 }
 
-export const getServerSideProps = withPageSessionAuthRequired;
+export async function getServerSideProps(props: any) {
+  const pageSessionRedirectProps = await withPageSessionAuthRequired(props);
+  const session = await getSession(props.req, props.res);
+
+  if (!session) {
+    return {
+      ...pageSessionRedirectProps,
+    };
+  }
+
+  const teamId = session?.user?.namora_team_id;
+  const accessToken = session?.accessToken as string;
+
+  const teams = await teamsFetcher(ENGINE_SERVICE_API_URL, teamId, accessToken);
+  const connectionId: string =
+    (teams?.data?.vessel_connection_id as string) ?? "";
+  const encodedConnectionId = connectionId
+    ? encodeURIComponent(connectionId)
+    : "";
+  await queryClient.prefetchQuery([...QUERY_KEY_TEAMS, teamId], () =>
+    teamsFetcher(ENGINE_SERVICE_API_URL, teamId, accessToken)
+  );
+
+  const teamUsers = await teamUsersFetcher(
+    ENGINE_SERVICE_API_URL,
+    teamId,
+    accessToken
+  );
+
+  let connectionStatusRes;
+  if (encodedConnectionId) {
+    connectionStatusRes = await vesselCRMConnectionStatusFetcher(
+      ENGINE_SERVICE_API_URL,
+      teamId,
+      encodedConnectionId,
+      accessToken
+    );
+    await queryClient.prefetchQuery(
+      [...QUERY_KEY_VESSEL_CRM_CONNECTION_STATUS, connectionId],
+      () =>
+        vesselCRMConnectionStatusFetcher(
+          ENGINE_SERVICE_API_URL,
+          teamId,
+          encodedConnectionId,
+          accessToken
+        )
+    );
+  }
+  const connectionStatus = connectionStatusRes?.connection?.status ?? "";
+
+  return {
+    ...pageSessionRedirectProps,
+    props: {
+      session: JSON.parse(JSON.stringify(session)),
+      connectionId,
+      connectionStatus,
+      teams: teams?.data,
+      teamUsers: teamUsers?.data,
+      dehydratedState: dehydrate(queryClient),
+    },
+  };
+}

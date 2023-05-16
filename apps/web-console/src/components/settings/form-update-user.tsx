@@ -8,7 +8,6 @@ import { TTeamMember } from "@/current-team/types";
 import { useUpdateTeamMember } from "@/hooks/settings/useUpdateTeamMember";
 import { queryClient, useQueryClient } from "@/react-query";
 import {
-  QUERY_KEY_TEAM,
   QUERY_KEY_TEAMS,
   QUERY_KEY_TEAM_USERS,
 } from "@/current-team/constants";
@@ -71,9 +70,8 @@ export const FormUpdateUser = ({
         TIMEOUT_MS
       );
       setPanelOpen(false);
-      queryClient.invalidateQueries(QUERY_KEY_TEAM_USERS);
-      queryClient.invalidateQueries(QUERY_KEY_TEAM);
-      queryClient.invalidateQueries(QUERY_KEY_TEAMS);
+      queryClient.invalidateQueries([...QUERY_KEY_TEAM_USERS, teamId]);
+      queryClient.invalidateQueries([...QUERY_KEY_TEAMS, teamId]);
       reset();
     },
     onError: () => {
@@ -88,9 +86,8 @@ export const FormUpdateUser = ({
         TIMEOUT_MS
       );
       setPanelOpen(false);
-      queryClient.invalidateQueries(QUERY_KEY_TEAM_USERS);
-      queryClient.invalidateQueries(QUERY_KEY_TEAM);
-      queryClient.invalidateQueries(QUERY_KEY_TEAMS);
+      queryClient.invalidateQueries([...QUERY_KEY_TEAM_USERS, teamId]);
+      queryClient.invalidateQueries([...QUERY_KEY_TEAMS, teamId]);
     },
   };
 
@@ -217,7 +214,7 @@ export const FormUpdateUser = ({
             type="submit"
             className="px-3 py-2 text-sm font-semibold text-white bg-indigo-500 rounded-md shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
           >
-            Update
+            Save
           </button>
         </div>
       </form>

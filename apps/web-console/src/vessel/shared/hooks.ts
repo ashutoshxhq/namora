@@ -7,6 +7,11 @@ import {
   TVesselCRMConnection,
 } from "@/vessel/shared/types";
 import { exchangeVesselCRMToken, linkVesselCRMToken } from "./api";
+import {
+  vesselCRMConnectionStatusFetcher,
+  vesselCRMDisconnectStatusFetcher,
+} from "./fetchers";
+import { useGetTeams } from "@/current-team/hooks";
 
 // export const linkVesselCRMTokenFetcher = (teamId: string) =>
 //   fetch(`api/teams/${teamId}/integrations/crm/link-token`, {
@@ -60,21 +65,24 @@ export const useExchangeVesselCRMToken = (
   return exchangeVesselCRMTokenMutation;
 };
 
-export const getVesselCRMConnectionStatusFetcher = (
-  teamId: string,
-  encodedConnectionId: string
-) =>
-  fetch(
-    `api/teams/${teamId}/integrations/crm/connections/${encodedConnectionId}`
-  );
-
 export const useGetVesselCRMConnectionStatus = ({
-  connectionId,
   teamId,
+  accessToken,
+  teams,
 }: {
-  connectionId: string;
   teamId: string;
+  accessToken: string;
+  teams: any;
 }) => {
+  const props = {
+    teamId,
+    accessToken,
+    teams,
+  };
+
+  const { data } = useGetTeams(props);
+  const connectionId: string =
+    (data?.data?.vessel_connection_id as string) ?? "";
   const encodedConnectionId = connectionId
     ? encodeURIComponent(connectionId)
     : "";
@@ -83,13 +91,16 @@ export const useGetVesselCRMConnectionStatus = ({
     data: vesselCRMConnectionAPIData,
     isLoading: isVesselCRMConnectionAPILoading,
   } = useQuery(
-    QUERY_KEY_VESSEL_CRM_CONNECTION_STATUS,
+    [...QUERY_KEY_VESSEL_CRM_CONNECTION_STATUS, connectionId],
     () =>
-      getVesselCRMConnectionStatusFetcher(teamId, encodedConnectionId).then(
-        (res) => res.json()
+      vesselCRMConnectionStatusFetcher(
+        "/api",
+        teamId,
+        encodedConnectionId,
+        accessToken
       ),
     {
-      enabled: !!connectionId && !!teamId,
+      enabled: !!connectionId && !!teamId && !!accessToken,
     }
   );
 
@@ -106,28 +117,27 @@ export const useGetVesselCRMConnectionStatus = ({
   };
 };
 
-export const getVesselCRMDisconnectStatusFetcher = (
-  teamId: string,
-  encodedConnectionId: string
-) =>
-  fetch(
-    `api/teams/${teamId}/integrations/crm/connections/${encodedConnectionId}`,
-    {
-      method: "DELETE",
-    }
-  );
-
 export const useDisconnectVesselCRMConnection = (
   disconnectVesselCRMConnectionMutationOptions: TMutationOptionProps
 ) => {
   const disconnectVesselCRMConnectionMutation = useMutation(
-    ({ teamId, connectionId }: { teamId: string; connectionId: string }) => {
+    ({
+      teamId,
+      connectionId,
+      accessToken,
+    }: {
+      teamId: string;
+      connectionId: string;
+      accessToken: string;
+    }) => {
       const encodedConnectionId = encodeURIComponent(connectionId);
 
-      return getVesselCRMDisconnectStatusFetcher(
+      return vesselCRMDisconnectStatusFetcher(
+        "/api",
         teamId,
-        encodedConnectionId
-      ).then((res) => res.json());
+        encodedConnectionId,
+        accessToken
+      );
     },
     disconnectVesselCRMConnectionMutationOptions
   );

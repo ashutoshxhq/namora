@@ -14,15 +14,14 @@ export default async function handler(
   const userId = query.userId;
 
   try {
-    let response: AxiosResponse;
     if (method === "GET") {
-      response = await getAxiosClient(accessToken).get(
+      const response: AxiosResponse = await getAxiosClient(accessToken).get(
         `/teams/${teamId}/users/${userId}`
       );
       const status = response?.status;
       res.status(status).json(response?.data);
     } else if (method === "PATCH") {
-      response = await getAxiosClient(accessToken).patch(
+      const response: AxiosResponse = await getAxiosClient(accessToken).patch(
         `/teams/${teamId}/users/${userId}`,
         {
           ...body,

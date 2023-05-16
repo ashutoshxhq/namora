@@ -24,7 +24,8 @@ const schema = yup.object().shape({
 });
 
 export const Window = (props: any) => {
-  const { accessToken, user } = props;
+  const { session } = props;
+  const { accessToken, user } = session;
   const { name: userName } = user;
 
   const webSocketRef = useRef<any>(null);

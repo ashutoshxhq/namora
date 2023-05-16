@@ -4,6 +4,7 @@ import { UserGroupIcon } from "@heroicons/react/24/outline";
 
 import { useVesselCRMIntegration } from "@/hooks/settings/useVesselCRMIntegration";
 import { Alert } from "@/design-system/molecules/alert";
+import { useGetVesselCRMConnectionStatus } from "@/vessel/shared/hooks";
 
 const statuses = {
   Connected: "text-green-700 bg-green-50 ring-green-600/20",
@@ -11,8 +12,8 @@ const statuses = {
 };
 
 export const Integrations = (props: any) => {
-  const connectionStatus = props?.connectionStatus;
-  const isCRMConnected = props?.isCRMConnected;
+  const { isCRMConnected, connectionStatus = "" } =
+    useGetVesselCRMConnectionStatus(props);
 
   const { alertProps, handleClickOnConnect, handleClickOnDisconnect } =
     useVesselCRMIntegration(props);
