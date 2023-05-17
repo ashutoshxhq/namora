@@ -17,6 +17,7 @@ Executed Action Outputs:
 Objective: Given the user query, identified actions, and executed action outputs, determine if action execution plan is required or you can answer the user query with the data you have.
 
 How to determine if action execution plan is required?
+1. If the user query is gibberish, then no action execution plan is required.
 1. If you can answer the user query with the past conversation and executed action outputs, then no third party application interaction is required.
 2. If you cannot answer the user query with the past conversation and executed action outputs, but if its a task like simple text generating or summarization, then no third party application interaction is required.
 3. If you cannot answer the user query with the past conversation and executed action outputs, then third party application interaction is required.
