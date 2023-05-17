@@ -6,40 +6,25 @@ import {
   TMutationOptionProps,
   TVesselCRMConnection,
 } from "@/vessel/shared/types";
-import { exchangeVesselCRMToken, linkVesselCRMToken } from "./api";
 import {
+  exchangeVesselCRMTokenFetcher,
+  linkVesselCRMTokenFetcher,
   vesselCRMConnectionStatusFetcher,
   vesselCRMDisconnectStatusFetcher,
-} from "./fetchers";
+} from "@/vessel/shared/fetchers";
 import { useGetTeams } from "@/current-team/hooks";
-
-// export const linkVesselCRMTokenFetcher = (teamId: string) =>
-//   fetch(`api/teams/${teamId}/integrations/crm/link-token`, {
-//     method: "POST",
-//   });
 
 export const useLinkVesselCRMToken = (
   linkVesselCRMTokenMutationOptions: TMutationOptionProps
 ) => {
   const linkVesselCRMTokenMutation = useMutation(
-    ({ accessToken, teamId }: { accessToken: string; teamId: string }) =>
-      linkVesselCRMToken({
-        accessToken,
-        teamId,
-      }),
+    ({ accessToken, teamId }: { accessToken: string; teamId: string }) => {
+      return linkVesselCRMTokenFetcher("/api", teamId, accessToken);
+    },
     linkVesselCRMTokenMutationOptions
   );
   return linkVesselCRMTokenMutation;
 };
-
-// export const exchangeVesselCRMTokenFetcher = (
-//   teamId: string,
-//   dataObj: { publicToken: string }
-// ) =>
-//   fetch(`api/teams/${teamId}/integrations/crm/exchange-token`, {
-//     method: "POST",
-//     body: JSON.stringify(dataObj),
-//   });
 
 export const useExchangeVesselCRMToken = (
   exchangeVesselCRMTokenMutationOptions: TMutationOptionProps
@@ -54,11 +39,12 @@ export const useExchangeVesselCRMToken = (
       accessToken: string;
       teamId: string;
     }) => {
-      return exchangeVesselCRMToken({
-        publicToken,
-        accessToken,
+      return exchangeVesselCRMTokenFetcher(
+        "/api",
         teamId,
-      });
+        accessToken,
+        publicToken
+      );
     },
     exchangeVesselCRMTokenMutationOptions
   );

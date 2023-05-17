@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import Head from "next/head";
@@ -22,6 +23,7 @@ import { ENGINE_SERVICE_API_URL } from "@/axios/constants";
 import { vesselCRMConnectionStatusFetcher } from "@/vessel/shared/fetchers";
 import { teamUsersFetcher, teamsFetcher } from "@/current-team/fetchers";
 import { withPageSessionAuthRequired } from "@/auth0/utils";
+import { Alert } from "@/design-system/molecules/alert";
 
 const TabLink = ({ href, isSelected, title }: any) => {
   return (
@@ -55,6 +57,12 @@ export default function SettingsPage(props: any) {
   const isAccountPageSelected = !!query[ACCOUNT];
   const isTeamMembersPageSelected = !!query[TEAM_MEMBERS];
   const isIntegrationPageSelected = !!query[INTEGRATIONS];
+
+  useEffect(() => {
+    if (router.asPath === `/${SETTINGS}`) {
+      router.push(decodeURIComponent(`/${SETTINGS}?${ACCOUNT}=true`));
+    }
+  }, [router]);
 
   return (
     <>
@@ -92,13 +100,14 @@ export default function SettingsPage(props: any) {
         {isTeamMembersPageSelected && <TeamMembers {...settingPageProps} />}
         {isIntegrationPageSelected && <Integrations {...settingPageProps} />}
       </section>
+      <Alert />
     </>
   );
 }
 
-export async function getServerSideProps(props: any) {
-  const pageSessionRedirectProps = await withPageSessionAuthRequired(props);
-  const session = await getSession(props.req, props.res);
+export async function getServerSideProps(ctx: any) {
+  const pageSessionRedirectProps = await withPageSessionAuthRequired(ctx);
+  const session = await getSession(ctx.req, ctx.res);
 
   if (!session) {
     return {

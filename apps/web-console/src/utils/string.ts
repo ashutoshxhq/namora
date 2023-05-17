@@ -12,10 +12,10 @@ export const encodeBase64 = (data: any) => {
 
 export const getAllFirstChars = (str: string) => {
   const name = str;
-  const data = name.split(" ");
+  const data = name?.split(" ");
   let output = "";
 
-  for (let i = 0; i < data.length; i++) {
+  for (let i = 0; i < data?.length; i++) {
     output += data[i].substring(0, 1);
   }
 

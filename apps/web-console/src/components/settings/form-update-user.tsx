@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import * as yup from "yup";
 import { useForm, SubmitHandler } from "react-hook-form";
 
@@ -6,12 +6,12 @@ import { FormInputEmailField, FormInputTextField } from "@/design-system/form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { TTeamMember } from "@/current-team/types";
 import { useUpdateTeamMember } from "@/hooks/settings/useUpdateTeamMember";
-import { queryClient, useQueryClient } from "@/react-query";
+import { queryClient } from "@/react-query";
 import {
   QUERY_KEY_TEAMS,
   QUERY_KEY_TEAM_USERS,
 } from "@/current-team/constants";
-import { Alert } from "@/design-system/molecules/alert";
+import { useNotificationDispatch } from "@/contexts/notification";
 
 const TIMEOUT_MS = 7000;
 
@@ -42,49 +42,26 @@ export const FormUpdateUser = ({
   const userId = rest?.userId;
 
   const setPanelOpen = rest.setOpen;
-
-  const [showAlert, setShowAlert] = useState(false);
-  const [alertContent, setAlertContent] = useState({
-    title: "",
-    description: "",
-    status: "",
-  });
-  const alertTimeoutRef = useRef<NodeJS.Timeout>();
-
-  const alertProps = {
-    ...alertContent,
-    show: showAlert,
-    setShow: setShowAlert,
-  };
+  const { showNotification, hideNotification } = useNotificationDispatch();
 
   const updateTeamMemberMutationOptions = {
     onSuccess: () => {
-      setAlertContent({
+      showNotification({
         title: "Success",
-        description: "Team member details are updated",
+        description: "User updated successfully",
         status: "success",
       });
-      alertProps.setShow(true);
-      alertTimeoutRef.current = setTimeout(
-        () => alertProps.setShow(false),
-        TIMEOUT_MS
-      );
       setPanelOpen(false);
       queryClient.invalidateQueries([...QUERY_KEY_TEAM_USERS, teamId]);
       queryClient.invalidateQueries([...QUERY_KEY_TEAMS, teamId]);
       reset();
     },
     onError: () => {
-      setAlertContent({
+      showNotification({
         title: "Failed",
-        description: "Team member details are not updated",
+        description: "Update failed",
         status: "error",
       });
-      alertProps.setShow(true);
-      alertTimeoutRef.current = setTimeout(
-        () => alertProps.setShow(false),
-        TIMEOUT_MS
-      );
       setPanelOpen(false);
       queryClient.invalidateQueries([...QUERY_KEY_TEAM_USERS, teamId]);
       queryClient.invalidateQueries([...QUERY_KEY_TEAMS, teamId]);
@@ -218,7 +195,6 @@ export const FormUpdateUser = ({
           </button>
         </div>
       </form>
-      <Alert {...alertProps} />
     </div>
   );
 };

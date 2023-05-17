@@ -1,3 +1,48 @@
+export const linkVesselCRMTokenFetcher = async (
+  baseURL: string,
+  teamId: string,
+  accessToken: string
+) => {
+  try {
+    const linkTokenRes = await fetch(
+      `${baseURL}/teams/${teamId}/integrations/crm/link-token`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    ).then((res) => res.json());
+    return linkTokenRes;
+  } catch (error) {
+    throw error;
+  }
+};
+
+export const exchangeVesselCRMTokenFetcher = async (
+  baseURL: string,
+  teamId: string,
+  accessToken: string,
+  publicToken: string
+) => {
+  try {
+    const res = await fetch(
+      `${baseURL}/teams/${teamId}/integrations/crm/exchange-token`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ public_token: publicToken }),
+      }
+    );
+    const linkTokenRes = await res.json();
+    return linkTokenRes;
+  } catch (error) {
+    throw error;
+  }
+};
+
 export const vesselCRMConnectionStatusFetcher = async (
   baseURL: string,
   teamId: string,

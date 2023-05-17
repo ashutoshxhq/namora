@@ -1,8 +1,7 @@
-import { Fragment, useState, useMemo } from "react";
+import { Fragment, useState } from "react";
 import { Menu, Transition } from "@headlessui/react";
 import { EllipsisVerticalIcon } from "@heroicons/react/20/solid";
 import Link from "next/link";
-import * as yup from "yup";
 
 import { classNames } from "@/utils";
 import { NamoraPanel } from "@/design-system/molecules";
@@ -96,34 +95,35 @@ export const TeamMembers = (props: any) => {
                     leaveFrom="transform opacity-100 scale-100"
                     leaveTo="transform opacity-0 scale-95"
                   >
-                    <Menu.Items className="absolute z-10 w-32 py-2 mt-2 origin-top-right bg-white rounded-md shadow-lg right-10 ring-1 ring-gray-900/5 focus:outline-none -top-9">
+                    <Menu.Items className="absolute z-10 w-32 p-1 mt-2 origin-top-right bg-white rounded-md shadow-lg right-10 ring-1 ring-gray-900/5 focus:outline-none -top-9">
                       <Menu.Item>
                         {({ active }) => (
-                          <Link
-                            href="#"
+                          <button
                             onClick={() => handleClickOnEdit(person.id)}
                             className={classNames(
+                              "w-full text-left",
                               active ? "bg-gray-50" : "",
                               "block px-3 py-1 text-sm leading-6 text-gray-900"
                             )}
                           >
                             Edit
-                          </Link>
+                          </button>
                         )}
                       </Menu.Item>
-                      <Menu.Item>
+                      {/* <Menu.Item>
                         {({ active }) => (
-                          <Link
-                            href="#"
+                          <button
+                            onClick={() => handleClickOnEdit(person.id)}
                             className={classNames(
+                              "w-full text-left",
                               active ? "bg-gray-50" : "",
                               "block px-3 py-1 text-sm leading-6 text-gray-900"
                             )}
                           >
                             Delete
-                          </Link>
+                          </button>
                         )}
-                      </Menu.Item>
+                      </Menu.Item> */}
                     </Menu.Items>
                   </Transition>
                 </Menu>

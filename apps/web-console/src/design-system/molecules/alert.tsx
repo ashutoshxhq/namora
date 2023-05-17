@@ -1,21 +1,17 @@
+import {
+  useNotificationDispatch,
+  useNotificationStore,
+} from "@/contexts/notification";
 import { Transition } from "@headlessui/react";
 import { CheckCircleIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import React from "react";
 import { Fragment } from "react";
 
-export const Alert = ({
-  show,
-  title,
-  status,
-  description,
-  setShow,
-}: {
-  show: boolean;
-  title: string;
-  status: string;
-  description: string;
-  setShow: (value: boolean) => void;
-}) => {
+export const Alert = () => {
+  const notificationState = useNotificationStore();
+  const { isShow, title, status, description } = notificationState;
+  const { hideNotification } = useNotificationDispatch();
+
   let statusColor = "";
   if (status === "error") {
     statusColor = "text-red-400";
@@ -25,11 +21,13 @@ export const Alert = ({
   return (
     <div
       aria-live="assertive"
-      className="fixed inset-0 z-10 flex items-end px-4 py-6 pointer-events-none sm:items-start sm:p-6 z-11"
+      className={`fixed inset-0 z-10 flex items-end px-4 py-6 pointer-events-none sm:items-start sm:p-6 z-11 ${
+        isShow ? "" : "hidden"
+      }`}
     >
       <div className="absolute flex flex-col items-center w-full space-y-4 bottom-5 right-5 sm:items-end">
         <Transition
-          show={show}
+          show={isShow}
           as={Fragment}
           enter="transform ease-out duration-300 transition"
           enterFrom="translate-y-2 opacity-0 sm:translate-y-0 sm:translate-x-2"
@@ -55,9 +53,7 @@ export const Alert = ({
                   <button
                     type="button"
                     className="inline-flex text-gray-400 bg-white rounded-md hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                    onClick={() => {
-                      setShow(false);
-                    }}
+                    onClick={() => hideNotification()}
                   >
                     <span className="sr-only">Close</span>
                     <XMarkIcon className="w-5 h-5" aria-hidden="true" />

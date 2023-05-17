@@ -10,6 +10,7 @@ import {
 } from "@/vessel/shared/hooks";
 import { QUERY_KEY_VESSEL_CRM_CONNECTION_STATUS } from "@/vessel/constants";
 import { QUERY_KEY_TEAMS } from "@/current-team/constants";
+import { useNotificationDispatch } from "@/contexts/notification";
 
 const TIMEOUT_MS = 7000;
 
@@ -18,37 +19,15 @@ export const useVesselCRMIntegration = (props: any) => {
   const teamId = props?.teamId;
   const connectionId = props?.connectionId;
 
-  const [showAlert, setShowAlert] = useState(false);
-  const [alertContent, setAlertContent] = useState({
-    title: "",
-    description: "",
-    status: "",
-  });
-  const alertTimeoutRef = useRef<NodeJS.Timeout>();
-
-  const alertProps = {
-    ...alertContent,
-    show: showAlert,
-    setShow: setShowAlert,
-  };
-
-  useEffect(() => {
-    const timeout = alertTimeoutRef.current;
-    return () => clearTimeout(timeout);
-  }, [alertTimeoutRef]);
+  const { showNotification, hideNotification } = useNotificationDispatch();
 
   const disconnectVesselCRMConnectionMutationOptions = {
     onSuccess: () => {
-      setAlertContent({
+      showNotification({
         title: "Success",
         description: "Disconnected from CRM",
         status: "success",
       });
-      alertProps.setShow(true);
-      alertTimeoutRef.current = setTimeout(
-        () => alertProps.setShow(false),
-        TIMEOUT_MS
-      );
       queryClient.invalidateQueries([
         ...QUERY_KEY_VESSEL_CRM_CONNECTION_STATUS,
         teamId,
@@ -56,16 +35,11 @@ export const useVesselCRMIntegration = (props: any) => {
       queryClient.invalidateQueries([...QUERY_KEY_TEAMS, teamId]);
     },
     onError: () => {
-      setAlertContent({
+      showNotification({
         title: "Failed",
         description: "Unable to disconnect",
         status: "error",
       });
-      alertProps.setShow(true);
-      alertTimeoutRef.current = setTimeout(
-        () => alertProps.setShow(false),
-        TIMEOUT_MS
-      );
       queryClient.invalidateQueries([
         ...QUERY_KEY_VESSEL_CRM_CONNECTION_STATUS,
         teamId,
@@ -93,17 +67,12 @@ export const useVesselCRMIntegration = (props: any) => {
   });
 
   const exchangeVesselCRMTokenMutationOptions = {
-    onSuccess: (data: any) => {
-      setAlertContent({
+    onSuccess: () => {
+      showNotification({
         title: "Success",
         description: "Connected with CRM",
         status: "success",
       });
-      alertProps.setShow(true);
-      alertTimeoutRef.current = setTimeout(
-        () => alertProps.setShow(false),
-        TIMEOUT_MS
-      );
       queryClient.invalidateQueries([
         ...QUERY_KEY_VESSEL_CRM_CONNECTION_STATUS,
         teamId,
@@ -114,16 +83,11 @@ export const useVesselCRMIntegration = (props: any) => {
       const response: AxiosResponse = error?.response!;
       const data: { message: string; statusCode: number } = response?.data;
       const message = data?.message || "Unable to connect with CRM";
-      setAlertContent({
+      showNotification({
         title: "Failed",
         description: message,
         status: "error",
       });
-      alertProps.setShow(true);
-      alertTimeoutRef.current = setTimeout(
-        () => alertProps.setShow(false),
-        TIMEOUT_MS
-      );
       queryClient.invalidateQueries([
         ...QUERY_KEY_VESSEL_CRM_CONNECTION_STATUS,
         teamId,
@@ -146,16 +110,11 @@ export const useVesselCRMIntegration = (props: any) => {
       const response: AxiosResponse = error?.response!;
       const data: { message: string; statusCode: number } = response?.data;
       const message = data?.message || "Unable to initiate connection with CRM";
-      setAlertContent({
+      showNotification({
         title: "Failed",
         description: message,
         status: "error",
       });
-      alertProps.setShow(true);
-      alertTimeoutRef.current = setTimeout(
-        () => alertProps.setShow(false),
-        TIMEOUT_MS
-      );
     },
   };
   const linkVesselCRMTokenMutation = useLinkVesselCRMToken(
@@ -174,7 +133,6 @@ export const useVesselCRMIntegration = (props: any) => {
     });
 
   return {
-    alertProps,
     handleClickOnConnect,
     handleClickOnDisconnect,
   };
