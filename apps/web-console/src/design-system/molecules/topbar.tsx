@@ -1,11 +1,5 @@
 import React, { Fragment } from "react";
-import {
-  Bars3Icon,
-  BellIcon,
-  ChevronDownIcon,
-  MagnifyingGlassIcon,
-} from "@/heroicons";
-import Image from "next/image";
+import { Bars3Icon, ChevronDownIcon, MagnifyingGlassIcon } from "@/heroicons";
 import { Menu, Transition } from "@headlessui/react";
 
 import { userNavigation } from "@/routes/config";
@@ -13,16 +7,20 @@ import { classNames } from "@/utils";
 import Link from "next/link";
 import { useCurrentUser } from "@/current-user";
 import { getAllFirstChars } from "@/utils/string";
+import { TopLineLoader } from "./top-line-loader";
 
 export const TopBar = ({
+  pageLoading,
   setSidebarOpen,
 }: {
+  pageLoading: boolean;
   setSidebarOpen: (value: boolean) => void;
 }) => {
   const { userName } = useCurrentUser();
 
   return (
     <div className="lg:pl-20">
+      {pageLoading ? <TopLineLoader /> : null}
       <div className="sticky top-0 z-40 flex items-center h-16 px-4 bg-white border-b border-gray-200 shadow-sm shrink-0 gap-x-4 sm:gap-x-6 sm:px-6 lg:px-8">
         <button
           type="button"
