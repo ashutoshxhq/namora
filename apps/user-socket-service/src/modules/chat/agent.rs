@@ -9,7 +9,7 @@ use lapin::{
         QueueDeleteOptions,
     },
     types::FieldTable,
-    BasicProperties,
+    BasicProperties, ConnectionProperties, Connection,
 };
 use namora_core::types::{
     error::Error,
@@ -20,7 +20,7 @@ use tokio::sync::{mpsc, Mutex};
 use uuid::Uuid;
 
 pub async fn generic_agent_socket(
-    app: NamoraAIState,
+    _app: NamoraAIState,
     socket: WebSocket,
     claims: Claims,
     auth_token: String,
@@ -31,8 +31,14 @@ pub async fn generic_agent_socket(
     let (mut socket_tx, mut socket_rx) = socket.split();
     tracing::info!("Creating channel to send messages to task orchestrator or user");
     let (tx, mut rx) = mpsc::channel::<MessageWithContext>(32);
-
-    let channel = app.channel.clone();
+    
+    tracing::info!("Setting up a connection to rabbitmq broker");
+    let uri = std::env::var("TASK_ORCHESTRATION_BROKER_URI")?;
+    let options = ConnectionProperties::default()
+        .with_executor(tokio_executor_trait::Tokio::current())
+        .with_reactor(tokio_reactor_trait::Tokio);
+    let connection = Connection::connect(&uri, options).await?;
+    let channel = connection.create_channel().await?;
     tracing::info!("Declaring queue to recieve messages from task orchestrator");
     let user_id = claims.namora_user_id;
     match channel
@@ -297,9 +303,12 @@ pub async fn generic_agent_socket(
     {
         Ok(_) => {
             tracing::info!("Deleted queue");
+            channel.close(200, "Bye").await?;
+            connection.close(200, "Bye").await?;
         }
         Err(err) => {
             tracing::error!("{:?}", err);
+            connection.close(200, "Bye").await?;
             return Err(err.into());
         }
     };

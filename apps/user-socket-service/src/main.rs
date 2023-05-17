@@ -6,7 +6,6 @@ use axum::routing::get;
 use axum::{error_handling::HandleErrorLayer, http::StatusCode, BoxError, Extension, Router};
 use dotenvy::dotenv;
 use hyper::{Body, Request, Response, Uri};
-use lapin::{Connection, ConnectionProperties};
 use modules::*;
 use state::NamoraAIState;
 use std::{env, net::SocketAddr, time::Duration};
@@ -60,12 +59,7 @@ async fn main() {
         .with_ansi(false)
         .finish();
     tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
-    let uri = std::env::var("TASK_ORCHESTRATION_BROKER_URI").unwrap();
-    let options = ConnectionProperties::default()
-        .with_executor(tokio_executor_trait::Tokio::current())
-        .with_reactor(tokio_reactor_trait::Tokio);
-    let connection = Connection::connect(&uri, options).await.unwrap();
-    let channel = connection.create_channel().await.unwrap();
+    
     let app = Router::new()
         .nest("/playground", get(file_handler))
         .merge(router::router())
@@ -83,7 +77,7 @@ async fn main() {
                 }))
                 .timeout(Duration::from_secs(10))
                 .layer(TraceLayer::new_for_http())
-                .layer(Extension(NamoraAIState::new(channel)))
+                .layer(Extension(NamoraAIState::new()))
                 .layer(
                     CorsLayer::new()
                         .allow_origin(Any)
