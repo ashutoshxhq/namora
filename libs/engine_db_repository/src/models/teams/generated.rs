@@ -1,6 +1,7 @@
 /* This file is generated and managed by dsync */
 
 use diesel::*;
+use utoipa::ToSchema;
 use crate::schema::*;
 use diesel::QueryResult;
 use diesel::r2d2::{PooledConnection, ConnectionManager};
@@ -9,7 +10,7 @@ use serde::{Deserialize, Serialize};
 
 type Connection = PooledConnection<ConnectionManager<PgConnection>>;
 
-#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset, Selectable)]
+#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset, Selectable, ToSchema)]
 #[diesel(table_name=teams, primary_key(id))]
 pub struct Team {
     pub id: uuid::Uuid,
@@ -33,7 +34,7 @@ pub struct Team {
     pub deleted_at: Option<chrono::NaiveDateTime>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset)]
+#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset, ToSchema)]
 #[diesel(table_name=teams)]
 pub struct CreateTeam {
     pub id: uuid::Uuid,
@@ -57,7 +58,7 @@ pub struct CreateTeam {
     pub deleted_at: Option<chrono::NaiveDateTime>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset)]
+#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset, ToSchema)]
 #[diesel(table_name=teams)]
 pub struct UpdateTeam {
     pub company_name: Option<Option<String>>,

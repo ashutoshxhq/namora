@@ -1,6 +1,7 @@
 /* This file is generated and managed by dsync */
 
 use diesel::*;
+use utoipa::ToSchema;
 use crate::schema::*;
 use diesel::QueryResult;
 use diesel::r2d2::{PooledConnection, ConnectionManager};
@@ -9,7 +10,7 @@ use crate::models::teams::Team;
 
 type Connection = PooledConnection<ConnectionManager<PgConnection>>;
 
-#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset, Identifiable, Associations, Selectable)]
+#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset, Identifiable, Associations, Selectable, ToSchema)]
 #[diesel(table_name=users, primary_key(id), belongs_to(Team, foreign_key=team_id))]
 pub struct User {
     pub id: uuid::Uuid,
@@ -33,7 +34,7 @@ pub struct User {
     pub deleted_at: Option<chrono::NaiveDateTime>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset)]
+#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset, ToSchema)]
 #[diesel(table_name=users)]
 pub struct CreateUser {
     pub id: uuid::Uuid,
@@ -57,7 +58,7 @@ pub struct CreateUser {
     pub deleted_at: Option<chrono::NaiveDateTime>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset)]
+#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset, ToSchema)]
 #[diesel(table_name=users)]
 pub struct UpdateUser {
     pub firstname: Option<Option<String>>,

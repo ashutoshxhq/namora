@@ -6,3 +6,4 @@ pub mod user;
 pub mod authn;
 pub mod crm;
 pub mod tasks;
+pub mod openapi;

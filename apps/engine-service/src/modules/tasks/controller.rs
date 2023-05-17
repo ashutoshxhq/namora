@@ -13,6 +13,13 @@ use crate::{authz::Claims, state::NamoraAIState};
 
 use super::types::GetTasksByQuery;
 
+#[utoipa::path(
+    get,
+    path = "/teams/{team_id}/tasks/{task_id}",
+    security(
+        ("Authorization" = [])
+    )
+)]
 pub async fn get_task(
     Extension(namora): Extension<NamoraAIState>,
     Path((_team_id, task_id)): Path<(String, String)>,
@@ -49,6 +56,13 @@ pub async fn get_task(
     }
 }
 
+#[utoipa::path(
+    get,
+    path = "/teams/{team_id}/tasks",
+    security(
+        ("Authorization" = [])
+    )
+)]
 pub async fn get_tasks(
     Extension(namora): Extension<NamoraAIState>,
     Extension(_claims): Extension<Claims>,
@@ -84,6 +98,13 @@ pub async fn get_tasks(
     }
 }
 
+#[utoipa::path(
+    post,
+    path = "/teams/{team_id}/tasks",
+    security(
+        ("Authorization" = [])
+    )
+)]
 pub async fn create_task(
     Extension(namora): Extension<NamoraAIState>,
     Path(_team_id): Path<String>,
@@ -110,6 +131,14 @@ pub async fn create_task(
     }
 }
 
+#[utoipa::path(
+    patch,
+    path = "/teams/{team_id}/tasks/{task_id}",
+    request_body = UpdateTask,
+    security(
+        ("Authorization" = [])
+    )
+)]
 pub async fn update_task(
     Extension(namora): Extension<NamoraAIState>,
     Path((_team_id, task_id)): Path<(String, String)>,
@@ -147,6 +176,13 @@ pub async fn update_task(
     }
 }
 
+#[utoipa::path(
+    delete,
+    path = "/teams/{team_id}/tasks/{task_id}",
+    security(
+        ("Authorization" = [])
+    )
+)]
 pub async fn delete_task(
     Extension(namora): Extension<NamoraAIState>,
     Path((_team_id, task_id)): Path<(String, String)>,

@@ -1,6 +1,7 @@
 /* This file is generated and managed by dsync */
 use diesel::*;
 use diesel::r2d2::{PooledConnection, ConnectionManager};
+use utoipa::ToSchema;
 use crate::schema::*;
 use diesel::QueryResult;
 use serde::{Deserialize, Serialize};
@@ -9,7 +10,7 @@ use crate::models::users::User;
 
 type Connection = PooledConnection<ConnectionManager<PgConnection>>;
 
-#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset, Identifiable, Associations, Selectable)]
+#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset, Identifiable, Associations, Selectable, ToSchema)]
 #[diesel(table_name=tasks, primary_key(id), belongs_to(Team, foreign_key=team_id) , belongs_to(User, foreign_key=user_id))]
 pub struct Task {
     pub id: uuid::Uuid,
@@ -26,7 +27,7 @@ pub struct Task {
     pub deleted_at: Option<chrono::NaiveDateTime>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset)]
+#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset, ToSchema)]
 #[diesel(table_name=tasks)]
 pub struct CreateTask {
     pub id: uuid::Uuid,
@@ -43,7 +44,7 @@ pub struct CreateTask {
     pub deleted_at: Option<chrono::NaiveDateTime>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset)]
+#[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset, ToSchema)]
 #[diesel(table_name=tasks)]
 pub struct UpdateTask {
     pub task_type: Option<String>,
