@@ -60,7 +60,6 @@ export const FormUpdateUser = ({
         description: "Update failed",
         status: "error",
       });
-      setPanelOpen(false);
       queryClient.invalidateQueries([...QUERY_KEY_TEAM_USERS, teamId]);
       queryClient.invalidateQueries([...QUERY_KEY_TEAMS, teamId]);
     },
@@ -102,15 +101,17 @@ export const FormUpdateUser = ({
   }, [firstName, lastName, email, companyPosition, reset]);
 
   const onFormSubmit: SubmitHandler<any> = (submittedFormData) => {
-    mutate({
-      firstname: submittedFormData.first_name,
-      lastname: submittedFormData.last_name,
-      email: submittedFormData.email,
-      company_position: submittedFormData.company_position,
-      teamId,
-      userId,
-      accessToken,
-    });
+    if (isDirty) {
+      mutate({
+        firstname: submittedFormData.first_name,
+        lastname: submittedFormData.last_name,
+        email: submittedFormData.email,
+        company_position: submittedFormData.company_position,
+        teamId,
+        userId,
+        accessToken,
+      });
+    }
   };
 
   return (

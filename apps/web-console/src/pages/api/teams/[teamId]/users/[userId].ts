@@ -24,7 +24,7 @@ export default async function handler(
       const response: AxiosResponse = await getAxiosClient(accessToken).patch(
         `/teams/${teamId}/users/${userId}`,
         {
-          ...body,
+          ...JSON.parse(body)?.data,
         }
       );
       const status = response?.status;

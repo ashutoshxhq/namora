@@ -94,15 +94,17 @@ export const PersonalDetails = (props: any) => {
   }, [firstName, lastName, email, companyPosition, reset]);
 
   const onFormSubmit: SubmitHandler<any> = (submittedFormData) => {
-    mutate({
-      firstname: submittedFormData.first_name,
-      lastname: submittedFormData.last_name,
-      email: submittedFormData.email,
-      company_position: submittedFormData.company_position,
-      teamId,
-      userId,
-      accessToken,
-    });
+    if (isDirty) {
+      mutate({
+        firstname: submittedFormData.first_name,
+        lastname: submittedFormData.last_name,
+        email: submittedFormData.email,
+        company_position: submittedFormData.company_position,
+        teamId,
+        userId,
+        accessToken,
+      });
+    }
   };
 
   const disabled = "opacity-50 cursor-not-allowed";

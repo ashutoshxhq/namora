@@ -7,23 +7,27 @@ type TMutationOptionProps = {
   onError: () => void;
 };
 
-export const updateTeamUsersFetcher = ({
-  teamId,
-  userId,
-  body,
-  accessToken,
-}: {
-  teamId: string;
-  userId: string;
-  body: any;
-  accessToken: string;
-}) =>
-  getAxiosClientInternal(accessToken).patch(
-    `/api/teams/${teamId}/users/${userId}`,
-    {
-      ...body,
-    }
-  );
+export const updateTeamUsersFetcher = async (
+  baseURL: string,
+  teamId: string,
+  userId: string,
+  data: any,
+  accessToken: string
+) => {
+  try {
+    const res = await fetch(`/${baseURL}/teams/${teamId}/users/${userId}`, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({ data }),
+    });
+    const updateUserRes = await res.json();
+    return updateUserRes;
+  } catch (error) {
+    throw error;
+  }
+};
 
 export const useUpdateTeamMember = (
   updateTeamMemberOptions: TMutationOptionProps
@@ -42,13 +46,13 @@ export const useUpdateTeamMember = (
       userId: string;
       accessToken: string;
     }) => {
-      const body = {
+      const data = {
         firstname,
         lastname,
         email,
         company_position,
       };
-      return updateTeamUsersFetcher({ teamId, userId, body, accessToken });
+      return updateTeamUsersFetcher("api", teamId, userId, data, accessToken);
     },
     updateTeamMemberOptions
   );
