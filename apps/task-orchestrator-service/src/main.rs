@@ -18,7 +18,7 @@ use namora_core::types::{
 };
 use tokio::sync::Mutex;
 use tracing::Level;
-use tracing_subscriber::{FmtSubscriber, fmt::format::FmtSpan};
+use tracing_subscriber::{fmt::format::FmtSpan, FmtSubscriber};
 use uuid::Uuid;
 
 use crate::{db::create_pool, orchestrator::TaskOrchestrator};
@@ -37,45 +37,48 @@ async fn main() {
         .with_ansi(false)
         .finish();
     tracing::subscriber::set_global_default(subscriber).expect("setting default subscriber failed");
-    tracing::info!("Creating database pool");
-    let db_url = std::env::var("ENGINE_SERVICE_DATABASE_URL").expect("Unable to get database url");
-    let pool = create_pool(db_url).await.unwrap();
-    tracing::info!("Created database pool");
-    let uri = std::env::var("TASK_ORCHESTRATION_BROKER_URI").unwrap();
-    let options = ConnectionProperties::default()
-        .with_executor(tokio_executor_trait::Tokio::current())
-        .with_reactor(tokio_reactor_trait::Tokio);
-    let connection = Connection::connect(&uri, options).await.unwrap();
-    let channel = connection.create_channel().await.unwrap();
-    let task_orchestrator_queue_routing_key = std::env::var("TASK_ORCHESTRATION_QUEUE")
-        .expect("Unable to get task orchestrator queue routing key");
-    let _queue = channel
-        .queue_declare(
-            &task_orchestrator_queue_routing_key,
-            QueueDeclareOptions::default(),
-            FieldTable::default(),
-        )
-        .await
-        .unwrap();
-    let consumer = channel
-        .basic_consume(
-            &task_orchestrator_queue_routing_key,
-            &format!(
-                "namora.svc.task-orchestrator.consumer.{}",
-                Uuid::new_v4().to_string()
-            ),
-            BasicConsumeOptions::default(),
-            FieldTable::default(),
-        )
-        .await
-        .unwrap();
+    loop {
+        tracing::info!("Creating database pool");
+        let db_url =
+            std::env::var("ENGINE_SERVICE_DATABASE_URL").expect("Unable to get database url");
+        let pool = create_pool(db_url).await.unwrap();
+        tracing::info!("Created database pool");
+        let uri = std::env::var("TASK_ORCHESTRATION_BROKER_URI").unwrap();
+        let options = ConnectionProperties::default()
+            .with_executor(tokio_executor_trait::Tokio::current())
+            .with_reactor(tokio_reactor_trait::Tokio);
+        let connection = Connection::connect(&uri, options).await.unwrap();
 
-    let worker_context = Arc::new(Mutex::new(WorkerContext {
-        pool: pool.clone(),
-        channel: channel.clone(),
-    }));
-    tracing::info!("Listning to messages");
-    consumer.set_delegate(move |delivery: DeliveryResult| {
+        let channel = connection.create_channel().await.unwrap();
+        let task_orchestrator_queue_routing_key = std::env::var("TASK_ORCHESTRATION_QUEUE")
+            .expect("Unable to get task orchestrator queue routing key");
+        let _queue = channel
+            .queue_declare(
+                &task_orchestrator_queue_routing_key,
+                QueueDeclareOptions::default(),
+                FieldTable::default(),
+            )
+            .await
+            .unwrap();
+        let consumer = channel
+            .basic_consume(
+                &task_orchestrator_queue_routing_key,
+                &format!(
+                    "namora.svc.task-orchestrator.consumer.{}",
+                    Uuid::new_v4().to_string()
+                ),
+                BasicConsumeOptions::default(),
+                FieldTable::default(),
+            )
+            .await
+            .unwrap();
+
+        let worker_context = Arc::new(Mutex::new(WorkerContext {
+            pool: pool.clone(),
+            channel: channel.clone(),
+        }));
+        tracing::info!("Listning to messages");
+        consumer.set_delegate(move |delivery: DeliveryResult| {
         let worker_context_mutex = Arc::clone(&worker_context);
         async move {
             tracing::info!("Recieved a message from queue");
@@ -230,8 +233,15 @@ async fn main() {
         }
     });
 
-    // Keep the main function running
-    loop {
-        tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
+        // Keep the main function running
+        loop {
+            let status = connection.status();
+            if status.closed() || status.closing() {
+                tracing::error!("Connection closed");
+                break;
+            }
+            tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
+        }
+        tracing::info!("Connection closed, restarting worker");
     }
 }
