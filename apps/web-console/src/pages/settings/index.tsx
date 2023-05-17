@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import Head from "next/head";
@@ -56,6 +57,12 @@ export default function SettingsPage(props: any) {
   const isTeamMembersPageSelected = !!query[TEAM_MEMBERS];
   const isIntegrationPageSelected = !!query[INTEGRATIONS];
 
+  useEffect(() => {
+    if (router.asPath === `/${SETTINGS}`) {
+      router.push(decodeURIComponent(`/${SETTINGS}?${ACCOUNT}=true`));
+    }
+  }, [router]);
+
   return (
     <>
       <Head>
@@ -96,9 +103,9 @@ export default function SettingsPage(props: any) {
   );
 }
 
-export async function getServerSideProps(props: any) {
-  const pageSessionRedirectProps = await withPageSessionAuthRequired(props);
-  const session = await getSession(props.req, props.res);
+export async function getServerSideProps(ctx: any) {
+  const pageSessionRedirectProps = await withPageSessionAuthRequired(ctx);
+  const session = await getSession(ctx.req, ctx.res);
 
   if (!session) {
     return {

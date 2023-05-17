@@ -1,6 +1,7 @@
 import React, { Fragment } from "react";
 import { Menu, Transition } from "@headlessui/react";
 import { EllipsisVerticalIcon } from "@/heroicons";
+import Head from "next/head";
 import Link from "next/link";
 
 import { classNames } from "@/utils";
@@ -38,6 +39,9 @@ const projects = [
 const Jobs = () => {
   return (
     <>
+      <Head>
+        <title>Namora | Review Jobs</title>
+      </Head>
       <div className="pb-3 mb-3 border-b">
         <h3 className="text-xl font-semibold leading-6 text-gray-900">
           Review Jobs

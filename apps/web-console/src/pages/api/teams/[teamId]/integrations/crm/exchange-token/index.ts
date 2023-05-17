@@ -13,16 +13,17 @@ export default async function handler(
   const teamId = query.teamId;
   const publicToken = "";
 
-  let response;
   try {
-    response = await getAxiosClient(accessToken).post(
+    const response = await getAxiosClient(accessToken).post(
       `/teams/${teamId}/integrations/crm/connections/exchange-token`,
       {
         public_token: publicToken,
       }
     );
-    res.json(response?.data?.data);
+    const status = response?.status;
+    res.status(status).json(response?.data);
   } catch (error: any) {
-    res.json(error?.response?.data);
+    const status = error?.status;
+    res.status(status).json(error);
   }
 }
