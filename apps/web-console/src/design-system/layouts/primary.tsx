@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 
 import { Sidebar, SidebarMobile, TopBar } from "@/design-system/molecules";
+import { NotificationStoreProvider } from "@/contexts/notification";
 
 export default function MainLayout({ children }: { children: JSX.Element }) {
   const router = useRouter();
@@ -29,16 +30,23 @@ export default function MainLayout({ children }: { children: JSX.Element }) {
     setSidebarOpen,
   };
 
+  const topBarProps = {
+    pageLoading,
+    setSidebarOpen,
+  };
+
   return (
-    <div className="flex flex-col">
-      <Sidebar />
-      <SidebarMobile {...sidebarProps} />
-      <TopBar setSidebarOpen={setSidebarOpen} pageLoading={pageLoading} />
-      <div className="lg:pl-20">
-        <main>
-          <div className="p-4 sm:px-6 lg:px-6">{children}</div>
-        </main>
+    <NotificationStoreProvider>
+      <div className="flex flex-col">
+        <Sidebar />
+        <SidebarMobile {...sidebarProps} />
+        <TopBar {...topBarProps} />
+        <div className="lg:pl-20">
+          <main>
+            <div className="p-4 sm:px-6 lg:px-6">{children}</div>
+          </main>
+        </div>
       </div>
-    </div>
+    </NotificationStoreProvider>
   );
 }

@@ -15,7 +15,7 @@ export const Integrations = (props: any) => {
   const { isCRMConnected, connectionStatus = "" } =
     useGetVesselCRMConnectionStatus(props);
 
-  const { alertProps, handleClickOnConnect, handleClickOnDisconnect } =
+  const { handleClickOnConnect, handleClickOnDisconnect } =
     useVesselCRMIntegration(props);
 
   const handleClickOnConnectionChange = (checked: boolean) => {
@@ -138,7 +138,6 @@ export const Integrations = (props: any) => {
           </div>
         </div>
       </ul>
-      <Alert {...alertProps} />
     </div>
   );
 };

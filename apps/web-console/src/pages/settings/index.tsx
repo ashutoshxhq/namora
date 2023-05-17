@@ -23,6 +23,7 @@ import { ENGINE_SERVICE_API_URL } from "@/axios/constants";
 import { vesselCRMConnectionStatusFetcher } from "@/vessel/shared/fetchers";
 import { teamUsersFetcher, teamsFetcher } from "@/current-team/fetchers";
 import { withPageSessionAuthRequired } from "@/auth0/utils";
+import { Alert } from "@/design-system/molecules/alert";
 
 const TabLink = ({ href, isSelected, title }: any) => {
   return (
@@ -99,6 +100,7 @@ export default function SettingsPage(props: any) {
         {isTeamMembersPageSelected && <TeamMembers {...settingPageProps} />}
         {isIntegrationPageSelected && <Integrations {...settingPageProps} />}
       </section>
+      <Alert />
     </>
   );
 }

@@ -16,7 +16,6 @@ const schema = yup.object().shape({
 });
 
 export const PersonalDetails = () => {
-  const [showAlert, setShowAlert] = useState(false);
   const useFormObj = useMemo(
     () => ({
       defaultValues: {
@@ -33,29 +32,9 @@ export const PersonalDetails = () => {
   const hookFormProps = useForm(useFormObj);
 
   const onFormSubmit: SubmitHandler<any> = (submittedFormData) => {
-    handleClickOnSendMessage(submittedFormData);
-  };
-  const handleClickOnSendMessage = (submittedFormData: any) => {
-    // let data = JSON.stringify({
-    //   Data: {
-    //     message_from: "USER",
-    //     message_to: "AI",
-    //     message: submittedFormData.message,
-    //   },
-    // });
-    // const encoder = new TextEncoder();
-    // const binaryData = encoder.encode(data);
-    // web_socket.send(binaryData.buffer)
-    setShowAlert(true);
+    console.log({ submittedFormData });
   };
 
-  const alertProps = {
-    title: "Account/Profile",
-    description: "something...",
-    show: showAlert,
-    status: "",
-    setShow: setShowAlert,
-  };
   const { handleSubmit } = hookFormProps;
 
   return (
@@ -166,7 +145,6 @@ export const PersonalDetails = () => {
           </form>
         </div>
       </div>
-      <Alert {...alertProps} />
     </>
   );
 };
