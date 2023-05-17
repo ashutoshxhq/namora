@@ -15,7 +15,7 @@ export default async function handler(
   try {
     if (method === "POST") {
       const response = await getAxiosClient(accessToken).post(
-        `/teams/${teamId}/integrations/crm/connections/link-token`
+        `/teams/${teamId}/integrations/crm/link-token`
       );
       const status = response?.status;
       res.status(status).json(response?.data);

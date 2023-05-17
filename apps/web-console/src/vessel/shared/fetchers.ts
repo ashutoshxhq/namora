@@ -33,7 +33,7 @@ export const exchangeVesselCRMTokenFetcher = async (
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
-        body: JSON.stringify({ publicToken }),
+        body: JSON.stringify({ public_token: publicToken }),
       }
     );
     const linkTokenRes = await res.json();

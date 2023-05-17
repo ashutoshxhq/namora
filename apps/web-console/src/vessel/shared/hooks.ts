@@ -7,24 +7,20 @@ import {
   TVesselCRMConnection,
 } from "@/vessel/shared/types";
 import {
+  exchangeVesselCRMTokenFetcher,
+  linkVesselCRMTokenFetcher,
   vesselCRMConnectionStatusFetcher,
   vesselCRMDisconnectStatusFetcher,
 } from "@/vessel/shared/fetchers";
 import { useGetTeams } from "@/current-team/hooks";
-import { exchangeVesselCRMToken, linkVesselCRMToken } from "./api";
 
 export const useLinkVesselCRMToken = (
   linkVesselCRMTokenMutationOptions: TMutationOptionProps
 ) => {
   const linkVesselCRMTokenMutation = useMutation(
-    // ({ accessToken, teamId }: { accessToken: string; teamId: string }) => {
-    //   return linkVesselCRMTokenFetcher("/api", teamId, accessToken);
-    // },
-    ({ accessToken, teamId }: { accessToken: string; teamId: string }) =>
-      linkVesselCRMToken({
-        accessToken,
-        teamId,
-      }),
+    ({ accessToken, teamId }: { accessToken: string; teamId: string }) => {
+      return linkVesselCRMTokenFetcher("/api", teamId, accessToken);
+    },
     linkVesselCRMTokenMutationOptions
   );
   return linkVesselCRMTokenMutation;
@@ -43,17 +39,12 @@ export const useExchangeVesselCRMToken = (
       accessToken: string;
       teamId: string;
     }) => {
-      // return exchangeVesselCRMTokenFetcher(
-      //   "/api",
-      //   teamId,
-      //   accessToken,
-      //   publicToken
-      // );
-      return exchangeVesselCRMToken({
-        publicToken,
-        accessToken,
+      return exchangeVesselCRMTokenFetcher(
+        "/api",
         teamId,
-      });
+        accessToken,
+        publicToken
+      );
     },
     exchangeVesselCRMTokenMutationOptions
   );

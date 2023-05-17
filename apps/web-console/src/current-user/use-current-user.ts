@@ -4,7 +4,10 @@ export const useCurrentUser = () => {
   const { user } = useUser();
   const teamId = user?.namora_team_id;
   const userId = user?.namora_user_id;
-  const userName = user?.name ?? "N/A";
+  const userName: string =
+    user?.firstname && user?.lastname
+      ? `${user?.firstname} ${user?.lastname}`
+      : (user?.name as string);
 
   return {
     user,
