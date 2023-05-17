@@ -130,7 +130,7 @@ impl CRMIntegrationService {
         let client = reqwest::Client::new();
         tracing::info!("Deleting connection with id {}", connection_id_str);
         let res = client
-            .get("https://api.vessel.land/connection/connection")
+            .delete("https://api.vessel.land/connection/connection")
             .header(
                 header::HeaderName::from_static("vessel-api-token"),
                 vessel_api_token,
