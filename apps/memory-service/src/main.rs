@@ -17,7 +17,6 @@ use tracing_subscriber::{fmt::format::FmtSpan, FmtSubscriber};
 #[tokio::main]
 async fn main() {
     dotenv().ok();
-
     let subscriber = FmtSubscriber::builder()
         .with_max_level(Level::DEBUG)
         .with_level(true)
