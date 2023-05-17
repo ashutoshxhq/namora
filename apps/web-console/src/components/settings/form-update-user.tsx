@@ -48,7 +48,7 @@ export const FormUpdateUser = ({
     onSuccess: () => {
       showNotification({
         title: "Success",
-        description: "Team member details are updated",
+        description: "User updated successfully",
         status: "success",
       });
       setPanelOpen(false);
@@ -59,7 +59,7 @@ export const FormUpdateUser = ({
     onError: () => {
       showNotification({
         title: "Failed",
-        description: "Team member details are not updated",
+        description: "Update failed",
         status: "error",
       });
       setPanelOpen(false);
