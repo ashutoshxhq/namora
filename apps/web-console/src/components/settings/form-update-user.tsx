@@ -13,8 +13,6 @@ import {
 } from "@/current-team/constants";
 import { useNotificationDispatch } from "@/contexts/notification";
 
-const TIMEOUT_MS = 7000;
-
 const schema = yup.object().shape({
   first_name: yup.string().required("Required"),
   last_name: yup.string().required("Required"),
@@ -42,7 +40,7 @@ export const FormUpdateUser = ({
   const userId = rest?.userId;
 
   const setPanelOpen = rest.setOpen;
-  const { showNotification, hideNotification } = useNotificationDispatch();
+  const { showNotification } = useNotificationDispatch();
 
   const updateTeamMemberMutationOptions = {
     onSuccess: () => {
@@ -86,7 +84,13 @@ export const FormUpdateUser = ({
     [companyPosition, email, firstName, lastName]
   );
   const hookFormProps = useForm(useFormObj);
-  const { handleSubmit, reset } = hookFormProps;
+  const {
+    handleSubmit,
+    reset,
+    formState: { isDirty },
+  } = hookFormProps;
+
+  const disabled = "opacity-50 cursor-not-allowed";
 
   useEffect(() => {
     reset({
@@ -160,7 +164,7 @@ export const FormUpdateUser = ({
               <FormInputEmailField
                 id="email"
                 name="email"
-                contextId="email"
+                contextId="team_members_email"
                 placeholder="..."
                 {...hookFormProps}
               />
@@ -189,7 +193,9 @@ export const FormUpdateUser = ({
         <div className="flex my-8">
           <button
             type="submit"
-            className="px-3 py-2 text-sm font-semibold text-white bg-indigo-500 rounded-md shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+            className={`px-3 py-2 text-sm font-semibold text-white bg-indigo-500 rounded-md shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500
+            ${!isDirty ? disabled : ""}
+            `}
           >
             Save
           </button>

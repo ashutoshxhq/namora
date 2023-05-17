@@ -46,7 +46,7 @@ const Jobs = () => {
         <h3 className="text-xl font-semibold leading-6 text-gray-900">
           Review Jobs
         </h3>
-        <p className="mt-1 text-xs text-gray-500">...</p>
+        {/* <p className="mt-1 text-xs text-gray-500">...</p> */}
       </div>
       <div className="overflow-hidden bg-white shadow sm:rounded-md">
         <ul role="list" className="divide-y divide-gray-200">

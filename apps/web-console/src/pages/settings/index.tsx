@@ -73,7 +73,7 @@ export default function SettingsPage(props: any) {
         <h3 className="text-xl font-semibold leading-6 text-gray-900">
           Settings
         </h3>
-        <p className="mt-1 text-xs text-gray-500">...</p>
+        {/* <p className="mt-1 text-xs text-gray-500">...</p> */}
       </div>
       <div className="pb-5 border-gray-200 sm:pb-0">
         <div className="hidden sm:block">

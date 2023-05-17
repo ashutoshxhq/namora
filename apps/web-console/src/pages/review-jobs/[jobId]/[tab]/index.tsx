@@ -29,7 +29,7 @@ const JobPage = () => {
         <h3 className="text-xl font-semibold leading-6 text-gray-900">
           {jobId}
         </h3>
-        <p className="mt-1 text-xs text-gray-500">...</p>
+        {/* <p className="mt-1 text-xs text-gray-500">...</p> */}
       </div>
       <Tab.Group
         selectedIndex={_selectedIndex}

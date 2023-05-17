@@ -1,13 +1,13 @@
 import React from "react";
-import { PersonalDetails } from "./personal-details";
-import { Password } from "./password";
+import { PersonalDetails } from "@/components/settings/personal-details";
+// import { Password } from "@/components/settings/password";
 
-export const Account = () => {
+export const Account = (props: any) => {
   return (
     <div className="overflow-auto">
       <div className="divide-y divide-white/5">
-        <PersonalDetails />
-        <Password />
+        <PersonalDetails {...props} />
+        {/* <Password /> */}
       </div>
     </div>
   );
