@@ -5,3 +5,4 @@ pub mod team;
 pub mod user;
 pub mod authn;
 pub mod crm;
+pub mod tasks;

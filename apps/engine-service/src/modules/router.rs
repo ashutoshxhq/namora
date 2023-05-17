@@ -1,4 +1,4 @@
-use super::{health, authn, user, team, crm};
+use super::{health, authn, user, team, crm, tasks};
 use axum::Router;
 
 pub fn router() -> Router {
@@ -8,4 +8,5 @@ pub fn router() -> Router {
         .merge(user::router::new())
         .merge(team::router::new())
         .merge(crm::router::new())
+        .merge(tasks::router::new())
 }

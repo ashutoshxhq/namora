@@ -1,9 +1,9 @@
 /* This file is generated and managed by dsync */
 
 use diesel::*;
-use diesel::r2d2::{PooledConnection, ConnectionManager};
 use crate::schema::*;
 use diesel::QueryResult;
+use diesel::r2d2::{PooledConnection, ConnectionManager};
 use serde::{Deserialize, Serialize};
 
 

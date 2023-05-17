@@ -31,6 +31,38 @@ diesel::table! {
 }
 
 diesel::table! {
+    task_activity_logs (id) {
+        id -> Uuid,
+        activity_type -> Varchar,
+        description -> Nullable<Text>,
+        data -> Jsonb,
+        task_id -> Uuid,
+        user_id -> Uuid,
+        team_id -> Uuid,
+        created_at -> Nullable<Timestamp>,
+        updated_at -> Nullable<Timestamp>,
+        deleted_at -> Nullable<Timestamp>,
+    }
+}
+
+diesel::table! {
+    tasks (id) {
+        id -> Uuid,
+        task_type -> Varchar,
+        title -> Varchar,
+        description -> Nullable<Text>,
+        plan -> Nullable<Jsonb>,
+        trigger -> Nullable<Jsonb>,
+        status -> Varchar,
+        user_id -> Uuid,
+        team_id -> Uuid,
+        created_at -> Nullable<Timestamp>,
+        updated_at -> Nullable<Timestamp>,
+        deleted_at -> Nullable<Timestamp>,
+    }
+}
+
+diesel::table! {
     teams (id) {
         id -> Uuid,
         company_name -> Nullable<Varchar>,
@@ -83,11 +115,18 @@ diesel::joinable!(review_artifacts -> teams (team_id));
 diesel::joinable!(review_artifacts -> users (user_id));
 diesel::joinable!(review_jobs -> teams (team_id));
 diesel::joinable!(review_jobs -> users (user_id));
+diesel::joinable!(task_activity_logs -> tasks (task_id));
+diesel::joinable!(task_activity_logs -> teams (team_id));
+diesel::joinable!(task_activity_logs -> users (user_id));
+diesel::joinable!(tasks -> teams (team_id));
+diesel::joinable!(tasks -> users (user_id));
 diesel::joinable!(users -> teams (team_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
     review_artifacts,
     review_jobs,
+    task_activity_logs,
+    tasks,
     teams,
     users,
 );

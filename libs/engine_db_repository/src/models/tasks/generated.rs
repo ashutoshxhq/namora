@@ -1,24 +1,24 @@
 /* This file is generated and managed by dsync */
-
 use diesel::*;
-use crate::schema::*;
 use diesel::r2d2::{PooledConnection, ConnectionManager};
+use crate::schema::*;
 use diesel::QueryResult;
 use serde::{Deserialize, Serialize};
-use crate::models::review_jobs::ReviewJob;
 use crate::models::teams::Team;
 use crate::models::users::User;
 
 type Connection = PooledConnection<ConnectionManager<PgConnection>>;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset, Identifiable, Associations, Selectable)]
-#[diesel(table_name=review_artifacts, primary_key(id), belongs_to(ReviewJob, foreign_key=job_id) , belongs_to(Team, foreign_key=team_id) , belongs_to(User, foreign_key=user_id))]
-pub struct ReviewArtifact {
+#[diesel(table_name=tasks, primary_key(id), belongs_to(Team, foreign_key=team_id) , belongs_to(User, foreign_key=user_id))]
+pub struct Task {
     pub id: uuid::Uuid,
-    pub artifact_type: String,
-    pub data: serde_json::Value,
+    pub task_type: String,
+    pub title: String,
+    pub description: Option<String>,
+    pub plan: Option<serde_json::Value>,
+    pub trigger: Option<serde_json::Value>,
     pub status: String,
-    pub job_id: uuid::Uuid,
     pub user_id: uuid::Uuid,
     pub team_id: uuid::Uuid,
     pub created_at: Option<chrono::NaiveDateTime>,
@@ -27,13 +27,15 @@ pub struct ReviewArtifact {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset)]
-#[diesel(table_name=review_artifacts)]
-pub struct CreateReviewArtifact {
+#[diesel(table_name=tasks)]
+pub struct CreateTask {
     pub id: uuid::Uuid,
-    pub artifact_type: String,
-    pub data: serde_json::Value,
+    pub task_type: String,
+    pub title: String,
+    pub description: Option<String>,
+    pub plan: Option<serde_json::Value>,
+    pub trigger: Option<serde_json::Value>,
     pub status: String,
-    pub job_id: uuid::Uuid,
     pub user_id: uuid::Uuid,
     pub team_id: uuid::Uuid,
     pub created_at: Option<chrono::NaiveDateTime>,
@@ -42,12 +44,14 @@ pub struct CreateReviewArtifact {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset)]
-#[diesel(table_name=review_artifacts)]
-pub struct UpdateReviewArtifact {
-    pub artifact_type: Option<String>,
-    pub data: Option<serde_json::Value>,
+#[diesel(table_name=tasks)]
+pub struct UpdateTask {
+    pub task_type: Option<String>,
+    pub title: Option<String>,
+    pub description: Option<Option<String>>,
+    pub plan: Option<Option<serde_json::Value>>,
+    pub trigger: Option<Option<serde_json::Value>>,
     pub status: Option<String>,
-    pub job_id: Option<uuid::Uuid>,
     pub user_id: Option<uuid::Uuid>,
     pub team_id: Option<uuid::Uuid>,
     pub created_at: Option<Option<chrono::NaiveDateTime>>,
@@ -66,27 +70,27 @@ pub struct PaginationResult<T> {
     pub num_pages: i64,
 }
 
-impl ReviewArtifact {
+impl Task {
 
-    pub fn create(db: &mut Connection, item: &CreateReviewArtifact) -> QueryResult<Self> {
-        use crate::schema::review_artifacts::dsl::*;
+    pub fn create(db: &mut Connection, item: &CreateTask) -> QueryResult<Self> {
+        use crate::schema::tasks::dsl::*;
 
-        insert_into(review_artifacts).values(item).get_result::<Self>(db)
+        insert_into(tasks).values(item).get_result::<Self>(db)
     }
 
     pub fn read(db: &mut Connection, param_id: uuid::Uuid) -> QueryResult<Self> {
-        use crate::schema::review_artifacts::dsl::*;
+        use crate::schema::tasks::dsl::*;
 
-        review_artifacts.filter(id.eq(param_id)).first::<Self>(db)
+        tasks.filter(id.eq(param_id)).first::<Self>(db)
     }
 
     /// Paginates through the table where page is a 0-based index (i.e. page 0 is the first page)
     pub fn paginate(db: &mut Connection, page: i64, page_size: i64) -> QueryResult<PaginationResult<Self>> {
-        use crate::schema::review_artifacts::dsl::*;
+        use crate::schema::tasks::dsl::*;
 
         let page_size = if page_size < 1 { 1 } else { page_size };
-        let total_items = review_artifacts.count().get_result(db)?;
-        let items = review_artifacts.limit(page_size).offset(page * page_size).load::<Self>(db)?;
+        let total_items = tasks.count().get_result(db)?;
+        let items = tasks.limit(page_size).offset(page * page_size).load::<Self>(db)?;
 
         Ok(PaginationResult {
             items,
@@ -98,16 +102,16 @@ impl ReviewArtifact {
         })
     }
 
-    pub fn update(db: &mut Connection, param_id: uuid::Uuid, item: &UpdateReviewArtifact) -> QueryResult<Self> {
-        use crate::schema::review_artifacts::dsl::*;
+    pub fn update(db: &mut Connection, param_id: uuid::Uuid, item: &UpdateTask) -> QueryResult<Self> {
+        use crate::schema::tasks::dsl::*;
 
-        diesel::update(review_artifacts.filter(id.eq(param_id))).set(item).get_result(db)
+        diesel::update(tasks.filter(id.eq(param_id))).set(item).get_result(db)
     }
 
     pub fn delete(db: &mut Connection, param_id: uuid::Uuid) -> QueryResult<usize> {
-        use crate::schema::review_artifacts::dsl::*;
+        use crate::schema::tasks::dsl::*;
 
-        diesel::delete(review_artifacts.filter(id.eq(param_id))).execute(db)
+        diesel::delete(tasks.filter(id.eq(param_id))).execute(db)
     }
 
 }

@@ -1,6 +1,5 @@
 use serde::{Deserialize, Serialize};
 
-
 #[derive(Deserialize)]
 pub struct GetUsersByQuery {
     pub offset: Option<i64>,
