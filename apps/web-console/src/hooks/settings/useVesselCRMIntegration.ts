@@ -21,13 +21,6 @@ export const useVesselCRMIntegration = (props: any) => {
 
   const { showNotification, hideNotification } = useNotificationDispatch();
 
-  const alertTimeoutRef = useRef<NodeJS.Timeout>();
-
-  useEffect(() => {
-    const timeout = alertTimeoutRef.current;
-    return () => clearTimeout(timeout);
-  }, [alertTimeoutRef]);
-
   const disconnectVesselCRMConnectionMutationOptions = {
     onSuccess: () => {
       showNotification({
@@ -35,10 +28,6 @@ export const useVesselCRMIntegration = (props: any) => {
         description: "Disconnected from CRM",
         status: "success",
       });
-      alertTimeoutRef.current = setTimeout(
-        () => hideNotification(),
-        TIMEOUT_MS
-      );
       queryClient.invalidateQueries([
         ...QUERY_KEY_VESSEL_CRM_CONNECTION_STATUS,
         teamId,
@@ -51,10 +40,6 @@ export const useVesselCRMIntegration = (props: any) => {
         description: "Unable to disconnect",
         status: "error",
       });
-      alertTimeoutRef.current = setTimeout(
-        () => hideNotification(),
-        TIMEOUT_MS
-      );
       queryClient.invalidateQueries([
         ...QUERY_KEY_VESSEL_CRM_CONNECTION_STATUS,
         teamId,
@@ -88,10 +73,6 @@ export const useVesselCRMIntegration = (props: any) => {
         description: "Connected with CRM",
         status: "success",
       });
-      alertTimeoutRef.current = setTimeout(
-        () => hideNotification(),
-        TIMEOUT_MS
-      );
       queryClient.invalidateQueries([
         ...QUERY_KEY_VESSEL_CRM_CONNECTION_STATUS,
         teamId,
@@ -107,10 +88,6 @@ export const useVesselCRMIntegration = (props: any) => {
         description: message,
         status: "error",
       });
-      alertTimeoutRef.current = setTimeout(
-        () => hideNotification(),
-        TIMEOUT_MS
-      );
       queryClient.invalidateQueries([
         ...QUERY_KEY_VESSEL_CRM_CONNECTION_STATUS,
         teamId,
@@ -138,11 +115,6 @@ export const useVesselCRMIntegration = (props: any) => {
         description: message,
         status: "error",
       });
-
-      alertTimeoutRef.current = setTimeout(
-        () => hideNotification(),
-        TIMEOUT_MS
-      );
     },
   };
   const linkVesselCRMTokenMutation = useLinkVesselCRMToken(

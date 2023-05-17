@@ -3,7 +3,6 @@ import { Switch } from "@headlessui/react";
 import { UserGroupIcon } from "@heroicons/react/24/outline";
 
 import { useVesselCRMIntegration } from "@/hooks/settings/useVesselCRMIntegration";
-import { Alert } from "@/design-system/molecules/alert";
 import { useGetVesselCRMConnectionStatus } from "@/vessel/shared/hooks";
 
 const statuses = {

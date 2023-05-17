@@ -1,4 +1,10 @@
-import { createContext, useContext, useReducer } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useReducer,
+  useRef,
+} from "react";
 import { notificationReducer } from "./reducer";
 import { TNotificationState, TNotificationStoreProvider } from "./types";
 import { SET_SHOW } from "./actionTypes";
@@ -13,10 +19,13 @@ export const initialAppState: TNotificationState = {
   status: "",
 };
 
+const TIMEOUT_MS = 7000;
+
 export const NotificationStoreProvider = ({
   children,
 }: TNotificationStoreProvider) => {
   const [state, dispatch] = useReducer(notificationReducer, initialAppState);
+  const alertTimeoutRef = useRef<NodeJS.Timeout | null>();
 
   const hideNotification = () => {
     dispatch({
@@ -42,6 +51,18 @@ export const NotificationStoreProvider = ({
     showNotification,
     hideNotification,
   };
+
+  const { isShow } = state;
+  alertTimeoutRef.current = isShow
+    ? setTimeout(() => hideNotification(), TIMEOUT_MS)
+    : null;
+
+  useEffect(() => {
+    if (isShow && alertTimeoutRef?.current) {
+      const timeout = alertTimeoutRef?.current;
+      return () => clearTimeout(timeout);
+    }
+  }, [isShow, alertTimeoutRef]);
 
   return (
     <dispatchContext.Provider value={{ ...dispatches }}>

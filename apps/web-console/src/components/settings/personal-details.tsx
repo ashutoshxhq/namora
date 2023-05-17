@@ -1,11 +1,8 @@
-import Image from "next/image";
 import { useMemo } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { useState } from "react";
 
-import { Alert } from "@/design-system/molecules/alert";
 import { FormInputTextField, FormInputEmailField } from "@/design-system/form";
 
 const schema = yup.object().shape({

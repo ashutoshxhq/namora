@@ -44,8 +44,6 @@ export const FormUpdateUser = ({
   const setPanelOpen = rest.setOpen;
   const { showNotification, hideNotification } = useNotificationDispatch();
 
-  const alertTimeoutRef = useRef<NodeJS.Timeout>();
-
   const updateTeamMemberMutationOptions = {
     onSuccess: () => {
       showNotification({
@@ -53,10 +51,6 @@ export const FormUpdateUser = ({
         description: "Team member details are updated",
         status: "success",
       });
-      alertTimeoutRef.current = setTimeout(
-        () => hideNotification(),
-        TIMEOUT_MS
-      );
       setPanelOpen(false);
       queryClient.invalidateQueries([...QUERY_KEY_TEAM_USERS, teamId]);
       queryClient.invalidateQueries([...QUERY_KEY_TEAMS, teamId]);
@@ -68,10 +62,6 @@ export const FormUpdateUser = ({
         description: "Team member details are not updated",
         status: "error",
       });
-      alertTimeoutRef.current = setTimeout(
-        () => hideNotification(),
-        TIMEOUT_MS
-      );
       setPanelOpen(false);
       queryClient.invalidateQueries([...QUERY_KEY_TEAM_USERS, teamId]);
       queryClient.invalidateQueries([...QUERY_KEY_TEAMS, teamId]);
@@ -106,11 +96,6 @@ export const FormUpdateUser = ({
       company_position: companyPosition,
     });
   }, [firstName, lastName, email, companyPosition, reset]);
-
-  useEffect(() => {
-    const timeout = alertTimeoutRef.current;
-    return () => clearTimeout(timeout);
-  }, [alertTimeoutRef]);
 
   const onFormSubmit: SubmitHandler<any> = (submittedFormData) => {
     mutate({
