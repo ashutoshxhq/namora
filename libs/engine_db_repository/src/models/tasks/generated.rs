@@ -30,7 +30,6 @@ pub struct Task {
 #[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset, ToSchema)]
 #[diesel(table_name=tasks)]
 pub struct CreateTask {
-    pub id: uuid::Uuid,
     pub task_type: String,
     pub title: String,
     pub description: Option<String>,
