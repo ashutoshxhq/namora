@@ -1,23 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: engine-service-deployment
+  name: memory-service-deployment
   labels:
-    name: engine-service-deployment
+    name: memory-service-deployment
 spec:
   replicas: 1
   selector:
     matchLabels:
-      name: engine-service-pod
+      name: memory-service-pod
   template:
     metadata:
-      name: engine-service-pod
+      name: memory-service-pod
       labels:
-        name: engine-service-pod
+        name: memory-service-pod
     spec:
       containers:
-        - name: engine-service-pod
-          image: 538780007699.dkr.ecr.us-west-2.amazonaws.com/engine-service:latest
+        - name: memory-service-pod
+          image: 538780007699.dkr.ecr.us-west-2.amazonaws.com/memory-service:latest
           ports:
             - containerPort: 8000
           env:
