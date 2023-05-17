@@ -29,7 +29,7 @@ RUN groupadd $APP_USER \
     && mkdir -p ${APP}
 
 COPY --from=builder /apps/memory-service/target/release/memory-service ${APP}/memory-service
-COPY --from=builder /apps/memory-service/public ${APP}/public
+# COPY --from=builder /apps/memory-service/public ${APP}/public
 
 RUN chown -R $APP_USER:$APP_USER ${APP}
 
