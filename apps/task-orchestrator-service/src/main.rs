@@ -236,7 +236,7 @@ async fn main() {
         // Keep the main function running
         loop {
             let status = connection.status();
-            if status.closed() || status.closing() {
+            if !status.connected() {
                 tracing::error!("Connection closed");
                 break;
             }
