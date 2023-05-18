@@ -1,3 +1,4 @@
+import { InboxStackIcon } from "@heroicons/react/24/outline";
 import {
   JOBS,
   SETTINGS,
@@ -7,6 +8,8 @@ import {
   TEAM_MEMBERS,
   INTEGRATIONS,
   ROOT,
+  TASKS,
+  AI,
 } from "./constants";
 
 import {
@@ -24,6 +27,8 @@ const routeNameMap = {
   [ARTIFACT]: "Artifacts",
   [ACCOUNT]: "Account",
   [INTEGRATIONS]: "Integrations",
+  [TASKS]: "Tasks",
+  [AI]: "ai",
 };
 
 export const sideBarMenuList = [
@@ -36,7 +41,16 @@ export const sideBarMenuList = [
       query: {},
     },
     icon: ChatBubbleBottomCenterIcon,
-    current: false,
+  },
+  {
+    id: TASKS,
+    name: routeNameMap[TASKS],
+    path: TASKS,
+    href: {
+      pathname: `/${TASKS}/${AI}`,
+      query: {},
+    },
+    icon: InboxStackIcon,
   },
   {
     id: JOBS,
@@ -47,25 +61,23 @@ export const sideBarMenuList = [
       query: {},
     },
     icon: RectangleStackIcon,
-    current: false,
   },
   {
     id: SETTINGS,
     name: routeNameMap[SETTINGS],
     path: SETTINGS,
     href: {
-      pathname: decodeURIComponent(`/${SETTINGS}?${ACCOUNT}=true`),
+      pathname: decodeURIComponent(`/${SETTINGS}/${ACCOUNT}`),
       query: {},
     },
     icon: Cog8ToothIcon,
-    current: false,
   },
 ];
 
 export const userNavigation = [
   {
     name: "Your profile",
-    href: decodeURIComponent(`/${SETTINGS}?${ACCOUNT}=true`),
+    href: decodeURIComponent(`/${SETTINGS}/${ACCOUNT}`),
   },
   { name: "Sign out", href: "/api/auth/logout" },
 ];
@@ -79,7 +91,6 @@ export const jobTabList = [
       pathname: `/${PLAN}`,
       query: {},
     },
-    current: false,
   },
   {
     id: ARTIFACT,
@@ -89,7 +100,6 @@ export const jobTabList = [
       pathname: `/${ARTIFACT}`,
       query: {},
     },
-    current: false,
   },
 ];
 
@@ -99,29 +109,26 @@ export const settingTabList = [
     name: routeNameMap[ACCOUNT],
     path: ACCOUNT,
     href: {
-      pathname: decodeURIComponent(`${SETTINGS}?${ACCOUNT}=true`),
+      pathname: decodeURIComponent(`${SETTINGS}/${ACCOUNT}`),
       query: {},
     },
-    current: false,
   },
   {
     id: TEAM_MEMBERS,
     name: routeNameMap[TEAM_MEMBERS],
     path: TEAM_MEMBERS,
     href: {
-      pathname: decodeURIComponent(`${SETTINGS}?${TEAM_MEMBERS}=true`),
+      pathname: decodeURIComponent(`${SETTINGS}/${TEAM_MEMBERS}`),
       query: {},
     },
-    current: false,
   },
   {
     id: INTEGRATIONS,
     name: routeNameMap[INTEGRATIONS],
     path: INTEGRATIONS,
     href: {
-      pathname: decodeURIComponent(`${SETTINGS}?${INTEGRATIONS}=true`),
+      pathname: decodeURIComponent(`${SETTINGS}/${INTEGRATIONS}`),
       query: {},
     },
-    current: false,
   },
 ];

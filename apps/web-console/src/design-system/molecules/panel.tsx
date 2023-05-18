@@ -60,15 +60,8 @@ export function NamoraPanel({
                       </button>
                     </div>
                   </Transition.Child>
-                  <div className="flex flex-col h-full py-6 pt-20 overflow-y-scroll bg-white shadow-xl">
-                    <div className="px-4 sm:px-6">
-                      <Dialog.Title className="text-base font-semibold leading-6 text-gray-900">
-                        Update User
-                      </Dialog.Title>
-                    </div>
-                    <div className="relative flex-1 px-4 sm:px-6">
-                      {children}
-                    </div>
+                  <div className="flex flex-col h-full py-6 pt-20 overflow-y-scroll bg-white">
+                    {children}
                   </div>
                 </Dialog.Panel>
               </Transition.Child>

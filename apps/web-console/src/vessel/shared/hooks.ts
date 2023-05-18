@@ -55,10 +55,12 @@ export const useGetVesselCRMConnectionStatus = ({
   teamId,
   accessToken,
   teams,
+  connectionObj,
 }: {
   teamId: string;
   accessToken: string;
   teams: any;
+  connectionObj: { [key: string]: any };
 }) => {
   const props = {
     teamId,
@@ -66,40 +68,42 @@ export const useGetVesselCRMConnectionStatus = ({
     teams,
   };
 
-  const { data } = useGetTeams(props);
+  const { data, isLoading: isTeamsLoading } = useGetTeams(props);
   const connectionId: string =
     (data?.data?.vessel_connection_id as string) ?? "";
-  const encodedConnectionId = connectionId
-    ? encodeURIComponent(connectionId)
-    : "";
 
   const {
     data: vesselCRMConnectionAPIData,
     isLoading: isVesselCRMConnectionAPILoading,
   } = useQuery(
-    [...QUERY_KEY_VESSEL_CRM_CONNECTION_STATUS, connectionId],
+    [...QUERY_KEY_VESSEL_CRM_CONNECTION_STATUS, teamId],
     () =>
       vesselCRMConnectionStatusFetcher(
         "/api",
         teamId,
-        encodedConnectionId,
+        connectionId,
         accessToken
       ),
     {
+      initialData: connectionObj,
       enabled: !!connectionId && !!teamId && !!accessToken,
     }
   );
 
-  const connectionObj: TVesselCRMConnection =
+  const _connectionObj: TVesselCRMConnection =
     vesselCRMConnectionAPIData?.connection;
-  const connectionStatus = connectionObj?.status;
+  const connectionStatus = _connectionObj?.status;
+  const _connectionId = _connectionObj?.connectionId;
   const isCRMConnected = CONNECTION_STATUS_LIST.includes(connectionStatus);
+
+  const isLoading = isTeamsLoading || isVesselCRMConnectionAPILoading;
 
   return {
     isCRMConnected,
     connectionStatus,
+    connectionId: _connectionId,
     vesselCRMConnectionAPIData,
-    isVesselCRMConnectionAPILoading,
+    isVesselCRMConnectionAPILoading: isLoading,
   };
 };
 
@@ -116,12 +120,10 @@ export const useDisconnectVesselCRMConnection = (
       connectionId: string;
       accessToken: string;
     }) => {
-      const encodedConnectionId = encodeURIComponent(connectionId);
-
       return vesselCRMDisconnectStatusFetcher(
         "/api",
         teamId,
-        encodedConnectionId,
+        connectionId,
         accessToken
       );
     },

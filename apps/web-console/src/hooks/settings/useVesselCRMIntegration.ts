@@ -1,25 +1,29 @@
 import { useVesselLink } from "@vesselapi/react-vessel-link";
-import { useEffect, useRef, useState } from "react";
 import { queryClient } from "@/react-query";
 
 import { AxiosError, AxiosResponse } from "@/axios";
 import {
   useDisconnectVesselCRMConnection,
   useExchangeVesselCRMToken,
+  useGetVesselCRMConnectionStatus,
   useLinkVesselCRMToken,
 } from "@/vessel/shared/hooks";
 import { QUERY_KEY_VESSEL_CRM_CONNECTION_STATUS } from "@/vessel/constants";
 import { QUERY_KEY_TEAMS } from "@/current-team/constants";
 import { useNotificationDispatch } from "@/contexts/notification";
 
-const TIMEOUT_MS = 7000;
-
 export const useVesselCRMIntegration = (props: any) => {
   const accessToken = props?.accessToken;
   const teamId = props?.teamId;
-  const connectionId = props?.connectionId;
 
-  const { showNotification, hideNotification } = useNotificationDispatch();
+  const {
+    connectionId,
+    isCRMConnected,
+    connectionStatus = "",
+    isVesselCRMConnectionAPILoading,
+  } = useGetVesselCRMConnectionStatus(props);
+
+  const { showNotification } = useNotificationDispatch();
 
   const disconnectVesselCRMConnectionMutationOptions = {
     onSuccess: () => {
@@ -132,7 +136,15 @@ export const useVesselCRMIntegration = (props: any) => {
       accessToken,
     });
 
+  const isConnectionLoading =
+    disconnectVesselCRMConnectionMutation.isLoading ||
+    isVesselCRMConnectionAPILoading;
+
   return {
+    connectionId,
+    isCRMConnected,
+    connectionStatus,
+    isConnectionLoading,
     handleClickOnConnect,
     handleClickOnDisconnect,
   };
