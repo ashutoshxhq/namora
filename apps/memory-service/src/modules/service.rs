@@ -1,8 +1,14 @@
+use super::memory::service::MemoryService;
+
 #[derive(Clone)]
-pub struct NamoraAIService {}
+pub struct NamoraAIService {
+    pub memory: MemoryService,
+}
 
 impl NamoraAIService {
     pub fn new() -> Self {
-        Self {}
+        Self {
+            memory: MemoryService::new(),
+        }
     }
 }
