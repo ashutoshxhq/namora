@@ -8,6 +8,8 @@ const SETTINGS = "settings";
 const ACCOUNT = "account";
 const TEAM_MEMBERS = "team-members";
 const INTEGRATIONS = "integrations";
+const TASKS = "tasks";
+const AI = "ai";
 
 export {
   ROOT,
@@ -20,4 +22,6 @@ export {
   INTEGRATIONS,
   CHATS,
   NOT_FOUND,
+  TASKS,
+  AI,
 };

@@ -20,7 +20,7 @@ export const useGetTeams = (props: any) => {
 };
 
 export const useGetTeamUsers = (props: any) => {
-  const teamId = props?.teamId;
+  const teamId = props?.teamId ?? "";
   const accessToken = props?.accessToken;
   const teamUsers = props?.teamUsers;
 

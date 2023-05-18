@@ -46,9 +46,13 @@ export const exchangeVesselCRMTokenFetcher = async (
 export const vesselCRMConnectionStatusFetcher = async (
   baseURL: string,
   teamId: string,
-  encodedConnectionId: string,
+  connectionId: string,
   accessToken: string
 ) => {
+  const encodedConnectionId = connectionId
+    ? encodeURIComponent(connectionId)
+    : "";
+
   try {
     const res = await fetch(
       `${baseURL}/teams/${teamId}/integrations/crm/connections/${encodedConnectionId}`,
@@ -68,9 +72,13 @@ export const vesselCRMConnectionStatusFetcher = async (
 export const vesselCRMDisconnectStatusFetcher = async (
   baseURL: string,
   teamId: string,
-  encodedConnectionId: string,
+  connectionId: string,
   accessToken: string
 ) => {
+  const encodedConnectionId = connectionId
+    ? encodeURIComponent(connectionId)
+    : "";
+
   try {
     const res = await fetch(
       `${baseURL}/teams/${teamId}/integrations/crm/connections/${encodedConnectionId}`,

@@ -13,7 +13,7 @@ import { queryClient } from "@/react-query";
 import { useUpdateTeamMember } from "@/hooks/settings/useUpdateTeamMember";
 import { useGetTeamUsers } from "@/current-team/hooks";
 import { TTeamMember } from "@/current-team/types";
-import { ButtonLoader } from "@/design-system/molecules/button-loader copy";
+import { ButtonLoader } from "@/design-system/molecules/button-loader";
 
 const schema = yup.object().shape({
   first_name: yup.string().required("Required"),
@@ -33,10 +33,10 @@ export const PersonalDetails = (props: any) => {
   const selectedMember = teamUsers?.find(
     (person: TTeamMember) => person.id === userId
   );
-  const firstName = selectedMember.firstname ?? "";
-  const lastName = selectedMember.lastname ?? "";
-  const email = selectedMember.email ?? "";
-  const companyPosition = selectedMember.company_position ?? "";
+  const firstName = selectedMember?.firstname ?? "";
+  const lastName = selectedMember?.lastname ?? "";
+  const email = selectedMember?.email ?? "";
+  const companyPosition = selectedMember?.company_position ?? "";
 
   const updateTeamMemberMutationOptions = {
     onSuccess: () => {

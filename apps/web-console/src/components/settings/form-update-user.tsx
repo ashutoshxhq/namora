@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useMemo } from "react";
 import * as yup from "yup";
 import { useForm, SubmitHandler } from "react-hook-form";
 
@@ -12,7 +12,7 @@ import {
   QUERY_KEY_TEAM_USERS,
 } from "@/current-team/constants";
 import { useNotificationDispatch } from "@/contexts/notification";
-import { ButtonLoader } from "@/design-system/molecules/button-loader copy";
+import { ButtonLoader } from "@/design-system/molecules/button-loader";
 
 const schema = yup.object().shape({
   first_name: yup.string().required("Required"),
@@ -116,94 +116,103 @@ export const FormUpdateUser = ({
   };
 
   return (
-    <div className="sm:mx-auto sm:w-full sm:max-w-md">
-      <form onSubmit={handleSubmit(onFormSubmit)}>
-        <div className="grid grid-cols-1 mt-10 gap-x-6 gap-y-8 sm:grid-cols-6">
-          <div className="col-span-full">
-            <label
-              htmlFor="first-name"
-              className="block text-sm font-medium leading-6 text-black"
-            >
-              First name
-            </label>
-            <div className="mt-2">
-              <FormInputTextField
-                id="first-name"
-                name="first_name"
-                contextId="first-name"
-                placeholder="..."
-                {...hookFormProps}
-              />
-            </div>
-          </div>
+    <>
+      <div className="px-4 sm:px-6">
+        <p className="text-base font-semibold leading-6 text-gray-900">
+          Update Member
+        </p>
+      </div>
+      <div className="relative flex-1 px-4 sm:px-6">
+        <div className="sm:mx-auto sm:w-full sm:max-w-md">
+          <form onSubmit={handleSubmit(onFormSubmit)}>
+            <div className="grid grid-cols-1 mt-10 gap-x-6 gap-y-8 sm:grid-cols-6">
+              <div className="col-span-full">
+                <label
+                  htmlFor="first-name"
+                  className="block text-sm font-medium leading-6 text-black"
+                >
+                  First name
+                </label>
+                <div className="mt-2">
+                  <FormInputTextField
+                    id="first-name"
+                    name="first_name"
+                    contextId="first-name"
+                    placeholder="..."
+                    {...hookFormProps}
+                  />
+                </div>
+              </div>
 
-          <div className="col-span-full">
-            <label
-              htmlFor="last-name"
-              className="block text-sm font-medium leading-6 text-black"
-            >
-              Last name
-            </label>
-            <div className="mt-2">
-              <FormInputTextField
-                id="last-name"
-                name="last_name"
-                contextId="last-name"
-                placeholder="..."
-                {...hookFormProps}
-              />
-            </div>
-          </div>
+              <div className="col-span-full">
+                <label
+                  htmlFor="last-name"
+                  className="block text-sm font-medium leading-6 text-black"
+                >
+                  Last name
+                </label>
+                <div className="mt-2">
+                  <FormInputTextField
+                    id="last-name"
+                    name="last_name"
+                    contextId="last-name"
+                    placeholder="..."
+                    {...hookFormProps}
+                  />
+                </div>
+              </div>
 
-          <div className="col-span-full">
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium leading-6 text-black"
-            >
-              Email
-            </label>
-            <div className="mt-2">
-              <FormInputEmailField
-                id="email"
-                name="email"
-                contextId="team_members_email"
-                placeholder="..."
-                {...hookFormProps}
-              />
-            </div>
-          </div>
+              <div className="col-span-full">
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium leading-6 text-black"
+                >
+                  Email
+                </label>
+                <div className="mt-2">
+                  <FormInputEmailField
+                    id="email"
+                    name="email"
+                    contextId="team_members_email"
+                    placeholder="..."
+                    {...hookFormProps}
+                  />
+                </div>
+              </div>
 
-          <div className="col-span-full">
-            <label
-              htmlFor="company_position"
-              className="block text-sm font-medium leading-6 text-black"
-            >
-              Company Position
-            </label>
-            <div className="mt-2">
-              <FormInputTextField
-                id="company_position"
-                name="company_position"
-                contextId="company_position"
-                placeholder="..."
-                {...hookFormProps}
-              />
+              <div className="col-span-full">
+                <label
+                  htmlFor="company_position"
+                  className="block text-sm font-medium leading-6 text-black"
+                >
+                  Company Position
+                </label>
+                <div className="mt-2">
+                  <FormInputTextField
+                    id="company_position"
+                    name="company_position"
+                    contextId="company_position"
+                    placeholder="..."
+                    {...hookFormProps}
+                  />
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
 
-        <div className="flex my-8 ">
-          <button
-            type="submit"
-            className={`relative flex items-center justify-center px-3 py-2 text-sm font-semibold text-white bg-indigo-500 rounded-md shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500
+            <div className="flex my-8 ">
+              <button
+                type="submit"
+                className={`relative flex items-center justify-center px-3 py-2 text-sm font-semibold text-white bg-indigo-500 rounded-md shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500
             ${!isDirty || isLoading ? disabled : ""}
             `}
-          >
-            <ButtonLoader isLoading={isLoading} />
-            Save
-          </button>
+              >
+                <ButtonLoader isLoading={isLoading} />
+                Save
+              </button>
+            </div>
+          </form>
         </div>
-      </form>
-    </div>
+      </div>
+    </>
   );
 };
