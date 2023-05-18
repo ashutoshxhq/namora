@@ -7,5 +7,6 @@ members = [
     "apps/user-socket-service",
     "libs/engine_db_repository",
     "libs/namora_core",
-    "functions/upsert-indexes-pinecone"
+    "functions/upsert-indexes-qdrant",
+    "functions/qdrant-experiments"
 ]

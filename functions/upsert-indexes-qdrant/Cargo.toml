@@ -1,5 +1,5 @@
 [package] 
-name = "agent-chat-upsert-indexes-pinecone"
+name = "upsert-indexes-qdrant"
 description = "Replace this with your function description"
 version = "0.1.0"
 edition = "2021"
