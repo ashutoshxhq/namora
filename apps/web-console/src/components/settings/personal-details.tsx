@@ -13,6 +13,7 @@ import { queryClient } from "@/react-query";
 import { useUpdateTeamMember } from "@/hooks/settings/useUpdateTeamMember";
 import { useGetTeamUsers } from "@/current-team/hooks";
 import { TTeamMember } from "@/current-team/types";
+import { ButtonLoader } from "@/design-system/molecules/button-loader copy";
 
 const schema = yup.object().shape({
   first_name: yup.string().required("Required"),
@@ -62,7 +63,7 @@ export const PersonalDetails = (props: any) => {
   const updateTeamMemberMutation = useUpdateTeamMember(
     updateTeamMemberMutationOptions
   );
-  const { mutate } = updateTeamMemberMutation;
+  const { mutate, isLoading } = updateTeamMemberMutation;
 
   const useFormObj = useMemo(
     () => ({
@@ -191,10 +192,11 @@ export const PersonalDetails = (props: any) => {
             <div className="flex my-8">
               <button
                 type="submit"
-                className={`px-3 py-2 text-sm font-semibold text-white bg-indigo-500 rounded-md shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 ${
-                  !isDirty ? disabled : ""
+                className={`relative flex items-center justify-center px-3 py-2 text-sm font-semibold text-white bg-indigo-500 rounded-md shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 ${
+                  !isDirty || isLoading ? disabled : ""
                 }`}
               >
+                <ButtonLoader isLoading={isLoading} />
                 Save
               </button>
             </div>
