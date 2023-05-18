@@ -32,10 +32,10 @@ export function NamoraPanel({
             <div className="fixed inset-y-0 right-0 flex max-w-full pl-10 pointer-events-none">
               <Transition.Child
                 as={Fragment}
-                enter="transform transition ease-in-out duration-500 sm:duration-700"
+                enter="transform transition ease-in-out duration-500 sm:duration-500"
                 enterFrom="translate-x-full"
                 enterTo="translate-x-0"
-                leave="transform transition ease-in-out duration-500 sm:duration-700"
+                leave="transform transition ease-in-out duration-500 sm:duration-500"
                 leaveFrom="translate-x-0"
                 leaveTo="translate-x-full"
               >
@@ -60,13 +60,13 @@ export function NamoraPanel({
                       </button>
                     </div>
                   </Transition.Child>
-                  <div className="flex flex-col h-full py-6 overflow-y-scroll bg-white shadow-xl">
+                  <div className="flex flex-col h-full py-6 pt-20 overflow-y-scroll bg-white shadow-xl">
                     <div className="px-4 sm:px-6">
                       <Dialog.Title className="text-base font-semibold leading-6 text-gray-900">
-                        Panel title
+                        Update User
                       </Dialog.Title>
                     </div>
-                    <div className="relative flex-1 px-4 mt-6 sm:px-6">
+                    <div className="relative flex-1 px-4 sm:px-6">
                       {children}
                     </div>
                   </div>

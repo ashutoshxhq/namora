@@ -12,8 +12,7 @@ import {
   QUERY_KEY_TEAM_USERS,
 } from "@/current-team/constants";
 import { useNotificationDispatch } from "@/contexts/notification";
-
-const TIMEOUT_MS = 7000;
+import { ButtonLoader } from "@/design-system/molecules/button-loader copy";
 
 const schema = yup.object().shape({
   first_name: yup.string().required("Required"),
@@ -42,7 +41,7 @@ export const FormUpdateUser = ({
   const userId = rest?.userId;
 
   const setPanelOpen = rest.setOpen;
-  const { showNotification, hideNotification } = useNotificationDispatch();
+  const { showNotification } = useNotificationDispatch();
 
   const updateTeamMemberMutationOptions = {
     onSuccess: () => {
@@ -62,7 +61,6 @@ export const FormUpdateUser = ({
         description: "Update failed",
         status: "error",
       });
-      setPanelOpen(false);
       queryClient.invalidateQueries([...QUERY_KEY_TEAM_USERS, teamId]);
       queryClient.invalidateQueries([...QUERY_KEY_TEAMS, teamId]);
     },
@@ -71,7 +69,7 @@ export const FormUpdateUser = ({
   const updateTeamMemberMutation = useUpdateTeamMember(
     updateTeamMemberMutationOptions
   );
-  const { mutate } = updateTeamMemberMutation;
+  const { mutate, isLoading } = updateTeamMemberMutation;
 
   const useFormObj = useMemo(
     () => ({
@@ -86,7 +84,13 @@ export const FormUpdateUser = ({
     [companyPosition, email, firstName, lastName]
   );
   const hookFormProps = useForm(useFormObj);
-  const { handleSubmit, reset } = hookFormProps;
+  const {
+    handleSubmit,
+    reset,
+    formState: { isDirty },
+  } = hookFormProps;
+
+  const disabled = "opacity-50 cursor-not-allowed";
 
   useEffect(() => {
     reset({
@@ -98,15 +102,17 @@ export const FormUpdateUser = ({
   }, [firstName, lastName, email, companyPosition, reset]);
 
   const onFormSubmit: SubmitHandler<any> = (submittedFormData) => {
-    mutate({
-      firstname: submittedFormData.first_name,
-      lastname: submittedFormData.last_name,
-      email: submittedFormData.email,
-      company_position: submittedFormData.company_position,
-      teamId,
-      userId,
-      accessToken,
-    });
+    if (isDirty) {
+      mutate({
+        firstname: submittedFormData.first_name,
+        lastname: submittedFormData.last_name,
+        email: submittedFormData.email,
+        company_position: submittedFormData.company_position,
+        teamId,
+        userId,
+        accessToken,
+      });
+    }
   };
 
   return (
@@ -160,7 +166,7 @@ export const FormUpdateUser = ({
               <FormInputEmailField
                 id="email"
                 name="email"
-                contextId="email"
+                contextId="team_members_email"
                 placeholder="..."
                 {...hookFormProps}
               />
@@ -186,11 +192,14 @@ export const FormUpdateUser = ({
           </div>
         </div>
 
-        <div className="flex my-8">
+        <div className="flex my-8 ">
           <button
             type="submit"
-            className="px-3 py-2 text-sm font-semibold text-white bg-indigo-500 rounded-md shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+            className={`relative flex items-center justify-center px-3 py-2 text-sm font-semibold text-white bg-indigo-500 rounded-md shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500
+            ${!isDirty || isLoading ? disabled : ""}
+            `}
           >
+            <ButtonLoader isLoading={isLoading} />
             Save
           </button>
         </div>

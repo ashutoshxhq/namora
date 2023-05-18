@@ -1,38 +1,114 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 
 import { FormInputTextField, FormInputEmailField } from "@/design-system/form";
+import { useNotificationDispatch } from "@/contexts/notification";
+import {
+  QUERY_KEY_TEAMS,
+  QUERY_KEY_TEAM_USERS,
+} from "@/current-team/constants";
+import { queryClient } from "@/react-query";
+import { useUpdateTeamMember } from "@/hooks/settings/useUpdateTeamMember";
+import { useGetTeamUsers } from "@/current-team/hooks";
+import { TTeamMember } from "@/current-team/types";
+import { ButtonLoader } from "@/design-system/molecules/button-loader copy";
 
 const schema = yup.object().shape({
-  first_name: yup.string(),
-  last_name: yup.string(),
+  first_name: yup.string().required("Required"),
+  last_name: yup.string().required("Required"),
   email: yup.string().email().required("Required"),
-  username: yup.string(),
+  company_position: yup.string(),
 });
 
-export const PersonalDetails = () => {
+export const PersonalDetails = (props: any) => {
+  const { showNotification } = useNotificationDispatch();
+  const teamId = props?.teamId;
+  const userId = props?.userId;
+  const accessToken = props?.accessToken;
+
+  const { data = [] } = useGetTeamUsers(props);
+  const teamUsers = data;
+  const selectedMember = teamUsers?.find(
+    (person: TTeamMember) => person.id === userId
+  );
+  const firstName = selectedMember.firstname ?? "";
+  const lastName = selectedMember.lastname ?? "";
+  const email = selectedMember.email ?? "";
+  const companyPosition = selectedMember.company_position ?? "";
+
+  const updateTeamMemberMutationOptions = {
+    onSuccess: () => {
+      showNotification({
+        title: "Success",
+        description: "User updated successfully",
+        status: "success",
+      });
+      queryClient.invalidateQueries([...QUERY_KEY_TEAM_USERS, teamId]);
+      queryClient.invalidateQueries([...QUERY_KEY_TEAMS, teamId]);
+      reset();
+    },
+    onError: () => {
+      showNotification({
+        title: "Failed",
+        description: "Update failed",
+        status: "error",
+      });
+      queryClient.invalidateQueries([...QUERY_KEY_TEAM_USERS, teamId]);
+      queryClient.invalidateQueries([...QUERY_KEY_TEAMS, teamId]);
+    },
+  };
+
+  const updateTeamMemberMutation = useUpdateTeamMember(
+    updateTeamMemberMutationOptions
+  );
+  const { mutate, isLoading } = updateTeamMemberMutation;
+
   const useFormObj = useMemo(
     () => ({
       defaultValues: {
-        first_name: "",
-        last_name: "",
-        email: "",
-        username: "",
-        company_position: "",
+        first_name: firstName,
+        last_name: lastName,
+        email,
+        company_position: companyPosition,
       },
       resolver: yupResolver(schema),
     }),
-    []
+    [companyPosition, email, firstName, lastName]
   );
   const hookFormProps = useForm(useFormObj);
 
+  const {
+    handleSubmit,
+    reset,
+    formState: { isDirty },
+  } = hookFormProps;
+
+  useEffect(() => {
+    reset({
+      first_name: firstName,
+      last_name: lastName,
+      email: email,
+      company_position: companyPosition,
+    });
+  }, [firstName, lastName, email, companyPosition, reset]);
+
   const onFormSubmit: SubmitHandler<any> = (submittedFormData) => {
-    console.log({ submittedFormData });
+    if (isDirty) {
+      mutate({
+        firstname: submittedFormData.first_name,
+        lastname: submittedFormData.last_name,
+        email: submittedFormData.email,
+        company_position: submittedFormData.company_position,
+        teamId,
+        userId,
+        accessToken,
+      });
+    }
   };
 
-  const { handleSubmit } = hookFormProps;
+  const disabled = "opacity-50 cursor-not-allowed";
 
   return (
     <>
@@ -87,25 +163,7 @@ export const PersonalDetails = () => {
                   <FormInputEmailField
                     id="email"
                     name="email"
-                    contextId="email"
-                    placeholder="..."
-                    {...hookFormProps}
-                  />
-                </div>
-              </div>
-
-              <div className="col-span-full">
-                <label
-                  htmlFor="username"
-                  className="block text-sm font-medium leading-6 text-black"
-                >
-                  Username
-                </label>
-                <div className="mt-2">
-                  <FormInputTextField
-                    id="username"
-                    name="username"
-                    contextId="username"
+                    contextId="personal_details_email"
                     placeholder="..."
                     {...hookFormProps}
                   />
@@ -134,9 +192,12 @@ export const PersonalDetails = () => {
             <div className="flex my-8">
               <button
                 type="submit"
-                className="px-3 py-2 text-sm font-semibold text-white bg-indigo-500 rounded-md shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+                className={`relative flex items-center justify-center px-3 py-2 text-sm font-semibold text-white bg-indigo-500 rounded-md shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 ${
+                  !isDirty || isLoading ? disabled : ""
+                }`}
               >
-                Update account & company
+                <ButtonLoader isLoading={isLoading} />
+                Save
               </button>
             </div>
           </form>

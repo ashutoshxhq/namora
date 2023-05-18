@@ -1,7 +1,6 @@
 import { Fragment, useState } from "react";
 import { Menu, Transition } from "@headlessui/react";
 import { EllipsisVerticalIcon } from "@heroicons/react/20/solid";
-import Link from "next/link";
 
 import { classNames } from "@/utils";
 import { NamoraPanel } from "@/design-system/molecules";
@@ -15,11 +14,11 @@ export const TeamMembers = (props: any) => {
   const [selectedMember, setSelectedMember] = useState<any>({});
 
   const { data = [] } = useGetTeamUsers(props);
-  const teamMembers = data;
+  const teamUsers = data;
 
   const handleClickOnEdit = (id: string) => {
     setOpen(true);
-    const selectedMember = teamMembers?.find(
+    const selectedMember = teamUsers?.find(
       (person: TTeamMember) => person.id === id
     );
     setSelectedMember(selectedMember);
@@ -30,7 +29,7 @@ export const TeamMembers = (props: any) => {
     setOpen,
   };
 
-  const totalMembers = teamMembers.length;
+  const totalMembers = teamUsers.length;
   return (
     <div className="overflow-auto h-[calc(100vh - theme(space.20))] overflow-hidden bg-white shadow rounded-md my-3 mb-11 ">
       <div className="p-3 border-b border-gray-200 sm:flex sm:items-center sm:justify-between">
@@ -47,14 +46,14 @@ export const TeamMembers = (props: any) => {
         </div>
       </div>
       <ul role="list" className="divide-y divide-gray-100">
-        {teamMembers.map((person: TTeamMember) => {
+        {teamUsers.map((person: TTeamMember) => {
           const name = `${person.firstname} ${person.lastname ?? ""}`;
           return (
             <li
               key={person.id}
-              className="z-0 flex items-center justify-between px-4 py-5 sm:px-6 gap-x-6"
+              className="flex items-center justify-between py-5 just sm:px-6 gap-x-6"
             >
-              <div className="flex gap-x-4">
+              <div className="flex flex-grow gap-x-4">
                 <span className="inline-flex items-center justify-center w-8 h-8 bg-gray-500 rounded-full">
                   <span className="text-sm font-medium leading-none text-white">
                     {getAllFirstChars(name)}
@@ -62,19 +61,22 @@ export const TeamMembers = (props: any) => {
                 </span>
                 <div className="flex-auto min-w-0">
                   <p className="text-sm font-semibold leading-6 text-gray-900">
-                    <a href="#" className="hover:underline">
-                      {name}
-                    </a>
-                  </p>
-                  <p className="flex mt-1 text-xs leading-5 text-gray-500">
-                    <a
-                      href={`mailto:${person.email}`}
-                      className="truncate hover:underline"
+                    <p
+                      className="cursor-pointer"
+                      onClick={() => handleClickOnEdit(person.id)}
                     >
-                      {person.email}
-                    </a>
+                      {name}
+                    </p>
+                  </p>
+                  <p className="mt-1 text-xs leading-5 text-gray-500 ">
+                    {person.email}
                   </p>
                 </div>
+              </div>
+              <div className="flex flex-col items-end ">
+                <p className="text-sm leading-6 text-gray-900">
+                  {person.company_position}
+                </p>
               </div>
               <div className="flex items-center gap-x-6">
                 <div className="hidden sm:flex sm:flex-col sm:items-end"></div>
@@ -95,7 +97,7 @@ export const TeamMembers = (props: any) => {
                     leaveFrom="transform opacity-100 scale-100"
                     leaveTo="transform opacity-0 scale-95"
                   >
-                    <Menu.Items className="absolute z-10 w-32 p-1 mt-2 origin-top-right bg-white rounded-md shadow-lg right-10 ring-1 ring-gray-900/5 focus:outline-none -top-9">
+                    <Menu.Items className="absolute z-10 w-32 p-1 mt-2 origin-top-right bg-white rounded-md shadow-lg right-10 ring-1 ring-gray-900/5 focus:outline-none -top-5">
                       <Menu.Item>
                         {({ active }) => (
                           <button
