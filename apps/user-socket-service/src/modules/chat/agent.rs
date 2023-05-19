@@ -1,4 +1,3 @@
-use std::sync::Arc;
 use crate::{authz::Claims, state::NamoraAIState};
 use axum::extract::ws::{Message as WSMessage, WebSocket};
 use futures::{sink::SinkExt, stream::StreamExt};
@@ -9,13 +8,14 @@ use lapin::{
         QueueDeleteOptions,
     },
     types::FieldTable,
-    BasicProperties, ConnectionProperties, Connection,
+    BasicProperties, Connection, ConnectionProperties,
 };
 use namora_core::types::{
     error::Error,
     message::{Context, ExecutionContext, Message, MessageWithContext},
 };
 use serde_json::json;
+use std::sync::Arc;
 use tokio::sync::{mpsc, Mutex};
 use uuid::Uuid;
 
@@ -31,7 +31,7 @@ pub async fn generic_agent_socket(
     let (mut socket_tx, mut socket_rx) = socket.split();
     tracing::info!("Creating channel to send messages to task orchestrator or user");
     let (tx, mut rx) = mpsc::channel::<MessageWithContext>(32);
-    
+
     tracing::info!("Setting up a connection to rabbitmq broker");
     let uri = std::env::var("TASK_ORCHESTRATION_BROKER_URI")?;
     let options = ConnectionProperties::default()
@@ -111,7 +111,9 @@ pub async fn generic_agent_socket(
         loop {
             tokio::time::sleep(tokio::time::Duration::from_secs(2)).await;
             let context = {
-                let context = socket_health_check_worker_session_context_mutex.lock().await;
+                let context = socket_health_check_worker_session_context_mutex
+                    .lock()
+                    .await;
                 context.clone()
             };
             let message_with_context = MessageWithContext {
@@ -125,7 +127,9 @@ pub async fn generic_agent_socket(
                 context,
             };
             tracing::info!("Sending ping message to client");
-            let res = socket_health_check_worker_worker_tx.send(message_with_context).await;
+            let res = socket_health_check_worker_worker_tx
+                .send(message_with_context)
+                .await;
             if let Err(e) = res {
                 tracing::error!("Failed to send message to worker, error: {}", e);
             }
@@ -211,7 +215,8 @@ pub async fn generic_agent_socket(
                         context.clone()
                     };
                     context.messages.push(message.clone());
-                    let message_with_context: MessageWithContext = MessageWithContext { message, context };
+                    let message_with_context: MessageWithContext =
+                        MessageWithContext { message, context };
                     if let Err(e) = socket_reciever_worker_tx.send(message_with_context).await {
                         tracing::error!("Error: {}", e);
                     }
@@ -363,7 +368,11 @@ async fn process_task_orchestrator_message(
             let message_with_context: MessageWithContext = match serde_json::from_str(&(message)) {
                 Ok(message) => message,
                 Err(error) => {
-                    tracing::error!("Failed to deserialize message: {}", error);
+                    tracing::error!(
+                        "Failed to deserialize message: {}, error: {}",
+                        message,
+                        error
+                    );
                     return Err(error.into());
                 }
             };

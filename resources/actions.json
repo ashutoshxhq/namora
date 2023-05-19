@@ -115,7 +115,8 @@
                     "type": "object",
                     "properties": {
                         "contains": {
-                            "type": "string"
+                            "type": "string",
+                            "description": "Prefer this over equals when searching for a string"
                         },
                         "endsWith": {
                             "type": "string"
@@ -262,7 +263,8 @@
                     "type": "object",
                     "properties": {
                         "contains": {
-                            "type": "string"
+                            "type": "string",
+                            "description": "Prefer this over equals when searching for a string"
                         },
                         "endsWith": {
                             "type": "string"
