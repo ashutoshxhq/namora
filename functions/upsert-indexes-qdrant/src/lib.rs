@@ -1,13 +1,18 @@
-use std::{collections::HashMap, env, fs};
+use std::{collections::HashMap, fs};
 
 use async_openai::{types::CreateEmbeddingRequestArgs, Client};
 use axum::Json;
 
 use dotenvy::dotenv;
 use namora_core::types::message::Action;
+use qdrant_client::{
+    prelude::{Payload, QdrantClient, QdrantClientConfig},
+    qdrant::PointStruct,
+};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
+use uuid::Uuid;
 
 #[derive(Serialize, Deserialize, JsonSchema, Debug)]
 pub struct Document {
@@ -19,7 +24,7 @@ pub struct Document {
 #[derive(Serialize, Deserialize, JsonSchema, Debug)]
 pub struct DocumentWithEmbeddings {
     pub id: String,
-    pub metadata: HashMap<String, Value>,
+    pub metadata: Value,
     pub values: Vec<f32>,
 }
 
@@ -32,6 +37,8 @@ pub struct Input {
 
 pub async fn handler() -> Json<Value> {
     dotenv().ok();
+    let config = QdrantClientConfig::from_url("http://localhost:6334");
+    let qdrant_client = QdrantClient::new(Some(config)).await.unwrap();
 
     let actions = fs::read_to_string("./../../resources/actions.json").unwrap();
     let actions = serde_json::from_str::<Vec<Action>>(&actions).unwrap();
@@ -48,66 +55,39 @@ pub async fn handler() -> Json<Value> {
         .build()
         .unwrap();
     let response = client.embeddings().create(request).await.unwrap();
-    let mut documents_with_embeddings: Vec<DocumentWithEmbeddings> = Vec::new();
+
+    let mut points = Vec::new();
 
     for (action, embedding) in actions.iter().zip(response.data.iter()) {
-        let mut metadata = HashMap::new();
-        metadata.insert(
-            "id".to_string(),
-            serde_json::to_value(action.id.clone()).unwrap(),
-        );
-        metadata.insert(
-            "name".to_string(),
-            serde_json::to_value(action.name.clone()).unwrap(),
-        );
-        metadata.insert(
-            "description".to_string(),
-            serde_json::to_value(action.description.clone()).unwrap(),
-        );
-        metadata.insert(
-            "input_json_schema".to_string(),
-            serde_json::to_value(serde_json::to_string(&action.input_json_schema.clone()).unwrap())
-                .unwrap(),
-        );
-        metadata.insert(
-            "sample_queries".to_string(),
-            serde_json::to_value(action.sample_queries.clone()).unwrap(),
-        );
 
-        documents_with_embeddings.push(DocumentWithEmbeddings {
-            id: action.id.clone(),
-            values: embedding.embedding.clone(),
-            metadata,
+        let metadata = json!({
+            "id": action.id.clone(),
+            "name": action.name.clone(),
+            "description": action.description.clone(),
+            "input_json_schema": action.input_json_schema.clone(),
+            "sample_queries": action.sample_queries.clone(),
         });
+        
+        let payload: Payload = metadata
+            .try_into()
+            .unwrap();
+    
+        points.push(PointStruct::new(
+            Uuid::new_v4().to_string(),
+            embedding.embedding.clone(),
+            payload,
+        ));
     }
 
-    let client = reqwest::Client::new();
-    let pinecone_api_key = env::var("PINECONE_API_KEY").unwrap();
-    let pinecone_index_host = env::var("PINECONE_INDEX_HOST").unwrap();
-
-    let response = client
-        .post(format!("https://{}/vectors/upsert", pinecone_index_host))
-        .json(&json!({
-          "vectors": documents_with_embeddings,
-          "namespace": "actions",
-        }))
-        .header("Api-Key", pinecone_api_key)
-        .send()
+    qdrant_client
+        .upsert_points_blocking("actions", points, None)
         .await
         .unwrap();
 
-    if response.status().is_success() {
-        Json(json!({
-            "status": "ok",
-            "data": response.json::<Value>().await.unwrap(),
-        }))
-    } else {
-        Json(json!({
-            "status": "error",
-            "message": "Something went wrong",
-            "response": response.text().await.unwrap(),
-        }))
-    }
+    Json(json!({
+        "status": "ok",
+        "data": {},
+    }))
 }
 
 #[cfg(test)]
@@ -118,7 +98,7 @@ mod tests {
     fn case_it_works() {
         let _result = tokio_test::block_on(handler()).0;
 
-        println!("{:?}", _result);
+        // println!("{:?}", _result);
 
         assert_eq!(true, true);
     }

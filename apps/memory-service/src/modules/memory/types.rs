@@ -23,7 +23,8 @@ pub struct IndexMemoriesRequest {
 
 #[derive(Deserialize, Serialize)]
 pub struct Document {
-    pub data: String,
+    pub title: String,
+    pub body: String,
     pub metadata: Value,
     pub namespace: String,
 }

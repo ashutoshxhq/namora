@@ -2943,6 +2943,7 @@ checksum = "2047c6ded9c721764247e62cd3b03c09ffc529b2ba5b10ec482ae507a4a70160"
 name = "task-orchestrator-service"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "async-openai",
  "base64 0.21.0",
  "boon",
@@ -2953,12 +2954,14 @@ dependencies = [
  "jsonschema",
  "lapin",
  "namora_core",
+ "qdrant-client",
  "reqwest",
  "serde",
  "serde_json",
  "tokio",
  "tokio-executor-trait",
  "tokio-reactor-trait",
+ "tonic",
  "tracing",
  "tracing-subscriber",
  "uuid",
@@ -3467,15 +3470,20 @@ checksum = "a156c684c91ea7d62626509bce3cb4e1d9ed5c4d978f7b4352658f96a4c26b4a"
 name = "upsert-indexes-qdrant"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "async-openai",
  "axum 0.5.17",
  "dotenvy",
  "namora_core",
+ "qdrant-client",
  "reqwest",
  "schemars",
  "serde",
  "serde_json",
+ "tokio",
  "tokio-test",
+ "tonic",
+ "uuid",
 ]
 
 [[package]]

@@ -2,7 +2,7 @@ use namora_core::types::{error::Error, message::Context};
 use serde_json::Value;
 
 use super::handlers::{
-    crm::get_object_records_from_crm_with_filter, linkedin::get_linkedin_profile,
+    crm::{get_object_records_from_crm_with_filter, update_object_record_in_crm_by_id}, linkedin::get_linkedin_profile,
 };
 
 pub async fn route(
@@ -19,9 +19,17 @@ pub async fn route(
         "search_deal" => {
             get_object_records_from_crm_with_filter(context, "deals".to_string(), action_data)
                 .await?
-        }
+        },
+        "update_deal_by_id" => {
+            update_object_record_in_crm_by_id(context, "deals".to_string(), action_data)
+                .await?
+        },
         "search_contact" => {
             get_object_records_from_crm_with_filter(context, "contacts".to_string(), action_data)
+                .await?
+        },
+        "update_contact_by_id" => {
+            update_object_record_in_crm_by_id(context, "contacts".to_string(), action_data)
                 .await?
         }
         _ => {

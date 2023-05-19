@@ -1,4 +1,4 @@
-use std::{collections::HashMap, env, fs};
+use std::{collections::HashMap, fs};
 
 use async_openai::{types::CreateEmbeddingRequestArgs, Client};
 use handlebars::Handlebars;
@@ -6,9 +6,13 @@ use namora_core::types::{
     error::Error,
     message::{Action, Message},
 };
+use qdrant_client::{
+    prelude::{QdrantClient, QdrantClientConfig},
+    qdrant::{with_payload_selector::SelectorOptions, SearchPoints, WithPayloadSelector},
+};
 use serde_json::{json, Value};
 
-use crate::{jsonllm::JsonLLM, types::pinecone::PineconeQueryResponse};
+use crate::jsonllm::JsonLLM;
 
 pub async fn is_action_execution_plan_required(
     query: String,
@@ -50,7 +54,10 @@ pub async fn is_action_execution_plan_required(
     if let Some(is_action_execution_plan_required) = is_action_execution_plan_required {
         match is_action_execution_plan_required.as_bool() {
             Some(is_action_execution_plan_required) => {
-                tracing::info!("Action execution plan required: {}", is_action_execution_plan_required);
+                tracing::info!(
+                    "Action execution plan required: {}",
+                    is_action_execution_plan_required
+                );
                 return Ok(is_action_execution_plan_required);
             }
             None => {
@@ -109,7 +116,10 @@ pub async fn create_non_deterministic_plan(
     }
 }
 
-pub async fn identify_actions(non_deterministic_plan: String, top_k: u32) -> Result<Vec<Action>, Error> {
+pub async fn identify_actions(
+    non_deterministic_plan: String,
+    top_k: u64,
+) -> Result<Vec<Action>, Error> {
     tracing::info!("Identifying actions");
     let mut actions: Vec<Action> = Vec::new();
 
@@ -123,29 +133,31 @@ pub async fn identify_actions(non_deterministic_plan: String, top_k: u32) -> Res
     tracing::info!("recieved openai embeddings response");
 
     let embedding = response.data[0].embedding.clone();
-    let client = reqwest::Client::new();
-    let pinecone_api_key = env::var("PINECONE_API_KEY")?;
-    let pinecone_index_host = env::var("PINECONE_INDEX_HOST")?;
 
-    tracing::info!("sending pinecone request to find actions");
-    let response = client
-        .post(format!("https://{}/query", pinecone_index_host))
-        .json(&json!({
-            "vector": embedding,
-            "topK": top_k,
-            "includeMetadata": true,
-            "includeValues": false,
-            "namespace": "actions",
-        }))
-        .header("Api-Key", pinecone_api_key)
-        .send()
+    let config = QdrantClientConfig::from_url("http://qdrant-vector-db:6334");
+    let client = QdrantClient::new(Some(config)).await?;
+
+    let search_result = client
+        .search_points(&SearchPoints {
+            collection_name: "actions".to_string(),
+            vector: embedding,
+            filter: None,
+            limit: top_k,
+            with_vectors: None,
+            with_payload: Some(WithPayloadSelector {
+                selector_options: Some(SelectorOptions::Enable(true)),
+            }),
+            params: None,
+            score_threshold: None,
+            offset: None,
+            ..Default::default()
+        })
         .await?;
-    tracing::info!("recieved pinecone response");
 
-    let response_data: PineconeQueryResponse = response.json().await?;
+    tracing::info!("recieved qdrant response");
 
-    for doc in &response_data.matches {
-        let action: Action = serde_json::from_value(doc.metadata.clone())?;
+    for point in &search_result.result {
+        let action: Action = serde_json::from_value(serde_json::to_value(point.payload.clone())?)?;
         actions.push(action);
     }
     tracing::info!("serialised actions");

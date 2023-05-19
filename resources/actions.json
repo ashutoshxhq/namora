@@ -1,24 +1,6 @@
 [
     {
-        "id": "create_contact",
-        "name": "Create a new contact in the CRM system",
-        "description": "Create a new contact in the CRM system with comprehensive information such as name, email, phone number, job title, company, and custom fields. This function ensures the contact is accurately added to the CRM database, enabling associations with deals, tasks, and other CRM objects. It also performs validation checks and deduplication strategies to maintain data integrity.",
-        "sample_queries": [
-            "Can you add a contact named John Smith with john@email.com?",
-            "Add Jane Doe to our contacts, her number is 555-1234.",
-            "I just met Mike Johnson, can you save his info? His email is mike.johnson@company.com.",
-            "Please create a new contact for Sarah Parker, sarahp@domain.com, and she's a Marketing Manager.",
-            "Add a contact: Alice Cooper, phone: 555-6789, email: a.cooper@website.com.",
-            "Store the contact info for Tom Harris, tom.harris@workemail.com.",
-            "Include Linda Green in our contact list, her email is lindagreen@companyxyz.com.",
-            "Save the info for Peter Brown, his email is peter.brown@bizmail.com.",
-            "I need you to store a new contact, Emma Wilson, her email is emma@emailexample.com.",
-            "Add a new contact for David Martin, david.martin@hisemail.com, and he's a Sales Director."
-        ],
-        "input_format": ""
-    },
-    {
-        "id": "update_contact",
+        "id": "update_contact_by_id",
         "name": "Update an existing contact's information within the CRM system",
         "description": "Update an existing contact's information within the CRM system, including name, email, phone number, job title, company, and custom fields. This function maintains accuracy and up-to-date information in the CRM database by reflecting contact detail changes or corrections. It also handles validation checks and updates related CRM objects (e.g., associated deals, tasks).",
         "sample_queries": [
@@ -33,7 +15,52 @@
             "Update Emma Wilson's contact info, her new email is emma@newemailexample.com.",
             "David Martin got promoted, please update his job title to Senior Sales Director."
         ],
-        "input_format": "{\r\n    \"id\": string(required: id of the string),\r\n    \"contact\": {\r\n        \"accountId\": string(optional: The Id of the account to associate this contact with),\r\n        \"additional\": object(optional: Create any property in the downstream CRM, such as a custom or native property. For a list of all properties see \/details.),\r\n        \"email\": string(optional),\r\n        \"firstName\": string(optional),\r\n        \"jobTitle\": string(optional),\r\n        \"lastName\": string(optional),\r\n        \"mobilePhone\": string(optional),\r\n        \"ownerUserId\": string(optional)\r\n    }\r\n}"
+        "input_json_schema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "required": [
+                "id"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "id of the string"
+                },
+                "contact": {
+                    "type": "object",
+                    "properties": {
+                        "accountId": {
+                            "type": "string",
+                            "description": "The Id of the account to associate this contact with"
+                        },
+                        "additional": {
+                            "type": "object",
+                            "description": "Create any property in the downstream CRM, such as a custom or native property. For a list of all properties see /details."
+                        },
+                        "email": {
+                            "type": "string"
+                        },
+                        "firstName": {
+                            "type": "string"
+                        },
+                        "jobTitle": {
+                            "type": "string"
+                        },
+                        "lastName": {
+                            "type": "string"
+                        },
+                        "mobilePhone": {
+                            "type": "string"
+                        },
+                        "ownerUserId": {
+                            "type": "string"
+                        }
+                    },
+                    "additionalProperties": false
+                }
+            },
+            "additionalProperties": false
+        }
     },
     {
         "id": "search_contact",
@@ -129,6 +156,60 @@
                 }
             },
             "additionalProperties": false
+        }
+    },
+    {
+        "id": "update_deal_by_id",
+        "name": "Modify an existing deal's properties within the CRM system",
+        "description": "Modify an existing deal's properties within the CRM system, including deal amount, pipeline, stage, expected close date, associated contact or company, and custom fields. This function keeps deal information current and accurately reflects any changes in the sales process. It also handles validation checks and updates related CRM objects (e.g., associated contacts, companies, tasks).",
+        "sample_queries": [
+            "Change the deal amount for John Smith to $12,000.",
+            "Update the deal stage for ABC Corporation to \"closed won.\"",
+            "Move the deal with Mike Johnson to the next stage in the pipeline.",
+            "Update Jane Doe's deal expected close date to next week.",
+            "Change the associated contact for the XYZ Company deal to Sarah Parker.",
+            "Increase the deal amount for Tom Harris' deal to $22,000.",
+            "Update Linda Green's deal stage to \"contract sent.\"",
+            "Move Peter Brown's deal to the \"negotiation\" stage and update the deal amount to $40,000.",
+            "Change the expected close date for Emma Wilson's deal to next month.",
+            "Update David Martin's deal stage to \"closed lost\" and add a reason for losing the deal."
+        ],
+        "input_json_schema": {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+                "deal": {
+                    "type": "object",
+                    "properties": {
+                        "accountId": {
+                            "type": "string"
+                        },
+                        "closeDate": {
+                            "type": "string"
+                        },
+                        "amount": {
+                            "type": "number"
+                        },
+                        "name": {
+                            "type": "string"
+                        },
+                        "probability": {
+                            "type": "string"
+                        },
+                        "stage": {
+                            "type": "string"
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "id": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "id"
+            ]
         }
     },
     {

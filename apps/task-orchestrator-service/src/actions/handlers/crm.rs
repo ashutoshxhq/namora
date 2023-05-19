@@ -62,7 +62,7 @@ pub async fn _create_object_record_in_crm(
     }
 }
 
-pub async fn _update_object_record_in_crm_by_id(
+pub async fn update_object_record_in_crm_by_id(
     context: Context,
     object: String,
     data: Value,
