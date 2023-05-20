@@ -6,19 +6,14 @@ dev: dev-engine dev-console
 .PHONY: dev-engine
 dev-engine:
 	@echo "Starting engine service..."
-	cd engine-service && cargo run
+	cd apps/engine-service && cargo run
 
 .PHONY: dev-console
 dev-console:
 	@echo "Starting web console..."
-	cd console && npm run dev
+	cd apps/web-console && pnpm run dev
 
-.PHONY: dev-worker
-dev-worker:
-	@echo "Starting worker..."
-	cd change-worker && cargo run
-
-.PHONY: engine-migrate
-engine-migrate:
-	@echo "Migrating database..."
-	cd engine-service && diesel migration run
+.PHONY: dev-console
+dev-extension:
+	@echo "Starting web extension..."
+	cd apps/web-extension && pnpm run start
