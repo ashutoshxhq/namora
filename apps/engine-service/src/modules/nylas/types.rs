@@ -1,6 +1,12 @@
 use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Serialize, Deserialize)]
+pub struct NylasAuthorizeRequest {
+    pub user_id: String,
+    pub team_id: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct AuthorizationCodeRequestQuery {
     pub code: String,
     pub state: String,

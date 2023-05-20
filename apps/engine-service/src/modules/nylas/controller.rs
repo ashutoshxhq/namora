@@ -1,4 +1,4 @@
-use crate::{state::NamoraAIState, authz::Claims};
+use crate::{state::NamoraAIState};
 use axum::{
     extract::{Extension, Json, Path, Query},
     http::StatusCode,
@@ -7,14 +7,13 @@ use axum::{
 use serde_json::json;
 use uuid::Uuid;
 
-use super::types::AuthorizationCodeRequestQuery;
+use super::types::{AuthorizationCodeRequestQuery, NylasAuthorizeRequest};
 
 pub async fn nylas_authorize(
     Extension(namora): Extension<NamoraAIState>,
-    Extension(claims): Extension<Claims>,
-    Path(team_id): Path<String>,
+    Query(query): Query<NylasAuthorizeRequest>,
 ) -> impl IntoResponse {
-    let team_id_res = Uuid::parse_str(&team_id);
+    let team_id_res = Uuid::parse_str(&query.team_id);
     if team_id_res.is_err() {
         return (
             StatusCode::BAD_REQUEST,
@@ -23,10 +22,21 @@ pub async fn nylas_authorize(
             .into_response();
     }
     let team_id = team_id_res.unwrap();
+
+    let user_id_res = Uuid::parse_str(&query.user_id);
+    if user_id_res.is_err() {
+        return (
+            StatusCode::BAD_REQUEST,
+            Json(json!({ "error":"bad team id in url"})),
+        )
+            .into_response();
+    }
+    let user_id = user_id_res.unwrap();
+
     let result = namora
         .services
         .nylas_integration
-        .get_nylas_authorize_url(team_id, claims.namora_user_id)
+        .get_nylas_authorize_url(team_id, user_id)
         .await;
     match result {
         Ok(result) => Redirect::to(&result.redirect_url).into_response(),
