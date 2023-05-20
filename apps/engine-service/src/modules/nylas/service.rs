@@ -135,7 +135,7 @@ impl NylasIntegrationService {
                     let res = client
                         .get(format!(
                             "https://api.nylas.com/threads/{}?view=expanded",
-                            delta.object_data.attributes.thread_id
+                            message_res.thread_id
                         ))
                         .header(ACCEPT, "application/json")
                         .header(CONTENT_TYPE, "application/json")

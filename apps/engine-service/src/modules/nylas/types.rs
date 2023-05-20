@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use serde::{Serialize, Deserialize};
+use serde_json::Value;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct NylasAuthorizeRequest {
@@ -75,10 +76,10 @@ pub struct NylasWebhookMessages {
 pub struct NylasEmail {
     pub account_id: String,
     pub bcc: Vec<HashMap<String, String>>,
-    pub body: String,
+    pub body: Option<String>,
     pub cc: Vec<HashMap<String, String>>,
     pub date: i64,
-    pub events: Vec<String>,
+    pub events: Option<Vec<String>>,
     pub files: Vec<String>,
     #[serde(rename = "from")]
     pub from_field: Vec<NylasFromField>,
@@ -117,7 +118,7 @@ pub struct NylasParticipant {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct NylasThread {
     pub account_id: String,
-    pub draft_ids: Vec<String>,
+    pub drafts: Vec<Value>,
     pub first_message_timestamp: u64,
     pub has_attachments: bool,
     pub id: String,
