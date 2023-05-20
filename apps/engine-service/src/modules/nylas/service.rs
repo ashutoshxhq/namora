@@ -134,7 +134,7 @@ impl NylasIntegrationService {
                     info!("Webhook Message is received email");
                     let res = client
                         .get(format!(
-                            "https://api.nylas.com/threads/{}",
+                            "https://api.nylas.com/threads/{}?view=expanded",
                             delta.object_data.attributes.thread_id
                         ))
                         .header(ACCEPT, "application/json")
