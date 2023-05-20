@@ -178,14 +178,17 @@ impl NylasIntegrationService {
                             .model("gpt-4")
                             .messages(messages)
                             .build()?;
-
+                        tracing::info!("Sending request to openai");
                         let response = openai_client.chat().create(request).await?;
+                        tracing::info!("Got response from openai");
+                        tracing::info!("Response: {:?}", response);
                         let reply_message = response.choices[0].message.content.clone();
                         let draft = json!({
                           "to": message_res.from_field,
                           "reply_to_message_id": message_res.id,
                           "body": reply_message
                         });
+                        tracing::info!("Creating a draft for the reply");
                         let res = client
                             .post(format!("https://api.nylas.com/drafts",))
                             .header(ACCEPT, "application/json")
