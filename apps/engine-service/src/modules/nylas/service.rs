@@ -2,11 +2,14 @@ use std::env;
 
 use diesel::prelude::*;
 use engine_db_repository::{
-    models::nylas_accounts::{CreateNylasAccount, NylasAccount},
+    models::{nylas_accounts::{CreateNylasAccount, NylasAccount}, users::User},
     schema::nylas_accounts::dsl,
+    schema::users::dsl as users_dsl,
 };
 use hyper::header::{ACCEPT, CONTENT_TYPE};
 use namora_core::types::{db::DbPool, error::Error};
+use serde_json::Value;
+use tracing::info;
 use uuid::Uuid;
 
 use super::types::{
@@ -25,7 +28,6 @@ impl NylasIntegrationService {
 
     pub async fn get_nylas_authorize_url(
         &self,
-        _team_id: Uuid,
         user_id: Uuid,
     ) -> Result<NylasOAuthTokenResponse, Error> {
         let nylas_client_id = env::var("NYLAS_CLIENT_ID")?;
@@ -38,10 +40,10 @@ impl NylasIntegrationService {
     pub async fn exchange_code_for_token(
         &self,
         user_id: Uuid,
-        team_id: Uuid,
         code: String,
     ) -> Result<(), Error> {
         let mut conn = self.pool.clone().get()?;
+        let user: User = users_dsl::users.find(user_id).first(&mut conn)?;
 
         let nylas_client_id = env::var("NYLAS_CLIENT_ID")?;
         let nylas_client_secret = env::var("NYLAS_CLIENT_SECRET")?;
@@ -74,13 +76,21 @@ impl NylasIntegrationService {
                 token_type: res_data.token_type,
                 status: "connected".to_string(),
                 user_id,
-                team_id,
+                team_id: user.team_id,
                 created_at: Some(chrono::Utc::now().naive_utc()),
                 updated_at: Some(chrono::Utc::now().naive_utc()),
                 deleted_at: None,
             })
             .get_result::<NylasAccount>(&mut conn)?;
 
+        Ok(())
+    }
+
+    pub async fn messages_webhook(
+        &self,
+        data: Value,
+    ) -> Result<(), Error> {
+        info!("messages_webhook: {:?}", data);
         Ok(())
     }
 }

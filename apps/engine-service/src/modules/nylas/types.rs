@@ -7,6 +7,11 @@ pub struct NylasAuthorizeRequest {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+pub struct NylasVerifyWebhookRequest {
+    pub challenge: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct AuthorizationCodeRequestQuery {
     pub code: String,
     pub state: String,
