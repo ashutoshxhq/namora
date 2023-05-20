@@ -4,11 +4,12 @@ use axum::{
     http::StatusCode,
     response::{IntoResponse, Redirect},
 };
-use serde_json::{json, Value};
+use serde_json::json;
 use uuid::Uuid;
 
 use super::types::{
     AuthorizationCodeRequestQuery, NylasAuthorizeRequest, NylasVerifyWebhookRequest,
+    NylasWebhookMessages,
 };
 
 pub async fn nylas_authorize(
@@ -83,7 +84,7 @@ pub async fn verify_nylas_webhook(
 
 pub async fn messages_webhook(
     Extension(namora): Extension<NamoraAIState>,
-    Json(data): Json<Value>,
+    Json(data): Json<NylasWebhookMessages>,
 ) -> impl IntoResponse {
     let results = namora
         .services
