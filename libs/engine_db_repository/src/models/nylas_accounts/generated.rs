@@ -10,13 +10,15 @@ use crate::models::users::User;
 type Connection = PooledConnection<ConnectionManager<PgConnection>>;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset, Identifiable, Associations, Selectable)]
-#[diesel(table_name=review_jobs, primary_key(id), belongs_to(Team, foreign_key=team_id) , belongs_to(User, foreign_key=user_id))]
-pub struct ReviewJob {
+#[diesel(table_name=nylas_accounts, primary_key(id), belongs_to(Team, foreign_key=team_id) , belongs_to(User, foreign_key=user_id))]
+pub struct NylasAccount {
     pub id: uuid::Uuid,
-    pub name: String,
-    pub plan: serde_json::Value,
+    pub account_id: String,
+    pub email_address: String,
+    pub access_token: String,
+    pub provider: String,
+    pub token_type: String,
     pub status: String,
-    pub trigger: serde_json::Value,
     pub user_id: uuid::Uuid,
     pub team_id: uuid::Uuid,
     pub created_at: Option<chrono::NaiveDateTime>,
@@ -25,13 +27,15 @@ pub struct ReviewJob {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset)]
-#[diesel(table_name=review_jobs)]
-pub struct CreateReviewJob {
+#[diesel(table_name=nylas_accounts)]
+pub struct CreateNylasAccount {
     pub id: uuid::Uuid,
-    pub name: String,
-    pub plan: serde_json::Value,
+    pub account_id: String,
+    pub email_address: String,
+    pub access_token: String,
+    pub provider: String,
+    pub token_type: String,
     pub status: String,
-    pub trigger: serde_json::Value,
     pub user_id: uuid::Uuid,
     pub team_id: uuid::Uuid,
     pub created_at: Option<chrono::NaiveDateTime>,
@@ -40,12 +44,14 @@ pub struct CreateReviewJob {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Queryable, Insertable, AsChangeset)]
-#[diesel(table_name=review_jobs)]
-pub struct UpdateReviewJob {
-    pub name: Option<String>,
-    pub plan: Option<serde_json::Value>,
+#[diesel(table_name=nylas_accounts)]
+pub struct UpdateNylasAccount {
+    pub account_id: Option<String>,
+    pub email_address: Option<String>,
+    pub access_token: Option<String>,
+    pub provider: Option<String>,
+    pub token_type: Option<String>,
     pub status: Option<String>,
-    pub trigger: Option<serde_json::Value>,
     pub user_id: Option<uuid::Uuid>,
     pub team_id: Option<uuid::Uuid>,
     pub created_at: Option<Option<chrono::NaiveDateTime>>,
@@ -64,27 +70,27 @@ pub struct PaginationResult<T> {
     pub num_pages: i64,
 }
 
-impl ReviewJob {
+impl NylasAccount {
 
-    pub fn create(db: &mut Connection, item: &CreateReviewJob) -> QueryResult<Self> {
-        use crate::schema::review_jobs::dsl::*;
+    pub fn create(db: &mut Connection, item: &CreateNylasAccount) -> QueryResult<Self> {
+        use crate::schema::nylas_accounts::dsl::*;
 
-        insert_into(review_jobs).values(item).get_result::<Self>(db)
+        insert_into(nylas_accounts).values(item).get_result::<Self>(db)
     }
 
     pub fn read(db: &mut Connection, param_id: uuid::Uuid) -> QueryResult<Self> {
-        use crate::schema::review_jobs::dsl::*;
+        use crate::schema::nylas_accounts::dsl::*;
 
-        review_jobs.filter(id.eq(param_id)).first::<Self>(db)
+        nylas_accounts.filter(id.eq(param_id)).first::<Self>(db)
     }
 
     /// Paginates through the table where page is a 0-based index (i.e. page 0 is the first page)
     pub fn paginate(db: &mut Connection, page: i64, page_size: i64) -> QueryResult<PaginationResult<Self>> {
-        use crate::schema::review_jobs::dsl::*;
+        use crate::schema::nylas_accounts::dsl::*;
 
         let page_size = if page_size < 1 { 1 } else { page_size };
-        let total_items = review_jobs.count().get_result(db)?;
-        let items = review_jobs.limit(page_size).offset(page * page_size).load::<Self>(db)?;
+        let total_items = nylas_accounts.count().get_result(db)?;
+        let items = nylas_accounts.limit(page_size).offset(page * page_size).load::<Self>(db)?;
 
         Ok(PaginationResult {
             items,
@@ -96,16 +102,16 @@ impl ReviewJob {
         })
     }
 
-    pub fn update(db: &mut Connection, param_id: uuid::Uuid, item: &UpdateReviewJob) -> QueryResult<Self> {
-        use crate::schema::review_jobs::dsl::*;
+    pub fn update(db: &mut Connection, param_id: uuid::Uuid, item: &UpdateNylasAccount) -> QueryResult<Self> {
+        use crate::schema::nylas_accounts::dsl::*;
 
-        diesel::update(review_jobs.filter(id.eq(param_id))).set(item).get_result(db)
+        diesel::update(nylas_accounts.filter(id.eq(param_id))).set(item).get_result(db)
     }
 
     pub fn delete(db: &mut Connection, param_id: uuid::Uuid) -> QueryResult<usize> {
-        use crate::schema::review_jobs::dsl::*;
+        use crate::schema::nylas_accounts::dsl::*;
 
-        diesel::delete(review_jobs.filter(id.eq(param_id))).execute(db)
+        diesel::delete(nylas_accounts.filter(id.eq(param_id))).execute(db)
     }
 
 }

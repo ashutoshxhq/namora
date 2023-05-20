@@ -1,6 +1,23 @@
 // @generated automatically by Diesel CLI.
 
 diesel::table! {
+    nylas_accounts (id) {
+        id -> Uuid,
+        account_id -> Varchar,
+        email_address -> Varchar,
+        access_token -> Varchar,
+        provider -> Varchar,
+        token_type -> Varchar,
+        status -> Varchar,
+        user_id -> Uuid,
+        team_id -> Uuid,
+        created_at -> Nullable<Timestamp>,
+        updated_at -> Nullable<Timestamp>,
+        deleted_at -> Nullable<Timestamp>,
+    }
+}
+
+diesel::table! {
     review_artifacts (id) {
         id -> Uuid,
         artifact_type -> Varchar,
@@ -110,6 +127,8 @@ diesel::table! {
     }
 }
 
+diesel::joinable!(nylas_accounts -> teams (team_id));
+diesel::joinable!(nylas_accounts -> users (user_id));
 diesel::joinable!(review_artifacts -> review_jobs (job_id));
 diesel::joinable!(review_artifacts -> teams (team_id));
 diesel::joinable!(review_artifacts -> users (user_id));
@@ -123,6 +142,7 @@ diesel::joinable!(tasks -> users (user_id));
 diesel::joinable!(users -> teams (team_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
+    nylas_accounts,
     review_artifacts,
     review_jobs,
     task_activity_logs,

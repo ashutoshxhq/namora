@@ -4,3 +4,4 @@ pub mod teams;
 pub mod users;
 pub mod task_activity_logs;
 pub mod tasks;
+pub mod nylas_accounts;

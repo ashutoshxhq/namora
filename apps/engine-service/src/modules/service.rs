@@ -1,6 +1,6 @@
 use namora_core::types::db::DbPool;
 
-use super::{authn::service::AuthNService, team::service::TeamService, user::service::UserService, crm::service::CRMIntegrationService, tasks::service::TaskService};
+use super::{authn::service::AuthNService, team::service::TeamService, user::service::UserService, crm::service::CRMIntegrationService, tasks::service::TaskService, nylas::service::NylasIntegrationService};
 
 #[derive(Clone)]
 pub struct NamoraAIService {
@@ -9,6 +9,7 @@ pub struct NamoraAIService {
     pub user: UserService,
     pub task: TaskService,
     pub crm_integration: CRMIntegrationService,
+    pub nylas_integration: NylasIntegrationService,
 }
 
 impl NamoraAIService {
@@ -19,6 +20,7 @@ impl NamoraAIService {
             user: UserService::new(pool.clone()),
             task: TaskService::new(pool.clone()),
             crm_integration: CRMIntegrationService::new(pool.clone()),
+            nylas_integration: NylasIntegrationService::new(pool.clone()),
         }
     }
 }

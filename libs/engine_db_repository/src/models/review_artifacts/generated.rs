@@ -1,8 +1,7 @@
 /* This file is generated and managed by dsync */
 
-use diesel::*;
+use diesel::{*, r2d2::{PooledConnection, ConnectionManager}};
 use crate::schema::*;
-use diesel::r2d2::{PooledConnection, ConnectionManager};
 use diesel::QueryResult;
 use serde::{Deserialize, Serialize};
 use crate::models::review_jobs::ReviewJob;
