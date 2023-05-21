@@ -86,23 +86,25 @@ pub async fn messages_webhook(
     Extension(namora): Extension<NamoraAIState>,
     Json(data): Json<NylasWebhookMessages>,
 ) -> impl IntoResponse {
-    let results = namora
-        .services
-        .nylas_integration
-        .messages_webhook(data)
-        .await;
-    match results {
-        Ok(_results) => (
-            StatusCode::OK,
-            Json(json!({
-                "status": "ok",
-            })),
-        )
-            .into_response(),
-        Err(err) => (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            Json(json!({ "error": err.to_string() })),
-        )
-            .into_response(),
-    }
+    tokio::spawn(async move {
+        let results = namora
+            .services
+            .nylas_integration
+            .messages_webhook(data)
+            .await;
+        match results {
+            Ok(_results) => {
+                tracing::info!("messages webhook processed successfully");
+            }
+            Err(err) => {
+                tracing::error!("messages webhook failed to process: {}", err);
+            }
+        }
+    });
+    (
+        StatusCode::OK,
+        Json(json!({
+            "status": "ok",
+        })),
+    )
 }
