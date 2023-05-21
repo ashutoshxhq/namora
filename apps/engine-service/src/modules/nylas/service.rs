@@ -179,27 +179,35 @@ impl NylasIntegrationService {
                             .messages(messages)
                             .build()?;
                         tracing::info!("Sending request to openai");
-                        let response = openai_client.chat().create(request).await?;
-                        tracing::info!("Got response from openai");
-                        tracing::info!("Response: {:?}", response);
-                        let reply_message = response.choices[0].message.content.clone();
-                        let draft = json!({
-                          "to": message_res.from_field,
-                          "reply_to_message_id": message_res.id,
-                          "body": reply_message
-                        });
-                        tracing::info!("Creating a draft for the reply");
-                        let res = client
-                            .post(format!("https://api.nylas.com/drafts",))
-                            .header(ACCEPT, "application/json")
-                            .header(CONTENT_TYPE, "application/json")
-                            .bearer_auth(user.access_token)
-                            .json(&draft)
-                            .send()
-                            .await?;
-                        let _res_data: Value = res.json().await?;
-                        tracing::info!("Created a reply for the message and added it in draft");
-                        // push to qdrant
+                        let response = openai_client.chat().create(request).await;
+                        match response {
+                            Ok(response) => {
+                                tracing::info!("Got response from openai");
+                                tracing::info!("Response: {:?}", response);
+                                let reply_message = response.choices[0].message.content.clone();
+                                let draft = json!({
+                                  "to": message_res.from_field,
+                                  "reply_to_message_id": message_res.id,
+                                  "body": reply_message
+                                });
+                                tracing::info!("Creating a draft for the reply");
+                                let res = client
+                                    .post(format!("https://api.nylas.com/drafts",))
+                                    .header(ACCEPT, "application/json")
+                                    .header(CONTENT_TYPE, "application/json")
+                                    .bearer_auth(user.access_token)
+                                    .json(&draft)
+                                    .send()
+                                    .await?;
+                                let _res_data: Value = res.json().await?;
+                                tracing::info!("Created a reply for the message and added it in draft");
+                                // push to qdrant
+                            }
+                            Err(err) => {
+                                tracing::error!("Error from openai: {:?}", err);
+                                return Err(err.into());
+                            }
+                        }
                     } else {
                         //TODO: check if sender is in contacts/leads in crm
                         //TODO: use ai to figure out if it should be handled
