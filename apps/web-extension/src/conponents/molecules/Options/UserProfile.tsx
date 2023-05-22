@@ -12,7 +12,7 @@ const UserProfile = () => {
     },
   })
 
-  console.log(user, userDetails.data)
+  console.log(user, userDetails?.data)
 
   return (
     <div className='flex flex-col justify-center items-center gap-4'>
