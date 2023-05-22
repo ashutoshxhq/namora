@@ -9,7 +9,7 @@ export const useGetTeams = (props: any) => {
 
   const { data, isLoading, isFetched } = useQuery(
     [...QUERY_KEY_TEAMS, teamId],
-    () => teamsFetcher("/api", teamId, accessToken),
+    () => teamsFetcher({ baseURL: "/api", teamId, accessToken }),
     {
       initialData: teams,
       enabled: !!teamId && !!accessToken,
@@ -26,7 +26,7 @@ export const useGetTeamUsers = (props: any) => {
 
   const { data, isLoading, isFetched } = useQuery(
     [...QUERY_KEY_TEAM_USERS, teamId],
-    () => teamUsersFetcher("/api", teamId, accessToken),
+    () => teamUsersFetcher({ baseURL: "/api", teamId, accessToken }),
     {
       initialData: teamUsers,
       enabled: !!teamId && !!accessToken,

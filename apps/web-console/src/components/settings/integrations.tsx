@@ -19,8 +19,6 @@ export const Integrations = (props: any) => {
     handleClickOnDisconnect,
   } = useVesselCRMIntegration(props);
 
-  console.log({ isConnectionLoading });
-
   const handleClickOnConnectionChange = (checked: boolean) => {
     if (checked) {
       handleClickOnConnect();

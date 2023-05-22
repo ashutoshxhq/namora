@@ -1,8 +1,12 @@
-export const teamsFetcher = async (
-  baseURL: string,
-  teamId: string,
-  accessToken: string
-) => {
+export const teamsFetcher = async ({
+  baseURL,
+  teamId,
+  accessToken,
+}: {
+  baseURL: string;
+  teamId: string;
+  accessToken: string;
+}) => {
   try {
     const res = await fetch(`${baseURL}/teams/${teamId}`, {
       headers: {
@@ -16,11 +20,15 @@ export const teamsFetcher = async (
   }
 };
 
-export const teamUsersFetcher = async (
-  baseURL: string,
-  teamId: string,
-  accessToken: string
-) => {
+export const teamUsersFetcher = async ({
+  baseURL,
+  teamId,
+  accessToken,
+}: {
+  baseURL: string;
+  teamId: string;
+  accessToken: string;
+}) => {
   try {
     const res = await fetch(`${baseURL}/teams/${teamId}/users`, {
       headers: {

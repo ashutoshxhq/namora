@@ -6,10 +6,8 @@ import { ExclamationCircleIcon } from "@heroicons/react/24/outline";
 const heightMap: { [key: string]: string } = {
   chat_message_input: "h-12",
 };
-const borderMap: { [key: string]: string } = {
-  task_title: "",
-};
-export const FormInputTextField = ({
+
+export const FormInputTextAreaField = ({
   id = "",
   name = "",
   label = "",
@@ -37,22 +35,17 @@ export const FormInputTextField = ({
       control={control}
       render={({ field }) => {
         return (
-          <div className="relative rounded-md ">
-            <input
+          <div className="relative rounded-md">
+            <textarea
               id={id}
-              type="text"
               className={`${
                 isError
-                  ? `block w-full rounded-md border-0 px-2 py-1.5 pr-10 text-red-900 ring-1 ring-inset ring-red-300 placeholder:text-red-300 focus:ring-1 focus:ring-inset focus:outline-0 focus:ring-red-500 ${
+                  ? `block w-full rounded-md border-0 px-2 py-1.5 pr-10 text-red-900 ring-1 ring-inset ring-red-300 placeholder:text-red-300 focus:ring-1 focus:ring-inset focus:outline-0 focus:ring-red-500 sm:text-sm sm:leading-6 ${
                       heightMap[contextId] ?? ""
                     }`
-                  : `block w-full rounded-md border-0 px-2 py-1.5 text-gray-900  placeholder:text-gray-400 focus:ring-1 focus:outline-0 focus:ring-inset focus:ring-black ${
+                  : `block w-full rounded-md border-0 px-2 py-1.5 text-gray-900 placeholder:text-gray-400 focus:ring-1 focus:outline-0 focus:ring-inset focus:ring-black sm:text-sm sm:leading-6 ${
                       heightMap[contextId] ?? ""
                     }`
-              }
-              ${
-                borderMap[contextId] ??
-                "shadow-sm ring-1 ring-inset ring-gray-300"
               }`}
               placeholder={errMessage || placeholder}
               aria-invalid="true"

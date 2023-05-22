@@ -29,7 +29,8 @@ export const PersonalDetails = (props: any) => {
   const accessToken = props?.accessToken;
 
   const { data = [] } = useGetTeamUsers(props);
-  const teamUsers = data;
+  const teamUsers = data?.data ?? [];
+
   const selectedMember = teamUsers?.find(
     (person: TTeamMember) => person.id === userId
   );
@@ -192,7 +193,7 @@ export const PersonalDetails = (props: any) => {
             <div className="flex my-8">
               <button
                 type="submit"
-                className={`relative flex items-center justify-center px-3 py-2 text-sm font-semibold text-white bg-indigo-500 rounded-md shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 ${
+                className={`relative flex items-center justify-center gap-2 px-3 py-2 text-sm font-semibold text-white bg-indigo-500 rounded-md shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 ${
                   !isDirty || isLoading ? disabled : ""
                 }`}
               >

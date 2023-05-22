@@ -6,6 +6,7 @@ import { ClientOnly } from "@/components/shared/client-only";
 import { TabLayout } from "@/components/settings/tab-layout";
 import { ENGINE_SERVICE_API_URL } from "@/axios/constants";
 import { teamUsersFetcher } from "@/current-team/fetchers";
+import { QUERY_KEY_TEAM_USERS } from "@/current-team/constants";
 
 export default function TeamMembers(props: any) {
   const session = { ...props.session };
@@ -38,12 +39,18 @@ export async function getServerSideProps(ctx: any) {
   const teamId = session?.user?.namora_team_id;
   const accessToken = session?.accessToken as string;
 
-  const teamUsers = await teamUsersFetcher(
-    ENGINE_SERVICE_API_URL,
+  const teamUsers = await teamUsersFetcher({
+    baseURL: ENGINE_SERVICE_API_URL,
     teamId,
-    accessToken
+    accessToken,
+  });
+  await queryClient.prefetchQuery([...QUERY_KEY_TEAM_USERS, teamId], () =>
+    teamUsersFetcher({
+      baseURL: ENGINE_SERVICE_API_URL,
+      teamId,
+      accessToken,
+    })
   );
-
   return {
     ...pageSessionRedirectProps,
     props: {
