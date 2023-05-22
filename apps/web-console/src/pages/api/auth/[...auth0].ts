@@ -3,8 +3,7 @@ import { handleAuth, handleLogin } from "@/auth0";
 export default handleAuth({
   login: handleLogin({
     authorizationParams: {
-      audience: "https://api.namora.ai",
-      scope: "openid profile email",
+      audience: "https://api.namora.ai"
     },
   }),
 });
