@@ -1,3 +1,4 @@
+import { withPageSessionAuthRequired } from "@/auth0/utils";
 import { AI, TASKS } from "@/routes/constants";
 import { useRouter } from "next/router";
 import React, { useEffect } from "react";
@@ -13,3 +14,5 @@ export default function Tasks() {
 
   return <div>Tasks</div>;
 }
+
+export const getServerSideProps = withPageSessionAuthRequired;
