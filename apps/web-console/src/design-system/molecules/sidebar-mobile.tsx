@@ -83,7 +83,7 @@ export const SidebarMobile = ({
                   <Link href={`/${CHATS}`}>
                     <Image
                       className="w-auto h-8"
-                      src="/namora.svg"
+                      src="https://assets.namora.ai/namora-white.svg"
                       title="Namora.ai"
                       alt="Your Company"
                       width="100"

@@ -7,7 +7,7 @@ export const InitialState = () => {
       <div className="p-4 m-2 bg-gray-800 rounded-full">
         <Image
           className="w-auto h-10"
-          src="/namora.svg"
+          src="https://assets.namora.ai/namora-white.svg"
           alt="Namora.ai"
           width="200"
           height="200"

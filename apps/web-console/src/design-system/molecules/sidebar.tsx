@@ -23,7 +23,7 @@ export const Sidebar = () => {
         <Link href={`/`}>
           <Image
             className="w-auto h-7"
-            src="/namora.svg"
+            src="https://assets.namora.ai/namora-white.svg"
             title="Namora.ai"
             alt="company logo"
             width="80"
