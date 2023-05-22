@@ -1,4 +1,3 @@
-import { getAxiosClientInternal } from "@/axios";
 import { TTeamMember } from "@/current-team/types";
 import { useMutation } from "@/react-query";
 
@@ -15,12 +14,12 @@ export const updateTeamUsersFetcher = async (
   accessToken: string
 ) => {
   try {
-    const res = await fetch(`/${baseURL}/teams/${teamId}/users/${userId}`, {
+    const res = await fetch(`${baseURL}/teams/${teamId}/users/${userId}`, {
       method: "PATCH",
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
-      body: JSON.stringify({ data }),
+      body: JSON.stringify({ ...data }),
     });
     const updateUserRes = await res.json();
     return updateUserRes;
@@ -52,7 +51,7 @@ export const useUpdateTeamMember = (
         email,
         company_position,
       };
-      return updateTeamUsersFetcher("api", teamId, userId, data, accessToken);
+      return updateTeamUsersFetcher("/api", teamId, userId, data, accessToken);
     },
     updateTeamMemberOptions
   );

@@ -19,5 +19,5 @@ export const getAllFirstChars = (str: string) => {
     output += data[i].substring(0, 1);
   }
 
-  return output;
+  return output.slice(0, 2);
 };

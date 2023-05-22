@@ -1,6 +1,6 @@
 export const ButtonLoader = ({
   isLoading,
-  color,
+  color = "white",
 }: {
   isLoading: boolean;
   color?: string;

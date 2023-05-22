@@ -37,7 +37,7 @@ export default function MainLayout({ children }: { children: JSX.Element }) {
 
   return (
     <NotificationStoreProvider>
-      <div className="flex flex-col">
+      <div className="flex flex-col font-sans">
         <Sidebar />
         <SidebarMobile {...sidebarProps} />
         <TopBar {...topBarProps} />

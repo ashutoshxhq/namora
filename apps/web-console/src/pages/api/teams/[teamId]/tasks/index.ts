@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 
 import { getAccessToken } from "@/auth0";
-import { AxiosError, AxiosResponse, getAxiosClient } from "@/axios";
+import { AxiosResponse, getAxiosClient } from "@/axios";
 
 export default async function handler(
   req: NextApiRequest,
@@ -11,18 +11,17 @@ export default async function handler(
   const accessToken = data?.accessToken ?? "";
   const { query, method, body } = req;
   const teamId = query.teamId;
-  const userId = query.userId;
 
   try {
     if (method === "GET") {
       const response: AxiosResponse = await getAxiosClient(accessToken).get(
-        `/teams/${teamId}/users/${userId}`
+        `/teams/${teamId}/tasks`
       );
       const status = response?.status;
       res.status(status).json(response?.data);
-    } else if (method === "PATCH") {
-      const response: AxiosResponse = await getAxiosClient(accessToken).patch(
-        `/teams/${teamId}/users/${userId}`,
+    } else if (method === "POST") {
+      const response: AxiosResponse = await getAxiosClient(accessToken).post(
+        `/teams/${teamId}/tasks`,
         {
           ...JSON.parse(body),
         }
@@ -31,7 +30,7 @@ export default async function handler(
       res.status(status).json(response?.data);
     }
   } catch (error: any) {
-    const status = error?.status;
-    res.status(status).json(error);
+    const status = error?.response?.status;
+    res.status(status).json(error?.response);
   }
 }

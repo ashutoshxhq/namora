@@ -14,7 +14,7 @@ export const TeamMembers = (props: any) => {
   const [selectedMember, setSelectedMember] = useState<any>({});
 
   const { data = [] } = useGetTeamUsers(props);
-  const teamUsers = data;
+  const teamUsers = data?.data ?? [];
 
   const handleClickOnEdit = (id: string) => {
     setOpen(true);
@@ -60,13 +60,11 @@ export const TeamMembers = (props: any) => {
                   </span>
                 </span>
                 <div className="flex-auto min-w-0">
-                  <p className="text-sm font-semibold leading-6 text-gray-900">
-                    <p
-                      className="cursor-pointer"
-                      onClick={() => handleClickOnEdit(person.id)}
-                    >
-                      {name}
-                    </p>
+                  <p
+                    className="inline text-sm font-semibold leading-6 text-gray-900 cursor-pointer"
+                    onClick={() => handleClickOnEdit(person.id)}
+                  >
+                    {name}
                   </p>
                   <p className="mt-1 text-xs leading-5 text-gray-500 ">
                     {person.email}

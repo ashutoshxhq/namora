@@ -8,6 +8,7 @@ import { ENGINE_SERVICE_API_URL } from "@/axios/constants";
 import { vesselCRMConnectionStatusFetcher } from "@/vessel/shared/fetchers";
 import { dehydrate, queryClient } from "@/react-query";
 import { QUERY_KEY_VESSEL_CRM_CONNECTION_STATUS } from "@/vessel/constants";
+import { QUERY_KEY_TEAMS } from "@/current-team/constants";
 
 export default function Integrations(props: any) {
   const session = { ...props.session };
@@ -40,9 +41,20 @@ export async function getServerSideProps(ctx: any) {
   const teamId = session?.user?.namora_team_id;
   const accessToken = session?.accessToken as string;
 
-  const teams = await teamsFetcher(ENGINE_SERVICE_API_URL, teamId, accessToken);
+  const teams = await teamsFetcher({
+    baseURL: ENGINE_SERVICE_API_URL,
+    teamId,
+    accessToken,
+  });
   const connectionId: string =
     (teams?.data?.vessel_connection_id as string) ?? "";
+  await queryClient.prefetchQuery([...QUERY_KEY_TEAMS, teamId], () =>
+    teamsFetcher({
+      baseURL: ENGINE_SERVICE_API_URL,
+      teamId,
+      accessToken,
+    })
+  );
 
   let connectionObj = null;
   if (!!connectionId) {

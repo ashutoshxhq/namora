@@ -17,7 +17,7 @@ export default async function handler(
       `/teams/${teamId}/users`
     );
     const status = response?.status;
-    res.status(status).json(response?.data?.data);
+    res.status(status).json(response?.data);
   } catch (error: any) {
     const status = error?.status;
     res.status(status).json(error);
