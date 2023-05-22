@@ -19,7 +19,6 @@ use crate::{db::create_pool,state::NamoraAIState};
 #[tokio::main]
 async fn main() {
     dotenv().ok();
-
     let subscriber = FmtSubscriber::builder()
         .with_max_level(Level::DEBUG)
         .with_level(true)
