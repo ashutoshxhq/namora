@@ -6,109 +6,85 @@ import { TTask } from "@/entities/tasks/types";
 import { Menu, Transition } from "@headlessui/react";
 import { EllipsisVerticalIcon } from "@heroicons/react/24/outline";
 import { useDeleteTask } from "@/entities/tasks/hooks";
-import { QUERY_KEY_TASKS } from "@/entities/tasks/constants";
-import { useNotificationDispatch } from "@/contexts/notification";
-import { queryClient } from "@/react-query";
+import {
+  QUERY_KEY_TASKS,
+  statusIconMap,
+  statusOptions,
+  typeIconMap,
+  typeOptions,
+} from "@/entities/tasks/constants";
 import { NamoraDialog, NamoraPanel } from "@/design-system/molecules";
 import { FormUpdateTask } from "@/entities/tasks/ui/form-update-task";
+import { FormInputSelectWithSubmit } from "@/design-system/form/select";
+import { useFormUpdateTask } from "./use-form-update-task";
+import { useListItem } from "./use-list-item";
 
 export const ListItem = ({
   task,
-  ...rest
+  ...props
 }: {
   task: TTask & { team_id: string };
   teamId: string;
   userId: string;
   accessToken: string;
 }) => {
-  const teamId = rest.teamId;
-  const selectedTask = { ...task };
+  const selectedTask: TTask = { ...task };
+  const selectedTaskId: string = task.id;
+  const selectedTaskTitle: string = task.title;
+  const selectedTaskDescription: string = task.description;
 
-  const taskId = selectedTask.id;
-  const taskName = `${selectedTask.title}`;
-  const taskDescription = `${selectedTask.description}`;
-  const { showNotification } = useNotificationDispatch();
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [panelOpen, setPanelOpen] = useState(false);
-
-  const deleteTaskMutationOptions = {
-    onSuccess: () => {
-      showNotification({
-        title: "Success",
-        description: "Task updated successfully",
-        status: "success",
-      });
-      queryClient.invalidateQueries([...QUERY_KEY_TASKS, teamId]);
-    },
-    onError: () => {
-      showNotification({
-        title: "Failed",
-        description: "Task update failed",
-        status: "error",
-      });
-      queryClient.invalidateQueries([...QUERY_KEY_TASKS, teamId]);
-    },
-  };
-
-  const deleteTaskMutation = useDeleteTask(deleteTaskMutationOptions);
-  const { mutate, isLoading: isDeleteTaskLoading } = deleteTaskMutation;
-
-  const handleClickOnEdit = (id: string) => {
-    setDialogOpen(true);
-  };
-
-  const handleClickOnDelete = (id: string) => {
-    mutate({
-      id,
-      ...rest,
-    });
-  };
-
-  const panelProps = {
-    open: panelOpen,
-    setOpen: setPanelOpen,
-  };
-
-  const closeDialog = () => {
-    setDialogOpen(false);
-  };
-
-  const updateTaskDialogProps = {
-    open: dialogOpen,
-    setOpen: setDialogOpen,
-    closeDialog: closeDialog,
-  };
+  const {
+    panelProps,
+    updateTaskDialogProps,
+    hookFormProps,
+    handleClickOnEdit,
+    handleClickOnItemName,
+    handleClickOnDelete,
+  } = useListItem({
+    ...props,
+    selectedTask,
+  });
 
   return (
     <>
-      <li
-        key={taskId}
-        className="flex items-center justify-between py-5 just sm:px-6 gap-x-6"
-      >
+      <li className="flex items-center justify-between px-6 py-5 ">
         <div className="flex flex-grow gap-x-4">
-          <span className="inline-flex items-center justify-center w-8 h-8 bg-gray-500 rounded-full">
-            <span className="text-sm font-medium leading-none text-white capitalize">
-              {getAllFirstChars(taskName)}
-            </span>
-          </span>
           <div className="flex-auto min-w-0">
             <p
               className="inline text-sm font-semibold leading-6 text-gray-900 cursor-pointer"
-              onClick={() => handleClickOnEdit(taskId)}
+              onClick={() => handleClickOnEdit(selectedTaskId)}
             >
-              {taskName}
+              {selectedTaskTitle}
             </p>
             <p className="mt-1 text-xs leading-5 text-gray-500 ">
-              {taskDescription}
+              {selectedTaskDescription}
             </p>
           </div>
         </div>
-        <div className="flex flex-col items-end ">
-          <p className="text-sm leading-6 text-gray-900">{task.status}</p>
-        </div>
-        <div className="flex flex-col items-end ">
-          <p className="text-sm leading-6 text-gray-900">{task.task_type}</p>
-        </div>
+
+        <form>
+          <div className="flex items-center gap-2">
+            <FormInputSelectWithSubmit
+              id="task_status"
+              name="task_status"
+              contextId="task_status"
+              placeholder="Choose a task status"
+              options={statusOptions}
+              iconMap={statusIconMap}
+              {...hookFormProps}
+            />
+            <FormInputSelectWithSubmit
+              id="task_type"
+              name="task_type"
+              contextId="task_type"
+              placeholder="Choose a task type"
+              options={typeOptions}
+              iconMap={typeIconMap}
+              {...hookFormProps}
+            />
+          </div>
+        </form>
+
         <div className="flex items-center gap-x-6">
           <div className="hidden sm:flex sm:flex-col sm:items-end"></div>
           <Menu as="div" className="relative flex-none">
@@ -129,7 +105,7 @@ export const ListItem = ({
                 <Menu.Item>
                   {({ active }) => (
                     <button
-                      onClick={() => handleClickOnEdit(task.id)}
+                      onClick={() => handleClickOnItemName(selectedTaskId)}
                       className={classNames(
                         "w-full text-left",
                         active ? "bg-gray-50" : "",
@@ -143,7 +119,7 @@ export const ListItem = ({
                 <Menu.Item>
                   {({ active }) => (
                     <button
-                      onClick={() => handleClickOnDelete(task.id)}
+                      onClick={() => handleClickOnDelete(selectedTaskId)}
                       className={classNames(
                         "w-full text-left",
                         active ? "bg-gray-50" : "",
@@ -160,15 +136,17 @@ export const ListItem = ({
         </div>
       </li>
       <NamoraPanel {...panelProps}>
-        <FormUpdateTask
-          {...rest}
-          {...updateTaskDialogProps}
-          selectedTask={selectedTask}
-        />
+        <div className="relative flex-1 px-4">
+          <FormUpdateTask
+            {...props}
+            {...panelProps}
+            selectedTask={selectedTask}
+          />
+        </div>
       </NamoraPanel>
       <NamoraDialog {...updateTaskDialogProps}>
         <FormUpdateTask
-          {...rest}
+          {...props}
           {...updateTaskDialogProps}
           selectedTask={selectedTask}
         />

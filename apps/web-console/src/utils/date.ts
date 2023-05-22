@@ -6,6 +6,13 @@ import {
   subDays,
 } from "date-fns";
 
+export const sortByCreatedAt = (a: any, b: any) =>
+  a?.created_at &&
+  b?.created_at &&
+  new Date(a.created_at).getTime() > new Date(b.created_at).getTime()
+    ? 1
+    : -1;
+
 export const getDates = () => {
   const now = new Date();
   const startOfToday = new Date(

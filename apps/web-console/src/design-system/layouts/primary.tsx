@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 
 import { Sidebar, SidebarMobile, TopBar } from "@/design-system/molecules";
 import { NotificationStoreProvider } from "@/contexts/notification";
+import { Alert } from "@/design-system/molecules/alert";
 
 export default function MainLayout({ children }: { children: JSX.Element }) {
   const router = useRouter();
@@ -44,6 +45,7 @@ export default function MainLayout({ children }: { children: JSX.Element }) {
         <div className="lg:pl-20">
           <main>
             <div className="p-4 sm:px-6 lg:px-6">{children}</div>
+            <Alert />
           </main>
         </div>
       </div>

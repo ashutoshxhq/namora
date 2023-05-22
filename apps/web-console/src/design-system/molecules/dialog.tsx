@@ -14,30 +14,29 @@ export function NamoraDialog({
     <>
       <Transition appear show={open} as={Fragment}>
         <Dialog as="div" className="relative z-10" onClose={closeDialog}>
-          <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
           <Transition.Child
             as={Fragment}
-            enter="ease-out duration-300"
+            enter="ease-out duration-250"
             enterFrom="opacity-0"
             enterTo="opacity-100"
-            leave="ease-in duration-200"
+            leave="ease-in duration-100"
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <div className="fixed inset-0 bg-black bg-opacity-25" />
+            <div className="fixed inset-0 transition-opacity bg-black bg-opacity-10" />
           </Transition.Child>
 
           <div className="flex items-center justify-center min-h-full p-4 text-center">
             <Transition.Child
               as={Fragment}
               enter="ease-out duration-300"
-              enterFrom="opacity-0 scale-95"
-              enterTo="opacity-100 scale-100"
+              enterFrom="opacity-0 translate-y-0 sm:translate-y-0 sm:scale-95"
+              enterTo="opacity-100 translate-y-0 sm:scale-100"
               leave="ease-in duration-200"
-              leaveFrom="opacity-100 scale-100"
-              leaveTo="opacity-0 scale-95"
+              leaveFrom="opacity-100 translate-y-0 sm:scale-100"
+              leaveTo="opacity-0 translate-y-0 sm:translate-y-0 sm:scale-95"
             >
-              <div className="fixed inset-0 flex items-center justify-center p-4">
+              <div className="fixed inset-0 flex items-start justify-center p-4 top-32">
                 <Dialog.Panel className="w-full max-w-4xl p-4 overflow-visible text-left align-middle transition-all transform bg-white rounded-lg shadow-xl">
                   {children}
                 </Dialog.Panel>

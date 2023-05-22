@@ -46,7 +46,7 @@ export const FormInputSelect = ({
 
   return (
     <>
-      <div id="id" className="flex items-center justify-center font-sans">
+      <div id={id} className="flex items-center justify-center">
         <div className="w-full max-w-xs mx-auto">
           <Controller
             control={control}
@@ -79,13 +79,13 @@ export const FormInputSelect = ({
                     leaveFrom="transform scale-100 opacity-100"
                     leaveTo="transform scale-95 opacity-0"
                   >
-                    <Listbox.Options className="absolute p-1 overflow-auto text-base bg-white rounded-md  max-h-60 ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm w-[160px]">
+                    <Listbox.Options className="absolute p-1 mt-1 overflow-auto text-base bg-white rounded-md  max-h-60 ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm w-[160px]">
                       {options.map((option: OptionType) => (
                         <Listbox.Option key={option.id} value={option}>
                           {({ selected, active }) => {
                             return (
                               <div
-                                className={`${active ? "bg-gray-300" : ""} ${
+                                className={`${active ? "bg-gray-100" : ""} ${
                                   selected ? "bg-gray-200" : ""
                                 } 
                                 cursor-default select-none relative p-2 flex flex-row  rounded-md  transition-colors duration-100 ease`}
@@ -110,6 +110,117 @@ export const FormInputSelect = ({
                       ))}
                     </Listbox.Options>
                   </Transition>
+                </div>
+              </Listbox>
+            )}
+          />
+        </div>
+      </div>
+    </>
+  );
+};
+
+export const FormInputSelectWithSubmit = ({
+  id = "",
+  name = "",
+  contextId = "",
+  options,
+  iconMap,
+  control,
+  formState,
+  getValues,
+  watch,
+  onFormSubmit,
+  handleSubmit,
+}: {
+  id: string;
+  name: string;
+  label?: string;
+  contextId: string;
+  placeholder: string;
+  options: any;
+  iconMap: { [key: string]: any };
+  control: Control;
+  formState: { errors: any };
+  getValues: UseFormGetValues<any>;
+  watch: UseFormWatch<any>;
+  onFormSubmit: any;
+  handleSubmit: any;
+}) => {
+  const _selectedOption = getValues(name);
+  const errName = formState?.errors?.[name];
+  const errType = errName?.type;
+  const errMessage = errName?.message;
+  const isError = !!(errType && errMessage);
+
+  const getIcon = (option: OptionType) => {
+    const _selectedOptionId = option?.id;
+    const Component: any = iconMap[_selectedOptionId];
+    return <Component className="w-5" />;
+  };
+
+  return (
+    <>
+      <div id={id} className="flex items-center justify-center ">
+        <div className="w-full max-w-xs mx-auto ">
+          <Controller
+            control={control}
+            name={name}
+            render={({ field }) => (
+              <Listbox
+                as="div"
+                className="space-y-1"
+                {...field}
+                onChange={(currentOption: any) => {
+                  if (currentOption.id !== _selectedOption.id) {
+                    field.onChange(currentOption);
+                    if (handleSubmit && onFormSubmit)
+                      handleSubmit(onFormSubmit)();
+                  }
+                }}
+                by="id"
+              >
+                <div>
+                  <span className="inline-block w-full rounded-xl">
+                    <Listbox.Button className="relative w-auto px-3 py-2 pr-5 text-left transition duration-150 ease-in-out bg-white border border-gray-300 cursor-default rounded-2xl sm:text-sm sm:leading-5 focus:outline-1">
+                      <span className="flex items-start justify-center gap-2">
+                        {getIcon(_selectedOption)}
+                        {_selectedOption?.name}
+                      </span>
+                    </Listbox.Button>
+                  </span>
+                  <div>
+                    <Listbox.Options className="absolute p-1 mt-1 overflow-auto text-base bg-white rounded-md  max-h-60 ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm w-[160px] ">
+                      {options.map((option: OptionType) => (
+                        <Listbox.Option key={option.id} value={option}>
+                          {({ selected, active }) => {
+                            return (
+                              <div
+                                className={`${active ? "bg-gray-100" : ""} ${
+                                  selected ? "bg-gray-200" : ""
+                                } 
+                                cursor-default select-none relative p-2 flex flex-row  rounded-md  transition-colors duration-100 ease`}
+                              >
+                                <div className="flex flex-1 gap-2">
+                                  <span>{getIcon(option)}</span>
+                                  <span
+                                    className={`${
+                                      selected ? "font-semibold" : "font-normal"
+                                    }  `}
+                                  >
+                                    {option.name}
+                                  </span>
+                                </div>
+                                <span>
+                                  {selected && <CheckIcon className="w-5" />}
+                                </span>
+                              </div>
+                            );
+                          }}
+                        </Listbox.Option>
+                      ))}
+                    </Listbox.Options>
+                  </div>
                 </div>
               </Listbox>
             )}
@@ -480,7 +591,7 @@ export const FormInputSelect = ({
 //                   leaveTo="opacity-0"
 //                   afterLeave={() => setQuery("")}
 //                 >
-//                   <Combobox.Options className="absolute w-full py-1 mt-1 overflow-auto text-base bg-white rounded-md shadow-lg max-h-60 ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm z-[1]">
+//                   <Combobox.Options className="absolute w-full py-1 mt-1 overflow-auto text-base bg-white rounded-md shadow-lg max-h-60 ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
 //                     {filteredPeople.length === 0 && query !== "" ? (
 //                       <div className="relative px-4 py-2 text-gray-700 cursor-default select-none">
 //                         Nothing found.

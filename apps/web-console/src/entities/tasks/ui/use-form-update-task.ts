@@ -26,10 +26,8 @@ export const useFormUpdateTask = (props: any) => {
   const accessToken = props?.accessToken;
   const teamId = props?.teamId;
   const userId = props?.userId;
-  const selectedTask: TTask = props?.selectedTask;
-  const tasks: TTask[] = props?.tasks;
-
-  const setDialogOpen = props.setOpen;
+  const selectedTask: TTask = { ...props?.selectedTask };
+  const setDialogOpen = props?.setOpen;
 
   const selectedTaskId = selectedTask.id;
   const selectedTaskTitle = selectedTask.title ?? "";
@@ -68,7 +66,7 @@ export const useFormUpdateTask = (props: any) => {
   };
 
   const updateTaskMutation = useUpdateTask(updateTaskMutationOptions);
-  const { mutate, isLoading: isCreateTaskLoading } = updateTaskMutation;
+  const { mutate, isLoading: isUpdateTaskLoading } = updateTaskMutation;
 
   const useFormObj = useMemo(
     () => ({
@@ -124,7 +122,7 @@ export const useFormUpdateTask = (props: any) => {
   };
 
   return {
-    isCreateTaskLoading,
+    isUpdateTaskLoading,
     hookFormProps: { ...hookFormProps, onFormEnterSubmit },
   };
 };
