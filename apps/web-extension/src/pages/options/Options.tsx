@@ -38,8 +38,8 @@ const Options: React.FC<Props> = ({ title }: Props) => {
   if (urlParams.get('trigger') === "login") {
     login(loginWithPopup, isAuthenticated)
   }
-  return <div className="bg-slate-200 w-screen h-screen flex flex-col py-40 sm:px-6 lg:px-8">
-    <div className="sm:mx-auto sm:w-full sm:max-w-md">
+  return <div className="bg-slate-200 w-screen h-screen flex items-center flex-col py-40 sm:px-6 lg:px-8">
+    <div className="flex">
       <img
         className="mx-auto h-10 w-auto"
         src="https://assets.namora.ai/namora-ai-dark.png"
@@ -48,9 +48,8 @@ const Options: React.FC<Props> = ({ title }: Props) => {
 
     </div>
 
-    <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-[480px]">
-      <div className="bg-white px-6 py-12 shadow sm:rounded-lg sm:px-12 gap-4 flex flex-col">
-
+    <div className="mt-10 flex-1 w-2/4">
+      <div className="bg-white px-12 py-12 shadow sm:rounded-lg">
         {isAuthenticated ? <UserProfile /> : <SignIn />}
       </div>
     </div>

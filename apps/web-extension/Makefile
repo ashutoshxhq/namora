@@ -9,6 +9,6 @@ dev-extension-start:
 .PHONY: dev-extension-tailwind-start
 dev-extension-tailwind-start:
 	@echo "Starting tailwind watcher..."
-	npx tailwindcss -i ./src/input.css -o ./build/output.css --watch
+	npx tailwindcss -i ./src/input.css -o ./src/output.css --watch
 
 dev: dev-extension-start dev-extension-tailwind-start
