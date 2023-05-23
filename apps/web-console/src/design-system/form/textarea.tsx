@@ -37,6 +37,7 @@ export const FormInputTextAreaField = ({
         return (
           <div className="relative rounded-md">
             <textarea
+              rows={4}
               id={id}
               className={`${
                 isError

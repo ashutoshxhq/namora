@@ -13,17 +13,23 @@ import {
 import { FormInputSelect } from "@/design-system/form/select";
 import { useFormCreateTask } from "./use-form-create-task";
 import { FormInputTextAreaField } from "@/design-system/form/textarea";
+import { userObjIconMap } from "@/current-user/constants";
+import { TTeamMember } from "@/current-team/types";
 
 export const FormCreateTask = (props: {
   accessToken: string;
   teamId: string;
   userId: string;
   setOpen: (value: boolean) => void;
+  teamUsers: TTeamMember[];
 }) => {
   const disabled = "opacity-50 cursor-not-allowed";
 
-  const { hookFormProps, isCreateTaskLoading = false } =
-    useFormCreateTask(props);
+  const {
+    userOptions,
+    hookFormProps,
+    isCreateTaskLoading = false,
+  } = useFormCreateTask(props);
   const { handleSubmit, onFormEnterSubmit, formState } = hookFormProps;
 
   const { isDirty } = formState;
@@ -62,7 +68,6 @@ export const FormCreateTask = (props: {
                 iconMap={statusIconMap}
                 {...hookFormProps}
               />
-
               <FormInputSelect
                 id="task_type"
                 name="task_type"
@@ -70,6 +75,15 @@ export const FormCreateTask = (props: {
                 placeholder="Choose a task type"
                 options={typeOptions}
                 iconMap={typeIconMap}
+                {...hookFormProps}
+              />
+              <FormInputSelect
+                id="task_user"
+                name="task_user"
+                contextId="task_user"
+                placeholder="Choose a assignee"
+                options={userOptions}
+                iconMap={userObjIconMap}
                 {...hookFormProps}
               />
             </div>

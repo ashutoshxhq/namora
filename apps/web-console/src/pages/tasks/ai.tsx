@@ -5,6 +5,9 @@ import { getSession } from "@/auth0";
 import { QUERY_KEY_TASKS } from "@/entities/tasks/constants";
 import { tasksFetcher } from "@/entities/tasks/fetchers";
 import { All } from "@/entities/tasks/ui";
+import { teamUsersFetcher } from "@/current-team/fetchers";
+import { QUERY_KEY_TEAM_USERS } from "@/current-team/constants";
+import { ClientOnly } from "@/components/shared/client-only";
 
 export default function AiTasks(props: any) {
   const session = { ...props.session };
@@ -15,9 +18,9 @@ export default function AiTasks(props: any) {
     accessToken: session.accessToken,
   };
   return (
-    <div>
+    <ClientOnly>
       <All {...allTasksPageProps} />
-    </div>
+    </ClientOnly>
   );
 }
 
@@ -47,11 +50,25 @@ export async function getServerSideProps(ctx: any) {
     })
   );
 
+  const teamUsers = await teamUsersFetcher({
+    baseURL: ENGINE_SERVICE_API_URL,
+    teamId,
+    accessToken,
+  });
+  await queryClient.prefetchQuery([...QUERY_KEY_TEAM_USERS, teamId], () =>
+    teamUsersFetcher({
+      baseURL: ENGINE_SERVICE_API_URL,
+      teamId,
+      accessToken,
+    })
+  );
+
   return {
     ...pageSessionRedirectProps,
     props: {
       session: JSON.parse(JSON.stringify(session)),
       tasks: tasks?.data,
+      teamUsers: teamUsers?.data,
       dehydratedState: dehydrate(queryClient),
     },
   };

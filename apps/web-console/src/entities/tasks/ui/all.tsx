@@ -43,7 +43,7 @@ export const All = (props: any) => {
         </button>
         {/* <p className="mt-1 text-xs text-gray-500">...</p> */}
       </div>
-      <div className="my-3 bg-white rounded-md shadow mb-11">
+      <div className="mt-3 bg-white rounded-md shadow">
         {/* <div className="p-3 border-b border-gray-200 sm:flex sm:items-center sm:justify-between">
           <h3 className="text-base font-semibold leading-6 text-gray-900">
             Filters
@@ -53,10 +53,12 @@ export const All = (props: any) => {
           </h3>
         </div> */}
         <ul role="list" className="divide-y divide-gray-100">
-          {[...tasks].sort(sortByCreatedAt).map((task: TTask) => {
-            const taskId = task.id;
-            return <ListItem key={taskId} task={task} {...props} />;
-          })}
+          <div className="overflow-auto h-[calc(100vh_-_160px)]">
+            {[...tasks].sort(sortByCreatedAt).map((task: TTask) => {
+              const taskId = task.id;
+              return <ListItem key={taskId} task={task} {...props} />;
+            })}
+          </div>
         </ul>
         <NamoraDialog {...createTaskDialogProps}>
           <FormCreateTask {...props} {...createTaskDialogProps} />

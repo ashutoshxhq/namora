@@ -12,6 +12,7 @@ import {
 } from "../constants";
 import { queryClient } from "@/react-query";
 import { useCreateTask } from "@/entities/tasks/hooks";
+import { getUserDataInGroupByType } from "@/current-user/utils";
 
 const taskOption = {
   id: yup.string(),
@@ -24,6 +25,7 @@ const schema = yup.object().shape({
   description: yup.string(),
   task_type: yup.object().shape(taskOption),
   task_status: yup.object().shape(taskOption),
+  task_user: yup.object().shape(taskOption),
 });
 
 export const useFormCreateTask = (props: any) => {
@@ -37,8 +39,10 @@ export const useFormCreateTask = (props: any) => {
 
   const selectedTaskStatus = statusOptions[0];
   const selectedTaskType = typeOptions[0];
-  const taskStatus = useMemo(() => selectedTaskStatus, [selectedTaskStatus]);
-  const taskType = useMemo(() => selectedTaskType, [selectedTaskType]);
+
+  const teamUsers = props?.teamUsers;
+  const userOptions = getUserDataInGroupByType(teamUsers);
+  const selectedTaskUser = useMemo(() => {}, []);
 
   const { showNotification } = useNotificationDispatch();
 
@@ -71,12 +75,19 @@ export const useFormCreateTask = (props: any) => {
       defaultValues: {
         title: taskTitle,
         description: taskDescription,
-        task_type: taskType,
-        task_status: taskStatus,
+        task_type: selectedTaskType,
+        task_status: selectedTaskStatus,
+        task_user: selectedTaskUser,
       },
       resolver: yupResolver(schema),
     }),
-    [taskTitle, taskDescription, taskType, taskStatus]
+    [
+      taskTitle,
+      taskDescription,
+      selectedTaskStatus,
+      selectedTaskType,
+      selectedTaskUser,
+    ]
   );
   const hookFormProps = useForm(useFormObj);
   const {
@@ -88,10 +99,18 @@ export const useFormCreateTask = (props: any) => {
     reset({
       title: taskTitle,
       description: taskDescription,
-      task_type: taskType,
-      task_status: taskStatus,
+      task_type: selectedTaskType,
+      task_status: selectedTaskStatus,
+      task_user: selectedTaskUser,
     });
-  }, [taskTitle, taskDescription, taskType, taskStatus, reset]);
+  }, [
+    taskTitle,
+    taskDescription,
+    selectedTaskStatus,
+    selectedTaskType,
+    selectedTaskUser,
+    reset,
+  ]);
 
   const onFormEnterSubmit: SubmitHandler<any> = (submittedFormData: any) => {
     if (isDirty) {
@@ -122,6 +141,7 @@ export const useFormCreateTask = (props: any) => {
   // };
 
   return {
+    userOptions,
     isCreateTaskLoading,
     hookFormProps: { ...hookFormProps, onFormEnterSubmit },
   };

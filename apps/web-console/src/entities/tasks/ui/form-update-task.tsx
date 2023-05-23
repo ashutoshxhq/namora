@@ -12,6 +12,7 @@ import {
 import { FormInputSelect } from "@/design-system/form/select";
 import { useFormUpdateTask } from "./use-form-update-task";
 import { FormInputTextAreaField } from "@/design-system/form/textarea";
+import { userObjIconMap } from "@/current-user/constants";
 
 export const FormUpdateTask = (props: {
   selectedTask: TTask;
@@ -22,8 +23,11 @@ export const FormUpdateTask = (props: {
 }) => {
   const disabled = "opacity-50 cursor-not-allowed";
 
-  const { hookFormProps, isUpdateTaskLoading = false } =
-    useFormUpdateTask(props);
+  const {
+    userOptions,
+    hookFormProps,
+    isUpdateTaskLoading = false,
+  } = useFormUpdateTask(props);
   const { handleSubmit, onFormEnterSubmit, formState } = hookFormProps;
 
   const { isDirty } = formState;
@@ -52,7 +56,7 @@ export const FormUpdateTask = (props: {
             />
           </div>
           <div className="flex">
-            <div className="flex flex-grow gap-2">
+            <div className="flex flex-grow gap-2 ">
               <FormInputSelect
                 id="task_status"
                 name="task_status"
@@ -69,6 +73,15 @@ export const FormUpdateTask = (props: {
                 placeholder="Choose a task type"
                 options={typeOptions}
                 iconMap={typeIconMap}
+                {...hookFormProps}
+              />
+              <FormInputSelect
+                id="task_user"
+                name="task_user"
+                contextId="task_user"
+                placeholder="Choose a assignee"
+                options={userOptions}
+                iconMap={userObjIconMap}
                 {...hookFormProps}
               />
             </div>

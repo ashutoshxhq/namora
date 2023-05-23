@@ -8,18 +8,11 @@ import {
   CheckCircleIcon,
   ClockIcon,
   CubeTransparentIcon,
-  DocumentTextIcon,
   EllipsisHorizontalCircleIcon,
-  EnvelopeIcon,
   ExclamationTriangleIcon,
   MinusCircleIcon,
   PauseCircleIcon,
-  PhoneIcon,
   QuestionMarkCircleIcon,
-  ShieldCheckIcon,
-  UsersIcon,
-  VideoCameraIcon,
-  XCircleIcon,
 } from "@heroicons/react/24/outline";
 
 export type OptionType = {
