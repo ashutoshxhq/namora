@@ -1,4 +1,4 @@
-import React, { Fragment } from "react";
+import React, { useRef, useState } from "react";
 import {
   Control,
   Controller,
@@ -6,8 +6,30 @@ import {
   UseFormWatch,
 } from "react-hook-form";
 import { Listbox, Transition } from "@headlessui/react";
+import { usePopper } from "react-popper";
+import { Portal } from "react-portal";
+
 import { CheckIcon } from "@heroicons/react/24/outline";
 import { OptionType } from "@/entities/tasks/constants";
+import { currentUserEntityKey } from "@/current-user/constants";
+import { getAllFirstChars } from "@/utils/string";
+
+const defaultAvatar = (
+  <span className="inline-block w-5 h-5 overflow-hidden bg-gray-100 rounded-full">
+    <svg
+      className="w-full h-full text-gray-300"
+      fill="currentColor"
+      viewBox="0 0 24 24"
+    >
+      <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
+    </svg>
+  </span>
+);
+// export const unassignedObj = {
+//   id: "unassigned",
+//   name: "Unassigned",
+//   type: "Unassigned",
+// };
 
 export const FormInputSelect = ({
   id = "",
@@ -31,6 +53,21 @@ export const FormInputSelect = ({
   getValues: UseFormGetValues<any>;
   watch: UseFormWatch<any>;
 }) => {
+  const popperElRef = useRef(null);
+  const [targetElement, setTargetElement] = useState<any>(null);
+  const [popperElement, setPopperElement] = useState(null);
+  const { styles, attributes } = usePopper(targetElement, popperElement, {
+    placement: "bottom-start",
+    modifiers: [
+      {
+        name: "offset",
+        options: {
+          offset: [0, 1],
+        },
+      },
+    ],
+  });
+
   const _selectedOption = watch(name);
 
   const errName = formState?.errors?.[name];
@@ -39,14 +76,17 @@ export const FormInputSelect = ({
   const isError = !!(errType && errMessage);
 
   const getIcon = (option: OptionType) => {
-    const _selectedOptionId = option?.id;
-    const Component: any = iconMap[_selectedOptionId];
+    let _selectedOptionId = option?.id ?? "";
+    if ((option && option.type) === currentUserEntityKey) {
+      _selectedOptionId = option?.type;
+    }
+    const Component: any = iconMap?.[_selectedOptionId];
     return <Component className="w-5" />;
   };
 
   return (
     <>
-      <div id="id" className="flex items-center justify-center font-sans">
+      <div id={id} className="relative z-20 flex items-center justify-center">
         <div className="w-full max-w-xs mx-auto">
           <Controller
             control={control}
@@ -61,56 +101,337 @@ export const FormInputSelect = ({
                 }}
                 by="id"
               >
-                <div className="relative">
-                  <span className="inline-block w-full rounded-xl">
-                    <Listbox.Button className="relative w-auto px-3 py-2 pr-5 text-left transition duration-150 ease-in-out bg-white border border-gray-300 cursor-default rounded-2xl sm:text-sm sm:leading-5 focus:outline-1">
-                      <span className="flex items-start justify-center gap-2">
-                        {getIcon(_selectedOption)}
-                        {_selectedOption?.name}
-                      </span>
-                    </Listbox.Button>
-                  </span>
-                  <Transition
-                    as={Fragment}
-                    enter="transition duration-100 ease-out"
-                    enterFrom="transform scale-95 opacity-0"
-                    enterTo="transform scale-100 opacity-100"
-                    leave="transition duration-75 ease-out"
-                    leaveFrom="transform scale-100 opacity-100"
-                    leaveTo="transform scale-95 opacity-0"
-                  >
-                    <Listbox.Options className="absolute p-1 overflow-auto text-base bg-white rounded-md  max-h-60 ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm w-[160px]">
-                      {options.map((option: OptionType) => (
-                        <Listbox.Option key={option.id} value={option}>
-                          {({ selected, active }) => {
-                            return (
-                              <div
-                                className={`${active ? "bg-gray-300" : ""} ${
-                                  selected ? "bg-gray-200" : ""
-                                } 
+                {({ open }) => (
+                  <div className="relative" ref={setTargetElement}>
+                    <span className="inline-block w-full rounded-xl">
+                      <Listbox.Button className="relative w-auto px-3 py-2 text-left transition duration-150 ease-in-out bg-white border border-gray-300 cursor-default rounded-2xl sm:text-sm sm:leading-5 focus:outline-1">
+                        <span className="flex items-start justify-center gap-2">
+                          {getIcon(_selectedOption)}
+                          {_selectedOption?.name}
+                        </span>
+                      </Listbox.Button>
+                    </span>
+                    <Portal>
+                      <div
+                        ref={popperElRef}
+                        style={styles.popper}
+                        {...attributes.popper}
+                        className="z-10"
+                      >
+                        <Transition
+                          show={open}
+                          enter="transition ease-out duration-100"
+                          enterFrom="transform opacity-0 scale-95"
+                          enterTo="transform opacity-100 scale-100"
+                          leave="transition ease-in duration-75"
+                          leaveFrom="transform opacity-100 scale-100"
+                          leaveTo="transform opacity-0 scale-95"
+                          beforeEnter={() =>
+                            setPopperElement(popperElRef.current)
+                          }
+                          afterLeave={() => setPopperElement(null)}
+                        >
+                          <Listbox.Options className="absolute z-20 flex flex-col p-1 mt-1 overflow-auto text-base bg-white rounded-md shadow-lg min-w-max max-h-60 ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+                            {options.map((option: OptionType) => (
+                              <Listbox.Option key={option.id} value={option}>
+                                {({ selected, active }) => {
+                                  return (
+                                    <div
+                                      className={`${
+                                        active ? "bg-gray-100" : ""
+                                      } 
+                                cursor-default select-none relative p-2 rounded-md  transition-colors duration-100 ease`}
+                                    >
+                                      <div className="flex gap-2">
+                                        <div className="flex">
+                                          {getIcon(option)}
+                                        </div>
+                                        <div className="flex justify-between flex-1 ">
+                                          <div
+                                            className={`${
+                                              selected
+                                                ? "font-semibold"
+                                                : "font-normal"
+                                            }`}
+                                          >
+                                            {option.name}
+                                          </div>
+                                          <div className="pl-10">
+                                            {selected && (
+                                              <CheckIcon className="w-5" />
+                                            )}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  );
+                                }}
+                              </Listbox.Option>
+                            ))}
+                            {/* <Listbox.Option value={unassignedObj}>
+                        {({ selected, active }) => {
+                          return (
+                            <div
+                              className={`${active ? "bg-gray-100" : ""} ${
+                                selected ? "bg-gray-200" : ""
+                              } 
                                 cursor-default select-none relative p-2 flex flex-row  rounded-md  transition-colors duration-100 ease`}
-                              >
-                                <div className="flex flex-1 gap-2">
-                                  <span>{getIcon(option)}</span>
-                                  <span
-                                    className={`${
-                                      selected ? "font-semibold" : "font-normal"
-                                    }  `}
-                                  >
-                                    {option.name}
-                                  </span>
-                                </div>
-                                <span>
-                                  {selected && <CheckIcon className="w-5" />}
+                            >
+                              <div className="flex flex-1 gap-2">
+                                <span>{getIcon(unassignedObj)}</span>
+                                <span
+                                  className={`${
+                                    selected ? "font-semibold" : "font-normal"
+                                  }  `}
+                                >
+                                  {unassignedObj.name}
                                 </span>
                               </div>
-                            );
+                              <span>
+                                {selected && <CheckIcon className="w-5" />}
+                              </span>
+                            </div>
+                          );
+                        }}
+                      </Listbox.Option> */}
+                          </Listbox.Options>
+                        </Transition>
+                      </div>
+                    </Portal>
+                  </div>
+                )}
+              </Listbox>
+            )}
+          />
+        </div>
+      </div>
+    </>
+  );
+};
+
+export const FormInputSelectWithSubmit = ({
+  id = "",
+  name = "",
+  contextId = "",
+  options,
+  iconMap,
+  control,
+  formState,
+  getValues,
+  watch,
+  onFormSubmit,
+  handleSubmit,
+}: {
+  id: string;
+  name: string;
+  label?: string;
+  contextId: string;
+  placeholder: string;
+  options: any;
+  iconMap: { [key: string]: any };
+  control: Control;
+  formState: { errors: any };
+  getValues: UseFormGetValues<any>;
+  watch: UseFormWatch<any>;
+  onFormSubmit: any;
+  handleSubmit: any;
+}) => {
+  const popperElRef = useRef(null);
+  const [targetElement, setTargetElement] = useState<any>(null);
+  const [popperElement, setPopperElement] = useState<any>(null);
+  const { styles, attributes, forceUpdate } = usePopper(
+    targetElement,
+    popperElement,
+    {
+      placement: "bottom",
+      strategy: "fixed",
+      modifiers: [
+        {
+          name: "flip",
+          enabled: true,
+          options: {
+            rootBoundary: "viewport",
+            altBoundary: false,
+            allowedAutoPlacements: ["top"],
+            fallbackPlacements: [
+              "top-start",
+              "top-end",
+              "bottom",
+              "bottom-start",
+              "bottom-end",
+            ],
+          },
+        },
+        {
+          name: "offset",
+          options: {
+            offset: [-75, 1],
+          },
+        },
+        {
+          name: "preventOverflow",
+          options: {
+            rootBoundary: "viewport",
+            mainAxis: false,
+            altAxis: true,
+          },
+        },
+      ],
+    }
+  );
+
+  const _selectedOption = getValues(name);
+  const errName = formState?.errors?.[name];
+  const errType = errName?.type;
+  const errMessage = errName?.message;
+  const isError = !!(errType && errMessage);
+
+  const getIcon = (option: OptionType) => {
+    let _selectedOptionId = option?.id ?? "";
+    if ((option && option.type) === currentUserEntityKey) {
+      _selectedOptionId = option?.type;
+    }
+    const Component: any = iconMap?.[_selectedOptionId] ?? defaultAvatar;
+    return <Component className="w-5" />;
+  };
+
+  let shortName = _selectedOption?.name;
+  if (_selectedOption?.type === currentUserEntityKey) {
+    shortName = getAllFirstChars(_selectedOption?.name);
+  }
+
+  let interactiveComponent = (
+    <Listbox.Button className="relative w-auto text-left transition duration-150 ease-in-out bg-white border border-gray-300 cursor-default rounded-2xl sm:text-sm sm:leading-5 focus:outline-1">
+      <span className="inline-flex items-center justify-center w-8 h-8 bg-gray-500 rounded-full">
+        <span className="text-sm font-medium leading-none text-white">
+          {shortName}
+        </span>
+      </span>
+    </Listbox.Button>
+  );
+
+  if (_selectedOption?.type !== currentUserEntityKey) {
+    interactiveComponent = (
+      <Listbox.Button className="relative w-auto px-3 py-2 pr-5 text-left transition duration-150 ease-in-out bg-white border border-gray-300 cursor-default rounded-2xl sm:text-sm sm:leading-5 focus:outline-1">
+        <span className="flex items-start justify-center gap-2">
+          {getIcon(_selectedOption)}
+          {shortName}
+        </span>
+      </Listbox.Button>
+    );
+  }
+
+  return (
+    <>
+      <div id={id} className="flex items-center justify-center ">
+        <div className="w-full max-w-xs mx-auto ">
+          <Controller
+            control={control}
+            name={name}
+            render={({ field }) => (
+              <Listbox
+                as="div"
+                className="space-y-1"
+                {...field}
+                onChange={(currentOption: any) => {
+                  if (currentOption.id !== _selectedOption.id) {
+                    field.onChange(currentOption);
+                    if (handleSubmit && onFormSubmit)
+                      handleSubmit(onFormSubmit)();
+                  }
+                }}
+                by="id"
+              >
+                {({ open }) => (
+                  <div className="relative" ref={setTargetElement}>
+                    <span className="inline-block w-full rounded-xl">
+                      {interactiveComponent}
+                    </span>
+                    <Portal>
+                      <div
+                        ref={setPopperElement}
+                        style={styles.popper}
+                        {...attributes.popper}
+                      >
+                        <Transition
+                          show={open}
+                          enter="transition ease-out duration-100"
+                          enterFrom="transform opacity-0 scale-95"
+                          enterTo="transform opacity-100 scale-100"
+                          leave="transition ease-in duration-75"
+                          leaveFrom="transform opacity-100 scale-100"
+                          leaveTo="transform opacity-0 scale-95"
+                          beforeEnter={() => {
+                            forceUpdate?.();
+                            setPopperElement(popperElRef.current);
                           }}
-                        </Listbox.Option>
-                      ))}
-                    </Listbox.Options>
-                  </Transition>
-                </div>
+                          afterLeave={() => setPopperElement(null)}
+                        >
+                          <Listbox.Options className="absolute p-1 mt-1 overflow-auto text-base bg-white rounded-md  max-h-60 ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm w-[160px] z-20 shadow-lg">
+                            {options.map((option: OptionType) => (
+                              <Listbox.Option key={option.id} value={option}>
+                                {({ selected, active }) => {
+                                  return (
+                                    <div
+                                      className={`${
+                                        active ? "bg-gray-100" : ""
+                                      } 
+                                cursor-default select-none relative p-2 flex flex-row  rounded-md  transition-colors duration-100 ease`}
+                                    >
+                                      <div className="flex flex-1 gap-2">
+                                        <span>{getIcon(option)}</span>
+                                        <span
+                                          className={`${
+                                            selected
+                                              ? "font-semibold"
+                                              : "font-normal"
+                                          }  `}
+                                        >
+                                          {option.name}
+                                        </span>
+                                      </div>
+                                      <span>
+                                        {selected && (
+                                          <CheckIcon className="w-5" />
+                                        )}
+                                      </span>
+                                    </div>
+                                  );
+                                }}
+                              </Listbox.Option>
+                            ))}
+                            {/* <Listbox.Option value={unassignedObj}>
+                        {({ selected, active }) => {
+                          return (
+                            <div
+                              className={`${active ? "bg-gray-100" : ""} ${
+                                selected ? "bg-gray-200" : ""
+                              } 
+                                cursor-default select-none relative p-2 flex flex-row  rounded-md  transition-colors duration-100 ease`}
+                            >
+                              <div className="flex items-center justify-start flex-1 gap-2">
+                                {defaultAvatar}
+                                <span
+                                  className={`${
+                                    selected ? "font-semibold" : "font-normal"
+                                  }  `}
+                                >
+                                  {unassignedObj?.name}
+                                </span>
+                              </div>
+                              <span>
+                                {selected && <CheckIcon className="w-5" />}
+                              </span>
+                            </div>
+                          );
+                        }}
+                      </Listbox.Option> */}
+                          </Listbox.Options>
+                        </Transition>
+                      </div>
+                    </Portal>
+                  </div>
+                )}
               </Listbox>
             )}
           />
@@ -480,7 +801,7 @@ export const FormInputSelect = ({
 //                   leaveTo="opacity-0"
 //                   afterLeave={() => setQuery("")}
 //                 >
-//                   <Combobox.Options className="absolute w-full py-1 mt-1 overflow-auto text-base bg-white rounded-md shadow-lg max-h-60 ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm z-[1]">
+//                   <Combobox.Options className="absolute w-full py-1 mt-1 overflow-auto text-base bg-white rounded-md shadow-lg max-h-60 ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
 //                     {filteredPeople.length === 0 && query !== "" ? (
 //                       <div className="relative px-4 py-2 text-gray-700 cursor-default select-none">
 //                         Nothing found.

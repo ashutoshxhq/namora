@@ -6,12 +6,13 @@ import { useGetTasks } from "@/entities/tasks/hooks";
 import { FormCreateTask } from "./form-create-task";
 import { TTask } from "../types";
 import { ListItem } from "./list-item";
+import { sortByCreatedAt } from "@/utils/date";
 
 export const All = (props: any) => {
   const [createTaskOpen, setCreateTaskOpen] = useState(false);
 
   const { data = [] } = useGetTasks(props);
-  const tasks: TTask[] = data?.data;
+  const tasks: TTask[] = data?.data ?? [];
 
   const handleClickOnCreateTask = () => {
     setCreateTaskOpen(true);
@@ -42,20 +43,22 @@ export const All = (props: any) => {
         </button>
         {/* <p className="mt-1 text-xs text-gray-500">...</p> */}
       </div>
-      <div className="my-3 bg-white rounded-md shadow mb-11">
-        <div className="p-3 border-b border-gray-200 sm:flex sm:items-center sm:justify-between">
+      <div className="mt-3 bg-white rounded-md shadow">
+        {/* <div className="p-3 border-b border-gray-200 sm:flex sm:items-center sm:justify-between">
           <h3 className="text-base font-semibold leading-6 text-gray-900">
             Filters
           </h3>
           <h3 className="text-base font-semibold leading-6 text-gray-900">
             Sort
           </h3>
-        </div>
+        </div> */}
         <ul role="list" className="divide-y divide-gray-100">
-          {tasks.map((task: TTask) => {
-            const taskId = task.id;
-            return <ListItem key={taskId} task={task} {...props} />;
-          })}
+          <div className="overflow-auto h-[calc(100vh_-_160px)]">
+            {[...tasks].sort(sortByCreatedAt).map((task: TTask) => {
+              const taskId = task.id;
+              return <ListItem key={taskId} task={task} {...props} />;
+            })}
+          </div>
         </ul>
         <NamoraDialog {...createTaskDialogProps}>
           <FormCreateTask {...props} {...createTaskDialogProps} />

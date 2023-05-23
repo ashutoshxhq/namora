@@ -7,7 +7,8 @@ import { useNotificationDispatch } from "@/contexts/notification";
 import { QUERY_KEY_TASKS, statusOptions, typeOptions } from "../constants";
 import { queryClient } from "@/react-query";
 import { useUpdateTask } from "@/entities/tasks/hooks";
-import { TTask } from "../types";
+import { TTask } from "@/entities/tasks/types";
+import { getUserDataInGroupByType } from "@/current-user/utils";
 
 const taskOption = {
   id: yup.string(),
@@ -20,22 +21,23 @@ const schema = yup.object().shape({
   description: yup.string(),
   task_type: yup.object().shape(taskOption),
   task_status: yup.object().shape(taskOption),
+  task_user: yup.object().shape(taskOption),
 });
 
 export const useFormUpdateTask = (props: any) => {
   const accessToken = props?.accessToken;
   const teamId = props?.teamId;
-  const userId = props?.userId;
-  const selectedTask: TTask = props?.selectedTask;
-  const tasks: TTask[] = props?.tasks;
-
-  const setDialogOpen = props.setOpen;
+  const selectedTask: TTask & { user_id: string } = { ...props?.selectedTask };
+  const setDialogOpen = props?.setOpen;
+  const teamUsers = props?.teamUsers;
+  const userOptions = getUserDataInGroupByType(teamUsers);
 
   const selectedTaskId = selectedTask.id;
   const selectedTaskTitle = selectedTask.title ?? "";
   const selectedTaskDescription = selectedTask.description ?? "";
   const selectedTaskStatus = selectedTask.status ?? "";
   const selectedTaskType = selectedTask.task_type ?? "";
+  const selectedTaskUserId = selectedTask?.user_id;
 
   const selectedTaskStatusObj =
     statusOptions.find((statusObj) => statusObj.id === selectedTaskStatus) ??
@@ -43,6 +45,27 @@ export const useFormUpdateTask = (props: any) => {
   const selectedTaskTypeObj =
     typeOptions.find((statusObj) => statusObj.id === selectedTaskType) ??
     typeOptions[0];
+
+  const selectedTaskUserObj = useMemo(() => {
+    return userOptions?.find(
+      (obj: { id: string }) => obj.id === selectedTaskUserId
+    );
+  }, [selectedTaskUserId, userOptions]);
+  // const selectedTaskUserName = getFullName(selectedTaskUserObj);
+  // const teamMemberToolTipText = selectedTaskUserName;
+
+  const selectedMemberId = selectedTaskUserObj?.id;
+  const selectedMemberName = selectedTaskUserObj?.name;
+  const selectedMemberType = selectedTaskUserObj?.type;
+
+  const relevantUserObj = useMemo(() => {
+    const obj = {
+      id: selectedMemberId,
+      name: selectedMemberName,
+      type: selectedMemberType,
+    };
+    return obj;
+  }, [selectedMemberId, selectedMemberName, selectedMemberType]);
 
   const { showNotification } = useNotificationDispatch();
 
@@ -68,7 +91,7 @@ export const useFormUpdateTask = (props: any) => {
   };
 
   const updateTaskMutation = useUpdateTask(updateTaskMutationOptions);
-  const { mutate, isLoading: isCreateTaskLoading } = updateTaskMutation;
+  const { mutate, isLoading: isUpdateTaskLoading } = updateTaskMutation;
 
   const useFormObj = useMemo(
     () => ({
@@ -77,6 +100,7 @@ export const useFormUpdateTask = (props: any) => {
         description: selectedTaskDescription,
         task_type: selectedTaskTypeObj,
         task_status: selectedTaskStatusObj,
+        task_user: relevantUserObj,
       },
       resolver: yupResolver(schema),
     }),
@@ -85,6 +109,7 @@ export const useFormUpdateTask = (props: any) => {
       selectedTaskDescription,
       selectedTaskTypeObj,
       selectedTaskStatusObj,
+      relevantUserObj,
     ]
   );
   const hookFormProps = useForm(useFormObj);
@@ -99,12 +124,14 @@ export const useFormUpdateTask = (props: any) => {
       description: selectedTaskDescription,
       task_type: selectedTaskTypeObj,
       task_status: selectedTaskStatusObj,
+      task_user: relevantUserObj,
     });
   }, [
     selectedTaskTitle,
     selectedTaskDescription,
     selectedTaskTypeObj,
     selectedTaskStatusObj,
+    relevantUserObj,
     reset,
   ]);
 
@@ -117,14 +144,15 @@ export const useFormUpdateTask = (props: any) => {
         task_type: submittedFormData.task_type.id,
         status: submittedFormData.task_status.id,
         teamId,
-        userId,
+        userId: submittedFormData.task_user.id,
         accessToken,
       });
     }
   };
 
   return {
-    isCreateTaskLoading,
+    userOptions,
+    isUpdateTaskLoading,
     hookFormProps: { ...hookFormProps, onFormEnterSubmit },
   };
 };

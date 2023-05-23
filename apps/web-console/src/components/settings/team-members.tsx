@@ -8,6 +8,7 @@ import { getAllFirstChars } from "@/utils/string";
 import { TTeamMember } from "@/current-team/types";
 import { FormUpdateUser } from "@/components/settings/form-update-user";
 import { useGetTeamUsers } from "@/current-team/hooks";
+import { sortByCreatedAt } from "@/utils/date";
 
 export const TeamMembers = (props: any) => {
   const [open, setOpen] = useState(false);
@@ -46,7 +47,7 @@ export const TeamMembers = (props: any) => {
         </div>
       </div>
       <ul role="list" className="divide-y divide-gray-100">
-        {teamUsers.map((person: TTeamMember) => {
+        {[...teamUsers].sort(sortByCreatedAt).map((person: TTeamMember) => {
           const name = `${person.firstname} ${person.lastname ?? ""}`;
           return (
             <li

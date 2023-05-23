@@ -39,7 +39,6 @@ export const TabLayout = ({ children }: any) => {
         </div>
       </div>
       {children}
-      <Alert />
     </div>
   );
 };

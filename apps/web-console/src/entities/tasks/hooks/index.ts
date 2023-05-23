@@ -30,7 +30,9 @@ export const useGetTasks = (props: any) => {
   return { data, isLoading, isFetched };
 };
 
-export const useCreateTask = (createTaskOptions: TMutationOptionProps) => {
+export const useCreateTask = (
+  createTaskMutationOptions: TMutationOptionProps
+) => {
   const createTaskMutation = useMutation(
     ({
       title,
@@ -55,12 +57,14 @@ export const useCreateTask = (createTaskOptions: TMutationOptionProps) => {
       };
       return createTaskFetcher({ baseURL: "/api", teamId, data, accessToken });
     },
-    createTaskOptions
+    createTaskMutationOptions
   );
   return createTaskMutation;
 };
 
-export const useUpdateTask = (updateTaskOptions: TMutationOptionProps) => {
+export const useUpdateTask = (
+  updateTaskMutationOptions: TMutationOptionProps
+) => {
   const updateTaskMutation = useMutation(
     ({
       id,
@@ -87,12 +91,14 @@ export const useUpdateTask = (updateTaskOptions: TMutationOptionProps) => {
       };
       return updateTaskFetcher({ baseURL: "/api", teamId, data, accessToken });
     },
-    updateTaskOptions
+    updateTaskMutationOptions
   );
   return updateTaskMutation;
 };
 
-export const useDeleteTask = (deleteTaskOptions: TMutationOptionProps) => {
+export const useDeleteTask = (
+  deleteTaskMutationOptions: TMutationOptionProps
+) => {
   const deleteTaskMutation = useMutation(
     ({
       id,
@@ -111,7 +117,7 @@ export const useDeleteTask = (deleteTaskOptions: TMutationOptionProps) => {
       };
       return deleteTaskFetcher({ baseURL: "/api", teamId, data, accessToken });
     },
-    deleteTaskOptions
+    deleteTaskMutationOptions
   );
   return deleteTaskMutation;
 };
