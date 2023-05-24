@@ -6,7 +6,7 @@ import { getTeams } from '../../api/teams';
 const CRMIntegration = () => {
     const { user } = useAuth0();
     const { data: teamDetails } = useQuery({
-        queryKey: ['users', user?.namora_team_id],
+        queryKey: ['teams', user?.namora_team_id],
         queryFn: async () => {
             return getTeams(user?.namora_team_id)
         }
