@@ -1,15 +1,17 @@
+import { useAuth0 } from '@auth0/auth0-react';
 import React from 'react'
 
 const NylasIntegration = () => {
+    const {user} = useAuth0();
     return (
         <li className="overflow-hidden rounded-xl border border-gray-200">
             <div className="flex items-center gap-x-4 border-b border-gray-900/5 bg-gray-50 p-6">
                 <img
-                    src={"/crm.png"}
-                    alt={"CRM"}
+                    src={"/email.png"}
+                    alt={"Email"}
                     className="h-12 w-12 flex-none rounded-lg bg-white object-cover ring-1 ring-gray-900/10"
                 />
-                <div className="text-sm font-medium leading-6 text-gray-900">CRM (Salesforce, Hubspot, Pipedrive, Zoho etc)</div>
+                <div className="text-sm font-medium leading-6 text-gray-900">Email (Gmail, Outlook, IMAP etc)</div>
 
             </div>
             <dl className="-my-3 divide-y divide-gray-100 px-6 py-4 text-sm leading-6">
@@ -21,10 +23,10 @@ const NylasIntegration = () => {
                     </div></dt>
                     <dd className="flex items-start gap-x-2">
                         <button
-                            onClick={() => { }}
+                            onClick={() => { window.open(`https://engine.svc.api.namora.ai/integrations/nylas/oauth/authorize?user_id=${user?.namora_user_id}&team_id=${user?.namora_team_id}`, '_blank')  }}
                             className="flex w-full justify-center rounded-md bg-slate-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-slate-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-600"
                         >
-                            Connect
+                            Connect your Email
                         </button>
                     </dd>
                 </div>
