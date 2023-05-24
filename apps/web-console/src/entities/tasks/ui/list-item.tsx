@@ -47,87 +47,89 @@ export const ListItem = ({
     selectedTask,
   });
 
+  const SelectedTaskTypeIcon = typeIconMap?.[selectedTask?.task_type ?? ""];
+
   return (
     <>
-      <li className="flex items-center justify-between px-6 py-5 border-b ">
-        <div className="flex flex-grow gap-x-4">
-          <div className="flex-auto min-w-0">
+      <li className="flex flex-col items-center justify-center px-6 py-3">
+        <div className="flex flex-row items-center w-full gap-x-4">
+          <div className="flex items-start">
+            <SelectedTaskTypeIcon className="h-6" />
+          </div>
+          <div className="flex items-center flex-1 min-w-0 gap-2">
             <p
-              className="inline text-sm font-semibold leading-6 text-gray-900 cursor-pointer"
+              className="overflow-hidden text-sm font-semibold text-gray-900 truncate cursor-pointer text-ellipsis whitespace-break-spaces"
               onClick={() => handleClickOnEdit(selectedTaskId)}
             >
               {selectedTaskTitle}
             </p>
-            <p className="mt-1 text-xs leading-5 text-gray-500 ">
-              {selectedTaskDescription}
-            </p>
           </div>
-        </div>
 
-        <form>
-          <div className="flex items-center gap-2">
-            <FormInputSelectWithSubmit
-              id="task_status"
-              name="task_status"
-              contextId="task_status"
-              placeholder="Choose a task status"
-              options={statusOptions}
-              iconMap={statusIconMap}
-              {...hookFormProps}
-            />
-            <FormInputSelectWithSubmit
-              id="task_type"
-              name="task_type"
-              contextId="task_type"
-              placeholder="Choose a task type"
-              options={typeOptions}
-              iconMap={typeIconMap}
-              {...hookFormProps}
-            />
-            <FormInputSelectWithSubmit
-              id="task_user"
-              name="task_user"
-              contextId="task_user"
-              placeholder="Choose a assignee"
-              options={userOptions}
-              iconMap={userObjIconMap}
-              {...hookFormProps}
-            />
+          <form>
+            <div className="flex items-center gap-2">
+              <FormInputSelectWithSubmit
+                id="task_status"
+                name="task_status"
+                contextId="task_status"
+                placeholder="Choose a task status"
+                options={statusOptions}
+                iconMap={statusIconMap}
+                {...hookFormProps}
+              />
+              <FormInputSelectWithSubmit
+                id="task_type"
+                name="task_type"
+                contextId="task_type"
+                placeholder="Choose a task type"
+                options={typeOptions}
+                iconMap={typeIconMap}
+                {...hookFormProps}
+              />
+              <FormInputSelectWithSubmit
+                id="task_user"
+                name="task_user"
+                contextId="task_user"
+                placeholder="Choose a assignee"
+                options={userOptions}
+                iconMap={userObjIconMap}
+                {...hookFormProps}
+              />
+            </div>
+          </form>
+          <div className="ml-2">
+            <OptionMenu>
+              <>
+                <Menu.Item>
+                  {({ active }) => (
+                    <button
+                      onClick={() => handleClickOnItemName(selectedTaskId)}
+                      className={classNames(
+                        "w-full text-left",
+                        active ? "bg-gray-100 " : "",
+                        "block px-3 py-1 text-sm leading-6 text-gray-900  rounded-md"
+                      )}
+                    >
+                      Edit
+                    </button>
+                  )}
+                </Menu.Item>
+                <Menu.Item>
+                  {({ active }) => (
+                    <button
+                      onClick={() => handleClickOnDelete(selectedTaskId)}
+                      className={classNames(
+                        "w-full text-left",
+                        active ? "bg-gray-100" : "",
+                        "block px-3 py-1 text-sm leading-6 text-gray-900 rounded-md"
+                      )}
+                    >
+                      Delete
+                    </button>
+                  )}
+                </Menu.Item>
+              </>
+            </OptionMenu>
           </div>
-        </form>
-        <div className="ml-2">
-          <OptionMenu>
-            <>
-              <Menu.Item>
-                {({ active }) => (
-                  <button
-                    onClick={() => handleClickOnItemName(selectedTaskId)}
-                    className={classNames(
-                      "w-full text-left",
-                      active ? "bg-gray-100" : "",
-                      "block px-3 py-1 text-sm leading-6 text-gray-900"
-                    )}
-                  >
-                    Edit
-                  </button>
-                )}
-              </Menu.Item>
-              <Menu.Item>
-                {({ active }) => (
-                  <button
-                    onClick={() => handleClickOnDelete(selectedTaskId)}
-                    className={classNames(
-                      "w-full text-left",
-                      active ? "bg-gray-50" : "",
-                      "block px-3 py-1 text-sm leading-6 text-gray-900"
-                    )}
-                  >
-                    Delete
-                  </button>
-                )}
-              </Menu.Item>
-            </>
-          </OptionMenu>
         </div>
       </li>
       <NamoraPanel {...panelProps}>

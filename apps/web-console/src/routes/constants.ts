@@ -9,7 +9,7 @@ const ACCOUNT = "account";
 const TEAM_MEMBERS = "team-members";
 const INTEGRATIONS = "integrations";
 const TASKS = "tasks";
-const AI = "ai";
+const ALL = "all";
 
 export {
   ROOT,
@@ -23,5 +23,5 @@ export {
   CHATS,
   NOT_FOUND,
   TASKS,
-  AI,
+  ALL,
 };

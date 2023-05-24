@@ -313,7 +313,7 @@ export const FormInputSelectWithSubmit = ({
   if (_selectedOption?.type !== currentUserEntityKey) {
     interactiveComponent = (
       <Listbox.Button className="relative w-auto px-3 py-2 pr-5 text-left transition duration-150 ease-in-out bg-white border border-gray-300 cursor-default rounded-2xl sm:text-sm sm:leading-5 focus:outline-1">
-        <span className="flex items-start justify-center gap-2">
+        <span className="flex items-start justify-center gap-2 text-sm">
           {getIcon(_selectedOption)}
           {shortName}
         </span>

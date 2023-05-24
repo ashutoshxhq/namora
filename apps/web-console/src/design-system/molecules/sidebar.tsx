@@ -5,7 +5,7 @@ import Link from "next/link";
 import { sideBarMenuList } from "@/routes/config";
 import { classNames } from "@/utils";
 import { useRouter } from "next/router";
-import { SETTINGS } from "@/routes/constants";
+import { SETTINGS, TASKS } from "@/routes/constants";
 
 export const Sidebar = () => {
   const router = useRouter();
@@ -13,6 +13,8 @@ export const Sidebar = () => {
   let replacedTabStr = _selectedTab?.replace("/", "");
   if (replacedTabStr.startsWith(SETTINGS)) {
     replacedTabStr = `${SETTINGS}`;
+  } else if (replacedTabStr.startsWith(TASKS)) {
+    replacedTabStr = `${TASKS}`;
   }
   const _selectedIndex =
     sideBarMenuList.map((tab) => tab.id).indexOf(replacedTabStr) ?? 0;

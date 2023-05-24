@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/router";
 
 import { sideBarMenuList } from "@/routes/config";
-import { CHATS, SETTINGS } from "@/routes/constants";
+import { CHATS, ROOT, SETTINGS } from "@/routes/constants";
 import { classNames } from "@/utils";
 
 export const SidebarMobile = ({
@@ -93,29 +93,33 @@ export const SidebarMobile = ({
                 </div>
                 <nav className="flex flex-col flex-1">
                   <ul role="list" className="flex-1 -mx-2 space-y-1">
-                    {sideBarMenuList.map((item, index) => {
-                      const decodedURI = decodeURIComponent(item.href.pathname);
+                    {sideBarMenuList
+                      .filter((tab) => tab.id !== ROOT)
+                      .map((item, index) => {
+                        const decodedURI = decodeURIComponent(
+                          item.href.pathname
+                        );
 
-                      return (
-                        <li key={item.id}>
-                          <Link
-                            href={decodedURI}
-                            className={classNames(
-                              _selectedIndex === index
-                                ? "bg-gray-800 text-white"
-                                : "text-gray-400 hover:text-white hover:bg-gray-800",
-                              "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
-                            )}
-                          >
-                            <item.icon
-                              className="w-6 h-6 shrink-0"
-                              aria-hidden="true"
-                            />
-                            <p className="capitalize"> {item.name}</p>
-                          </Link>
-                        </li>
-                      );
-                    })}
+                        return (
+                          <li key={item.id}>
+                            <Link
+                              href={decodedURI}
+                              className={classNames(
+                                _selectedIndex === index
+                                  ? "bg-gray-800 text-white"
+                                  : "text-gray-400 hover:text-white hover:bg-gray-800",
+                                "group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold"
+                              )}
+                            >
+                              <item.icon
+                                className="w-6 h-6 shrink-0"
+                                aria-hidden="true"
+                              />
+                              <p className="capitalize"> {item.name}</p>
+                            </Link>
+                          </li>
+                        );
+                      })}
                   </ul>
                 </nav>
               </div>

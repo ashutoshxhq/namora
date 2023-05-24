@@ -33,21 +33,16 @@ export default function SettingsPage(props: any) {
 
   useEffect(() => {
     if (router.asPath === `/${SETTINGS}`) {
-      router.push(decodeURIComponent(`/${SETTINGS}/${ACCOUNT}`));
+      router.push(`/${SETTINGS}/${ACCOUNT}`);
     }
   }, [router]);
 
   return (
-    <>
-      <Head>
-        <title>Namora | Settings</title>
-      </Head>
-      <section>
-        {isAccountPageSelected && <Account {...settingPageProps} />}
-        {isTeamMembersPageSelected && <TeamMembers {...settingPageProps} />}
-        {isIntegrationPageSelected && <Integrations {...settingPageProps} />}
-      </section>
-    </>
+    <section>
+      {isAccountPageSelected && <Account {...settingPageProps} />}
+      {isTeamMembersPageSelected && <TeamMembers {...settingPageProps} />}
+      {isIntegrationPageSelected && <Integrations {...settingPageProps} />}
+    </section>
   );
 }
 

@@ -17,7 +17,7 @@ const taskOption = {
 };
 
 const schema = yup.object().shape({
-  title: yup.string().required("Required"),
+  title: yup.string().required("Task title is Required"),
   description: yup.string(),
   task_type: yup.object().shape(taskOption),
   task_status: yup.object().shape(taskOption),

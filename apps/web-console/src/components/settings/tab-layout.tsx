@@ -1,17 +1,20 @@
 import Link from "next/link";
 import React from "react";
 import { useRouter } from "next/router";
+import Head from "next/head";
 
 import { settingTabList } from "@/routes/config";
 import { SETTINGS } from "@/routes/constants";
 import { TabLink } from "@/components/settings/tab-link";
-import { Alert } from "@/design-system/molecules/alert";
 
 export const TabLayout = ({ children }: any) => {
   const router = useRouter();
   const { pathname } = router;
   return (
     <div>
+      <Head>
+        <title>Namora | Settings</title>
+      </Head>
       <div className="pb-3 border-b">
         <h3 className="text-xl font-semibold leading-6 text-gray-900">
           Settings
