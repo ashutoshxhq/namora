@@ -85,7 +85,8 @@ pub async fn get_tasks(
             StatusCode::OK,
             Json(json!({
                 "status": "ok",
-                "data": res,
+                "data": res.data,
+                "meta_data": res.meta_data,
             })),
         ),
         Err(err) => (
