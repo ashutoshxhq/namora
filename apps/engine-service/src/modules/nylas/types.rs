@@ -33,6 +33,12 @@ pub struct NylasOAuthTokenResponse {
 }
 
 #[derive(Serialize, Deserialize)]
+pub struct NylasConnectionStatusResponse {
+    pub connection_status: String,
+}
+
+
+#[derive(Serialize, Deserialize)]
 pub struct NylasOAuthCodeExchangeResponse {
     pub access_token: String,
     pub account_id: String,

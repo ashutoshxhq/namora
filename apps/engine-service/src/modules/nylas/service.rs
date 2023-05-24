@@ -27,7 +27,7 @@ use crate::modules::nylas::types::{NylasEmail, NylasThread};
 
 use super::types::{
     NylasOAuthCodeExchangeResponse, NylasOAuthTokenRequest, NylasOAuthTokenResponse,
-    NylasWebhookMessages,
+    NylasWebhookMessages, NylasConnectionStatusResponse,
 };
 
 #[derive(Clone)]
@@ -38,6 +38,20 @@ pub struct NylasIntegrationService {
 impl NylasIntegrationService {
     pub fn new(pool: DbPool) -> Self {
         Self { pool }
+    }
+
+    pub async fn get_integration_status(
+        &self,
+        team_id: Uuid,
+    ) -> Result<NylasConnectionStatusResponse, Error> {
+        let mut conn = self.pool.clone().get()?;
+        let nylas_account: NylasAccount = dsl::nylas_accounts
+            .filter(dsl::team_id.eq(team_id))
+            .first(&mut conn)?;
+
+        Ok(NylasConnectionStatusResponse {
+            connection_status: nylas_account.status,
+        })
     }
 
     pub async fn get_nylas_authorize_url(
@@ -200,7 +214,9 @@ impl NylasIntegrationService {
                                     .send()
                                     .await?;
                                 let _res_data: Value = res.json().await?;
-                                tracing::info!("Created a reply for the message and added it in draft");
+                                tracing::info!(
+                                    "Created a reply for the message and added it in draft"
+                                );
                                 // push to qdrant
                             }
                             Err(err) => {

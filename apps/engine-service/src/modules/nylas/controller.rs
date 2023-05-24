@@ -1,10 +1,11 @@
 use crate::state::NamoraAIState;
 use axum::{
-    extract::{Extension, Json, Query},
+    extract::{Extension, Json, Path, Query},
     http::StatusCode,
     response::{IntoResponse, Redirect},
 };
 use serde_json::json;
+use urlencoding::encode;
 use uuid::Uuid;
 
 use super::types::{
@@ -61,16 +62,45 @@ pub async fn nylas_callback(
         .exchange_code_for_token(user_id, query.code)
         .await;
     match results {
-        Ok(_results) => (
+        Ok(_results) => Redirect::to("https://app.namora.ai/settings/integrations").into_response(),
+        Err(err) => Redirect::to(&format!(
+            "https://app.namora.ai/settings/integrations?error={}",
+            encode(&err.to_string()).to_string()
+        ))
+        .into_response(),
+    }
+}
+
+pub async fn get_integration_status(
+    Extension(namora): Extension<NamoraAIState>,
+    Path(team_id): Path<String>,
+) -> impl IntoResponse {
+    let team_id = Uuid::parse_str(&team_id);
+    if team_id.is_err() {
+        return (
+            StatusCode::BAD_REQUEST,
+            Json(json!({ "error":"bad user id in url"})),
+        )
+            .into_response();
+    }
+    let team_id = team_id.unwrap();
+
+    let results = namora
+        .services
+        .nylas_integration
+        .get_integration_status(team_id)
+        .await;
+    match results {
+        Ok(results) => (
             StatusCode::OK,
             Json(json!({
-                "status": "ok",
+                "data":results,
             })),
         )
             .into_response(),
         Err(err) => (
             StatusCode::INTERNAL_SERVER_ERROR,
-            Json(json!({ "error": err.to_string() })),
+            Json(json!({ "error":err.to_string()})),
         )
             .into_response(),
     }
