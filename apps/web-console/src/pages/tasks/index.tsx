@@ -1,14 +1,15 @@
-import { withPageSessionAuthRequired } from "@/auth0/utils";
-import { AI, TASKS } from "@/routes/constants";
-import { useRouter } from "next/router";
 import React, { useEffect } from "react";
+import { useRouter } from "next/router";
+
+import { withPageSessionAuthRequired } from "@/auth0/utils";
+import { ALL, TASKS } from "@/routes/constants";
 
 export default function Tasks() {
   const router = useRouter();
 
   useEffect(() => {
     if (router.asPath === `/${TASKS}`) {
-      router.push(decodeURIComponent(`/${TASKS}/${AI}`));
+      router.push(`/${TASKS}/${ALL}`);
     }
   }, [router]);
 

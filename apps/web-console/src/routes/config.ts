@@ -9,14 +9,10 @@ import {
   INTEGRATIONS,
   ROOT,
   TASKS,
-  AI,
+  ALL,
 } from "./constants";
 
-import {
-  ChatBubbleBottomCenterIcon,
-  RectangleStackIcon,
-  Cog8ToothIcon,
-} from "@/heroicons";
+import { ChatBubbleBottomCenterIcon, Cog8ToothIcon } from "@/heroicons";
 
 const routeNameMap = {
   [ROOT]: "",
@@ -28,7 +24,7 @@ const routeNameMap = {
   [ACCOUNT]: "Account",
   [INTEGRATIONS]: "Integrations",
   [TASKS]: "Tasks",
-  [AI]: "ai",
+  [ALL]: "all",
 };
 
 export const sideBarMenuList = [
@@ -47,27 +43,27 @@ export const sideBarMenuList = [
     name: routeNameMap[TASKS],
     path: TASKS,
     href: {
-      pathname: `/${TASKS}/${AI}`,
+      pathname: `/${TASKS}/${ALL}`,
       query: {},
     },
     icon: InboxStackIcon,
   },
-  {
-    id: JOBS,
-    name: routeNameMap[JOBS],
-    path: JOBS,
-    href: {
-      pathname: `/${JOBS}`,
-      query: {},
-    },
-    icon: RectangleStackIcon,
-  },
+  // {
+  //   id: JOBS,
+  //   name: routeNameMap[JOBS],
+  //   path: JOBS,
+  //   href: {
+  //     pathname: `/${JOBS}`,
+  //     query: {},
+  //   },
+  //   icon: RectangleStackIcon,
+  // },
   {
     id: SETTINGS,
     name: routeNameMap[SETTINGS],
     path: SETTINGS,
     href: {
-      pathname: decodeURIComponent(`/${SETTINGS}/${ACCOUNT}`),
+      pathname: `/${SETTINGS}/${ACCOUNT}`,
       query: {},
     },
     icon: Cog8ToothIcon,
@@ -77,7 +73,7 @@ export const sideBarMenuList = [
 export const userNavigation = [
   {
     name: "Your profile",
-    href: decodeURIComponent(`/${SETTINGS}/${ACCOUNT}`),
+    href: `/${SETTINGS}/${ACCOUNT}`,
   },
   { name: "Sign out", href: "/api/auth/logout" },
 ];
@@ -109,7 +105,7 @@ export const settingTabList = [
     name: routeNameMap[ACCOUNT],
     path: ACCOUNT,
     href: {
-      pathname: decodeURIComponent(`${SETTINGS}/${ACCOUNT}`),
+      pathname: `${SETTINGS}/${ACCOUNT}`,
       query: {},
     },
   },
@@ -118,7 +114,7 @@ export const settingTabList = [
     name: routeNameMap[TEAM_MEMBERS],
     path: TEAM_MEMBERS,
     href: {
-      pathname: decodeURIComponent(`${SETTINGS}/${TEAM_MEMBERS}`),
+      pathname: `${SETTINGS}/${TEAM_MEMBERS}`,
       query: {},
     },
   },
@@ -127,7 +123,7 @@ export const settingTabList = [
     name: routeNameMap[INTEGRATIONS],
     path: INTEGRATIONS,
     href: {
-      pathname: decodeURIComponent(`${SETTINGS}/${INTEGRATIONS}`),
+      pathname: `${SETTINGS}/${INTEGRATIONS}`,
       query: {},
     },
   },

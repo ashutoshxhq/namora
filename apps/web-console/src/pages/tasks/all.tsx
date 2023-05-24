@@ -1,3 +1,5 @@
+import Head from "next/head";
+
 import { withPageSessionAuthRequired } from "@/auth0/utils";
 import { ENGINE_SERVICE_API_URL } from "@/axios/constants";
 import { queryClient, dehydrate } from "@/react-query";
@@ -9,7 +11,7 @@ import { teamUsersFetcher } from "@/current-team/fetchers";
 import { QUERY_KEY_TEAM_USERS } from "@/current-team/constants";
 import { ClientOnly } from "@/components/shared/client-only";
 
-export default function AiTasks(props: any) {
+export default function AllTasks(props: any) {
   const session = { ...props.session };
   const allTasksPageProps = {
     ...props,
@@ -18,9 +20,14 @@ export default function AiTasks(props: any) {
     accessToken: session.accessToken,
   };
   return (
-    <ClientOnly>
-      <All {...allTasksPageProps} />
-    </ClientOnly>
+    <>
+      <Head>
+        <title>Namora | Tasks</title>
+      </Head>
+      <ClientOnly>
+        <All {...allTasksPageProps} />
+      </ClientOnly>
+    </>
   );
 }
 

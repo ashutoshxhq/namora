@@ -24,7 +24,7 @@ export function NamoraPanel({
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <div className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" />
+          <div className="fixed inset-0 bg-opacity-60 bg-zinc-100" />
         </Transition.Child>
 
         <div className="fixed inset-0 overflow-hidden ">

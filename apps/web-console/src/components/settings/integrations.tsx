@@ -34,7 +34,7 @@ export const Integrations = (props: any) => {
         className="grid grid-cols-1 gap-x-6 gap-y-8 lg:grid-cols-[repeat(auto-fill,_minmax(400px,_1fr))] xl:gap-x-8"
       >
         <div
-          className={`overflow-hidden border border-gray-200 bg-neutral-50 rounded-xl bg-gradient-to-r from-blue-50 ${
+          className={`overflow-hidden border border-gray-200 bg-neutral-50 rounded-xl bg-gradient-to-r from-indigo-50 ${
             isCRMConnected ? "to-green-50" : "to-red-50"
           }`}
         >
@@ -70,7 +70,10 @@ export const Integrations = (props: any) => {
                   } absolute inset-0 flex h-full w-full items-center justify-center transition-opacity`}
                   aria-hidden="true"
                 >
-                  <ButtonLoader isLoading={isConnectionLoading} color="blue" />
+                  <ButtonLoader
+                    isLoading={isConnectionLoading}
+                    color="#4F46E5"
+                  />
                 </span>
               </span>
             </Switch>
