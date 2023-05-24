@@ -4,27 +4,28 @@ use serde_json::Value;
 #[derive(Deserialize, Serialize)]
 pub struct RetrieveMemoriesRequest {
     pub query: String,
-    pub namespaces: Vec<String>,
+    pub memory_types: String,
     pub offset: Option<i64>,
     pub limit: Option<i64>,
 }
 
 #[derive(Deserialize, Serialize)]
 pub struct RetrieveMemoriesResponse {
-    pub documents: Vec<Document>,
+    pub memories: Vec<Memory>,
     pub total: i64,
     pub offset: i64,
 }
 
 #[derive(Deserialize, Serialize)]
 pub struct IndexMemoriesRequest {
-    pub documents: Vec<Document>,
+    pub memories: Vec<Memory>,
 }
 
 #[derive(Deserialize, Serialize)]
-pub struct Document {
-    pub title: String,
-    pub body: String,
-    pub metadata: Value,
-    pub namespace: String,
+pub struct Memory {
+    pub memory_type: String,
+    pub features: Option<Value>,
+    pub data: Value,
+    pub user_id: String,
+    pub team_id: String,
 }

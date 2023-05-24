@@ -1738,6 +1738,7 @@ name = "memory-service"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "async-openai",
  "axum 0.5.17",
  "chrono",
  "diesel",

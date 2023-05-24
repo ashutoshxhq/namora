@@ -1,12 +1,13 @@
 use axum::{extract::Path, response::IntoResponse, Extension, Json};
 use hyper::StatusCode;
 use serde_json::json;
+use uuid::Uuid;
 
 use crate::state::NamoraAIState;
 
 use super::types::{IndexMemoriesRequest, RetrieveMemoriesRequest};
 
-pub async fn retrieve_memories(
+pub async fn get_memories(
     Extension(namora): Extension<NamoraAIState>,
     Path(_team_id): Path<String>,
     Json(data): Json<RetrieveMemoriesRequest>,
@@ -31,12 +32,20 @@ pub async fn retrieve_memories(
     }
 }
 
-pub async fn index_memories(
+pub async fn create_memories(
     Extension(namora): Extension<NamoraAIState>,
-    Path(_team_id): Path<String>,
+    Path(team_id): Path<String>,
     Json(data): Json<IndexMemoriesRequest>,
 ) -> impl IntoResponse {
-    let res = namora.services.memory.index_memories(data).await;
+    let team_id_res = Uuid::parse_str(&team_id);
+    if team_id_res.is_err() {
+        return (
+            StatusCode::BAD_REQUEST,
+            Json(json!({ "error":"bad team id in url"})),
+        );
+    }
+    let team_id = team_id_res.unwrap();
+    let res = namora.services.memory.index_memories(team_id, data).await;
 
     match res {
         Ok(_res) => (
