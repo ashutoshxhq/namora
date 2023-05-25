@@ -29,7 +29,7 @@ export function NamoraPanel({
 
         <div className="fixed inset-0 overflow-hidden ">
           <div className="absolute inset-0 overflow-hidden">
-            <div className="fixed inset-y-0 right-0 flex max-w-full pl-10 pointer-events-none shadow-xl">
+            <div className="fixed inset-y-0 right-0 flex max-w-full pointer-events-none shadow-xl">
               <Transition.Child
                 as={Fragment}
                 enter="transform transition ease-in-out duration-500 sm:duration-500"
