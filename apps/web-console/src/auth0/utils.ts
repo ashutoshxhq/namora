@@ -10,7 +10,7 @@ export const withPageSessionAuthRequired = withPageAuthRequired({
 
     return {
       props: {
-        session: JSON.parse(JSON.stringify(session)),
+        session: session?JSON.parse(JSON.stringify(session)):{},
       },
     };
   },
