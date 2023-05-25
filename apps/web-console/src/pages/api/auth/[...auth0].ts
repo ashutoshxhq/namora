@@ -4,7 +4,7 @@ export default handleAuth({
     await handleLogin(req, res, {
       authorizationParams: {
         audience: "https://api.namora.ai",
-        scope: "openid profile email",
+        scope: "openid profile email offline_access",
       },
       returnTo: '/'
     });
