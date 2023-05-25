@@ -8,8 +8,6 @@ import { useUser } from "@auth0/nextjs-auth0/client";
 
 export default function MainLayout({ children }: { children: JSX.Element }) {
   const router = useRouter();
-  const {error, isLoading} = useUser();
-  console.log(error, isLoading)
   const [pageLoading, setIsPageLoading] = useState(false);
 
   useEffect(() => {

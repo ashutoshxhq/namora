@@ -1,9 +1,9 @@
 import { NextApiRequest, NextApiResponse } from "next";
 
-import { getAccessToken } from "@/auth0";
+import { getAccessToken, withApiAuthRequired } from "@/auth0";
 import { AxiosResponse, getAxiosClient } from "@/axios";
 
-export default async function handler(
+export default withApiAuthRequired(async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
@@ -22,4 +22,4 @@ export default async function handler(
     const status = error?.status;
     res.status(status).json(error);
   }
-}
+});
