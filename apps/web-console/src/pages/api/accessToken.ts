@@ -5,6 +5,8 @@ export default withApiAuthRequired(async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const { accessToken } = await getAccessToken(req, res, {});
+  const { accessToken } = await getAccessToken(req, res, {
+    refresh: true,
+  });
   res.status(200).json({ accessToken });
 });
