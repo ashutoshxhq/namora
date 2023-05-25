@@ -1,18 +1,14 @@
 export const tasksFetcher = async ({
   baseURL,
   teamId,
-  accessToken,
+  init = {},
 }: {
   baseURL: string;
   teamId: string;
-  accessToken: string;
+  init?: RequestInit;
 }) => {
   try {
-    const res = await fetch(`${baseURL}/teams/${teamId}/tasks`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
+    const res = await fetch(`${baseURL}/teams/${teamId}/tasks`, init);
     const tasks = await res.json();
     return tasks;
   } catch (error) {
@@ -24,19 +20,14 @@ export const createTaskFetcher = async ({
   baseURL,
   teamId,
   data,
-  accessToken,
 }: {
   baseURL: string;
   teamId: string;
   data: any;
-  accessToken: string;
 }) => {
   try {
     const res = await fetch(`${baseURL}/teams/${teamId}/tasks`, {
       method: "POST",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
       body: JSON.stringify({ ...data }),
     });
     const _res = await res.json();
@@ -50,19 +41,14 @@ export const updateTaskFetcher = async ({
   baseURL,
   teamId,
   data,
-  accessToken,
 }: {
   baseURL: string;
   teamId: string;
   data: any;
-  accessToken: string;
 }) => {
   try {
     const res = await fetch(`${baseURL}/teams/${teamId}/tasks/${data.id}`, {
       method: "PATCH",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
       body: JSON.stringify({ ...data }),
     });
     const _res = await res.json();
@@ -76,19 +62,14 @@ export const deleteTaskFetcher = async ({
   baseURL,
   teamId,
   data,
-  accessToken,
 }: {
   baseURL: string;
   teamId: string;
   data: any;
-  accessToken: string;
 }) => {
   try {
     const res = await fetch(`${baseURL}/teams/${teamId}/tasks/${data.id}`, {
       method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
     });
     const _res = await res.json();
     return _res;

@@ -26,7 +26,6 @@ export const PersonalDetails = (props: any) => {
   const { showNotification } = useNotificationDispatch();
   const teamId = props?.teamId;
   const userId = props?.userId;
-  const accessToken = props?.accessToken;
 
   const { data = [] } = useGetTeamUsers(props);
   const teamUsers = data?.data ?? [];
@@ -104,7 +103,6 @@ export const PersonalDetails = (props: any) => {
         company_position: submittedFormData.company_position,
         teamId,
         userId,
-        accessToken,
       });
     }
   };

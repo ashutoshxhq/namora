@@ -13,7 +13,6 @@ import { QUERY_KEY_TEAMS } from "@/current-team/constants";
 import { useNotificationDispatch } from "@/contexts/notification";
 
 export const useVesselCRMIntegration = (props: any) => {
-  const accessToken = props?.accessToken;
   const teamId = props?.teamId;
 
   const {
@@ -61,7 +60,6 @@ export const useVesselCRMIntegration = (props: any) => {
       exchangeVesselCRMTokenMutation.mutate({
         publicToken,
         teamId,
-        accessToken,
       });
     }
   };
@@ -126,14 +124,12 @@ export const useVesselCRMIntegration = (props: any) => {
   );
   const handleClickOnConnect = () =>
     linkVesselCRMTokenMutation.mutate({
-      accessToken,
       teamId,
     });
   const handleClickOnDisconnect = () =>
     disconnectVesselCRMConnectionMutation.mutate({
       connectionId,
       teamId,
-      accessToken,
     });
 
   const isConnectionLoading =

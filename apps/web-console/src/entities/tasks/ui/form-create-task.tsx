@@ -17,7 +17,6 @@ import { userObjIconMap } from "@/current-user/constants";
 import { TTeamMember } from "@/current-team/types";
 
 export const FormCreateTask = (props: {
-  accessToken: string;
   teamId: string;
   userId: string;
   setOpen: (value: boolean) => void;

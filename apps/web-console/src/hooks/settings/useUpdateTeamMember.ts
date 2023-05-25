@@ -10,15 +10,11 @@ export const updateTeamUsersFetcher = async (
   baseURL: string,
   teamId: string,
   userId: string,
-  data: any,
-  accessToken: string
+  data: any
 ) => {
   try {
     const res = await fetch(`${baseURL}/teams/${teamId}/users/${userId}`, {
       method: "PATCH",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
       body: JSON.stringify({ ...data }),
     });
     const updateUserRes = await res.json();
@@ -39,11 +35,9 @@ export const useUpdateTeamMember = (
       company_position,
       teamId,
       userId,
-      accessToken,
     }: Omit<TTeamMember, "id"> & {
       teamId: string;
       userId: string;
-      accessToken: string;
     }) => {
       const data = {
         firstname,
@@ -51,7 +45,7 @@ export const useUpdateTeamMember = (
         email,
         company_position,
       };
-      return updateTeamUsersFetcher("/api", teamId, userId, data, accessToken);
+      return updateTeamUsersFetcher("/api", teamId, userId, data);
     },
     updateTeamMemberOptions
   );

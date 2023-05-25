@@ -1,4 +1,4 @@
-import { getAccessToken, getSession } from "@/auth0";
+import { getAccessToken } from "@/auth0";
 import { withPageSessionAuthRequired } from "@/auth0/utils";
 import { dehydrate, queryClient } from "@/react-query";
 import { Account as AccountClientOnly } from "@/components/settings";
@@ -9,12 +9,13 @@ import { ENGINE_SERVICE_API_URL } from "@/axios/constants";
 import { QUERY_KEY_TEAM_USERS } from "@/current-team/constants";
 
 export default function Account(props: any) {
-  const session = { ...props.session };
+  const { user, teamId, userId, teamUsers } = props;
+
   const accountPageProps = {
-    ...props,
-    teamId: session.user.namora_team_id,
-    userId: session.user.namora_user_id,
-    accessToken: session.accessToken,
+    teamUsers,
+    user,
+    teamId,
+    userId,
   };
 
   return (
@@ -27,37 +28,61 @@ export default function Account(props: any) {
 }
 
 export async function getServerSideProps(ctx: any) {
-  const pageSessionRedirectProps = await withPageSessionAuthRequired(ctx);
-  const session = await getSession(ctx.req, ctx.res);
-  const { accessToken } = await getAccessToken(ctx.req, ctx.res, {
-    refresh: true,
-  })
+  const pageSessionAuthProps = await withPageSessionAuthRequired(ctx);
+  const { props }: any = pageSessionAuthProps;
+
+  const user = props?.user;
+  const session = props?.session;
+  const userId = user?.namora_user_id ?? "";
+  const teamId = user?.namora_team_id ?? "";
+
   if (!session) {
     return {
-      ...pageSessionRedirectProps,
+      ...pageSessionAuthProps,
     };
   }
 
-  const teamId = session?.user?.namora_team_id;
+  let accessToken = "";
+  if (session) {
+    const data = await getAccessToken(ctx.req, ctx.res, {
+      refresh: true,
+    });
+    accessToken = data?.accessToken as string;
+  }
 
-  const teamUsers = await teamUsersFetcher({
-    baseURL: ENGINE_SERVICE_API_URL,
-    teamId,
-    accessToken: accessToken || "",
-  });
-  await queryClient.prefetchQuery([...QUERY_KEY_TEAM_USERS, teamId], () =>
-    teamUsersFetcher({
-      baseURL: ENGINE_SERVICE_API_URL,
+  const baseURL = ENGINE_SERVICE_API_URL;
+
+  let teamUsers = { data: [] };
+  if (accessToken) {
+    teamUsers = await teamUsersFetcher({
+      baseURL,
       teamId,
-      accessToken: accessToken || "",
-    })
-  );
+      init: {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    });
+
+    await queryClient.prefetchQuery([...QUERY_KEY_TEAM_USERS, teamId], () =>
+      teamUsersFetcher({
+        baseURL,
+        teamId,
+        init: {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      })
+    );
+  }
 
   return {
-    ...pageSessionRedirectProps,
     props: {
-      session: JSON.parse(JSON.stringify({...session, accessToken})),
-      teamUsers: teamUsers?.data,
+      userId,
+      teamId,
+      user,
+      teamUsers: teamUsers?.data ?? [],
       dehydratedState: dehydrate(queryClient),
     },
   };

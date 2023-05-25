@@ -15,15 +15,14 @@ type TMutationOptionProps = {
 
 export const useGetTasks = (props: any) => {
   const teamId = props?.teamId;
-  const accessToken = props?.accessToken;
   const tasks = props?.tasks;
 
   const { data, isLoading, isFetched } = useQuery(
     [...QUERY_KEY_TASKS, teamId],
-    () => tasksFetcher({ baseURL: "/api", teamId, accessToken }),
+    () => tasksFetcher({ baseURL: "/api", teamId }),
     {
       initialData: tasks,
-      enabled: !!teamId && !!accessToken,
+      enabled: !!teamId,
     }
   );
 
@@ -41,11 +40,9 @@ export const useCreateTask = (
       task_type,
       teamId,
       userId,
-      accessToken,
     }: Omit<TTask, "id"> & {
       teamId: string;
       userId: string;
-      accessToken: string;
     }) => {
       const data = {
         title,
@@ -55,7 +52,7 @@ export const useCreateTask = (
         team_id: teamId,
         user_id: userId,
       };
-      return createTaskFetcher({ baseURL: "/api", teamId, data, accessToken });
+      return createTaskFetcher({ baseURL: "/api", teamId, data });
     },
     createTaskMutationOptions
   );
@@ -74,11 +71,9 @@ export const useUpdateTask = (
       task_type,
       teamId,
       userId,
-      accessToken,
     }: TTask & {
       teamId: string;
       userId: string;
-      accessToken: string;
     }) => {
       const data = {
         id,
@@ -89,7 +84,7 @@ export const useUpdateTask = (
         team_id: teamId,
         user_id: userId,
       };
-      return updateTaskFetcher({ baseURL: "/api", teamId, data, accessToken });
+      return updateTaskFetcher({ baseURL: "/api", teamId, data });
     },
     updateTaskMutationOptions
   );
@@ -104,18 +99,16 @@ export const useDeleteTask = (
       id,
       teamId,
       userId,
-      accessToken,
     }: Pick<TTask, "id"> & {
       teamId: string;
       userId: string;
-      accessToken: string;
     }) => {
       const data = {
         id,
         team_id: teamId,
         user_id: userId,
       };
-      return deleteTaskFetcher({ baseURL: "/api", teamId, data, accessToken });
+      return deleteTaskFetcher({ baseURL: "/api", teamId, data });
     },
     deleteTaskMutationOptions
   );

@@ -25,7 +25,6 @@ const schema = yup.object().shape({
 });
 
 export const useFormUpdateTask = (props: any) => {
-  const accessToken = props?.accessToken;
   const teamId = props?.teamId;
   const selectedTask: TTask & { user_id: string } = { ...props?.selectedTask };
   const setDialogOpen = props?.setOpen;
@@ -145,7 +144,6 @@ export const useFormUpdateTask = (props: any) => {
         status: submittedFormData.task_status.id,
         teamId,
         userId: submittedFormData.task_user.id,
-        accessToken,
       });
     }
   };

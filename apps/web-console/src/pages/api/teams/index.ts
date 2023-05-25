@@ -7,12 +7,11 @@ export default withApiAuthRequired(async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const data = await getAccessToken(req, res, {
+  const { accessToken = "" } = await getAccessToken(req, res, {
     refresh: true,
-});
+  });
   const session = await getSession(req, res);
 
-  const accessToken = data?.accessToken ?? "";
   const teamId = session?.user?.namora_team_id;
 
   try {

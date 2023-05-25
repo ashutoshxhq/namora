@@ -18,8 +18,8 @@ export const useLinkVesselCRMToken = (
   linkVesselCRMTokenMutationOptions: TMutationOptionProps
 ) => {
   const linkVesselCRMTokenMutation = useMutation(
-    ({ accessToken, teamId }: { accessToken: string; teamId: string }) => {
-      return linkVesselCRMTokenFetcher("/api", teamId, accessToken);
+    ({ teamId }: { teamId: string }) => {
+      return linkVesselCRMTokenFetcher("/api", teamId);
     },
     linkVesselCRMTokenMutationOptions
   );
@@ -30,21 +30,8 @@ export const useExchangeVesselCRMToken = (
   exchangeVesselCRMTokenMutationOptions: TMutationOptionProps
 ) => {
   const exchangeVesselCRMTokenMutation = useMutation(
-    ({
-      publicToken,
-      accessToken,
-      teamId,
-    }: {
-      publicToken: string;
-      accessToken: string;
-      teamId: string;
-    }) => {
-      return exchangeVesselCRMTokenFetcher(
-        "/api",
-        teamId,
-        accessToken,
-        publicToken
-      );
+    ({ publicToken, teamId }: { publicToken: string; teamId: string }) => {
+      return exchangeVesselCRMTokenFetcher("/api", teamId, publicToken);
     },
     exchangeVesselCRMTokenMutationOptions
   );
@@ -53,18 +40,15 @@ export const useExchangeVesselCRMToken = (
 
 export const useGetVesselCRMConnectionStatus = ({
   teamId,
-  accessToken,
   teams,
   connectionObj,
 }: {
   teamId: string;
-  accessToken: string;
   teams: any;
   connectionObj: { [key: string]: any };
 }) => {
   const props = {
     teamId,
-    accessToken,
     teams,
   };
 
@@ -78,15 +62,14 @@ export const useGetVesselCRMConnectionStatus = ({
   } = useQuery(
     [...QUERY_KEY_VESSEL_CRM_CONNECTION_STATUS, teamId],
     () =>
-      vesselCRMConnectionStatusFetcher(
-        "/api",
+      vesselCRMConnectionStatusFetcher({
+        baseURL: "/api",
         teamId,
         connectionId,
-        accessToken
-      ),
+      }),
     {
       initialData: connectionObj,
-      enabled: !!connectionId && !!teamId && !!accessToken,
+      enabled: !!connectionId && !!teamId,
     }
   );
 
@@ -111,21 +94,8 @@ export const useDisconnectVesselCRMConnection = (
   disconnectVesselCRMConnectionMutationOptions: TMutationOptionProps
 ) => {
   const disconnectVesselCRMConnectionMutation = useMutation(
-    ({
-      teamId,
-      connectionId,
-      accessToken,
-    }: {
-      teamId: string;
-      connectionId: string;
-      accessToken: string;
-    }) => {
-      return vesselCRMDisconnectStatusFetcher(
-        "/api",
-        teamId,
-        connectionId,
-        accessToken
-      );
+    ({ teamId, connectionId }: { teamId: string; connectionId: string }) => {
+      return vesselCRMDisconnectStatusFetcher("/api", teamId, connectionId);
     },
     disconnectVesselCRMConnectionMutationOptions
   );

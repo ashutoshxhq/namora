@@ -26,7 +26,6 @@ export const ListItem = ({
   task: TTask & { team_id: string };
   teamId: string;
   userId: string;
-  accessToken: string;
   teamUsers: TTeamMember[];
 }) => {
   const selectedTask: TTask = { ...task };

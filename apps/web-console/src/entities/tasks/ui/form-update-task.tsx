@@ -16,7 +16,6 @@ import { userObjIconMap } from "@/current-user/constants";
 
 export const FormUpdateTask = (props: {
   selectedTask: TTask;
-  accessToken: string;
   teamId: string;
   userId: string;
   setOpen: (value: boolean) => void;

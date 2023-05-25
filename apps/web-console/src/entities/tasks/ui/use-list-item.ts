@@ -27,7 +27,6 @@ const schema = yup.object().shape({
 });
 
 export const useListItem = (props: any) => {
-  const accessToken = props?.accessToken;
   const teamId = props?.teamId;
   const userId = props?.userId;
   const selectedTask: TTask & { user_id: string } = { ...props?.selectedTask };
@@ -141,7 +140,7 @@ export const useListItem = (props: any) => {
     onSuccess: () => {
       showNotification({
         title: "Success",
-        description: "Task updated successfully",
+        description: "Task deleted successfully",
         status: "success",
       });
       queryClient.invalidateQueries([...QUERY_KEY_TASKS, teamId]);
@@ -149,7 +148,7 @@ export const useListItem = (props: any) => {
     onError: () => {
       showNotification({
         title: "Failed",
-        description: "Task update failed",
+        description: "Task delete failed",
         status: "error",
       });
       queryClient.invalidateQueries([...QUERY_KEY_TASKS, teamId]);
@@ -208,7 +207,6 @@ export const useListItem = (props: any) => {
       status: submittedFormData.task_status.id,
       teamId,
       userId,
-      accessToken,
     });
   };
 
