@@ -8,7 +8,7 @@ export default withApiAuthRequired(async function handler(
   res: NextApiResponse
 ) {
   const data = await getAccessToken(req, res, {
-    refresh: true,
+    refresh: true, 
   });
   const accessToken = data?.accessToken ?? "";
   const { query, method } = req;
