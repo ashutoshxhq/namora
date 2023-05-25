@@ -29,7 +29,6 @@ const schema = yup.object().shape({
 });
 
 export const useFormCreateTask = (props: any) => {
-  const accessToken = props?.accessToken;
   const teamId = props?.teamId;
   const userId = props?.userId;
   const setDialogOpen = props.setOpen;
@@ -121,25 +120,9 @@ export const useFormCreateTask = (props: any) => {
         status: submittedFormData.task_status.id,
         teamId,
         userId,
-        accessToken,
       });
     }
   };
-
-  // const onFormSubmit: SubmitHandler<any> = (submittedFormData: any) => {
-  //   // if (isDirty) {
-  //   //   mutate({
-  //   //     title: submittedFormData.title,
-  //   //     description: submittedFormData.description,
-  //   //     task_type: submittedFormData.task_type.id,
-  //   //     status: submittedFormData.task_status.id,
-  //   //     teamId,
-  //   //     userId,
-  //   //     accessToken,
-  //   //   });
-  //   // }
-  // };
-
   return {
     userOptions,
     isCreateTaskLoading,

@@ -26,7 +26,6 @@ export const FormUpdateUser = ({
   ...rest
 }: {
   selectedMember: TTeamMember;
-  accessToken: string;
   teamId: string;
   userId: string;
   setOpen: (value: boolean) => void;
@@ -36,7 +35,6 @@ export const FormUpdateUser = ({
   const email = selectedMember.email ?? "";
   const companyPosition = selectedMember.company_position ?? "";
 
-  const accessToken = rest?.accessToken;
   const teamId = rest?.teamId;
   const userId = rest?.userId;
 
@@ -110,7 +108,6 @@ export const FormUpdateUser = ({
         company_position: submittedFormData.company_position,
         teamId,
         userId,
-        accessToken,
       });
     }
   };

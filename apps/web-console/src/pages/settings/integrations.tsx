@@ -1,4 +1,4 @@
-import { getSession } from "@/auth0";
+import { getAccessToken } from "@/auth0";
 import { withPageSessionAuthRequired } from "@/auth0/utils";
 import { Integrations as IntegrationsClientOnly } from "@/components/settings";
 import { ClientOnly } from "@/components/shared/client-only";
@@ -11,12 +11,13 @@ import { QUERY_KEY_VESSEL_CRM_CONNECTION_STATUS } from "@/vessel/constants";
 import { QUERY_KEY_TEAMS } from "@/current-team/constants";
 
 export default function Integrations(props: any) {
-  const session = { ...props.session };
+  const { user, teamId, userId, teams } = props;
+
   const integrationsPageProps = {
-    ...props,
-    teamId: session.user.namora_team_id,
-    userId: session.user.namora_user_id,
-    accessToken: session.accessToken,
+    teams,
+    user,
+    teamId,
+    userId,
   };
 
   return (
@@ -29,60 +30,94 @@ export default function Integrations(props: any) {
 }
 
 export async function getServerSideProps(ctx: any) {
-  const pageSessionRedirectProps = await withPageSessionAuthRequired(ctx);
-  const session = await getSession(ctx.req, ctx.res);
+  const pageSessionAuthProps = await withPageSessionAuthRequired(ctx);
+  const { props }: any = pageSessionAuthProps;
+
+  const user = props?.user;
+  const session = props?.session;
+  const userId = user?.namora_user_id ?? "";
+  const teamId = user?.namora_team_id ?? "";
 
   if (!session) {
     return {
-      ...pageSessionRedirectProps,
+      ...pageSessionAuthProps,
     };
   }
 
-  const teamId = session?.user?.namora_team_id;
-  const accessToken = session?.accessToken as string;
+  let accessToken = "";
+  if (session) {
+    const data = await getAccessToken(ctx.req, ctx.res, {
+      refresh: true,
+    });
+    accessToken = data?.accessToken as string;
+  }
 
-  const teams = await teamsFetcher({
-    baseURL: ENGINE_SERVICE_API_URL,
-    teamId,
-    accessToken,
-  });
-  const connectionId: string =
-    (teams?.data?.vessel_connection_id as string) ?? "";
-  await queryClient.prefetchQuery([...QUERY_KEY_TEAMS, teamId], () =>
-    teamsFetcher({
-      baseURL: ENGINE_SERVICE_API_URL,
-      teamId,
-      accessToken,
-    })
-  );
+  const baseURL = ENGINE_SERVICE_API_URL;
 
+  let teams = { data: [] };
+  let connectionId = "";
   let connectionObj = null;
-  if (!!connectionId) {
-    connectionObj = await vesselCRMConnectionStatusFetcher(
-      ENGINE_SERVICE_API_URL,
+
+  if (accessToken) {
+    const teams = await teamsFetcher({
+      baseURL,
       teamId,
-      connectionId,
-      accessToken
+      init: {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      },
+    });
+
+    await queryClient.prefetchQuery([...QUERY_KEY_TEAMS, teamId], () =>
+      teamsFetcher({
+        baseURL,
+        teamId,
+        init: {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      })
     );
-    await queryClient.prefetchQuery(
-      [...QUERY_KEY_VESSEL_CRM_CONNECTION_STATUS, teamId],
-      () =>
-        vesselCRMConnectionStatusFetcher(
-          ENGINE_SERVICE_API_URL,
-          teamId,
-          connectionId,
-          accessToken
-        )
-    );
+    connectionId = (teams?.data?.vessel_connection_id as string) ?? "";
+
+    if (!!connectionId) {
+      connectionObj = await vesselCRMConnectionStatusFetcher({
+        baseURL,
+        teamId,
+        connectionId,
+        init: {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      });
+      await queryClient.prefetchQuery(
+        [...QUERY_KEY_VESSEL_CRM_CONNECTION_STATUS, teamId],
+        () =>
+          vesselCRMConnectionStatusFetcher({
+            baseURL,
+            teamId,
+            connectionId,
+            init: {
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+              },
+            },
+          })
+      );
+    }
   }
 
   return {
-    ...pageSessionRedirectProps,
     props: {
+      userId,
+      teamId,
+      user,
+      teams: teams?.data ?? [],
       connectionObj,
-      teams: teams?.data,
       dehydratedState: dehydrate(queryClient),
-      session: JSON.parse(JSON.stringify(session)),
     },
   };
 }

@@ -13,19 +13,10 @@ import {
   INTEGRATIONS,
 } from "@/routes/constants";
 import { withPageSessionAuthRequired } from "@/auth0/utils";
-import { Alert } from "@/design-system/molecules/alert";
 
-export default function SettingsPage(props: any) {
+export default function SettingsPage() {
   const router = useRouter();
   const { query } = router;
-
-  const session = { ...props.session };
-  const settingPageProps = {
-    ...props,
-    teamId: session.user.namora_team_id,
-    userId: session.user.namora_user_id,
-    accessToken: session.accessToken,
-  };
 
   const isAccountPageSelected = !!query[ACCOUNT];
   const isTeamMembersPageSelected = !!query[TEAM_MEMBERS];
@@ -39,9 +30,9 @@ export default function SettingsPage(props: any) {
 
   return (
     <section>
-      {isAccountPageSelected && <Account {...settingPageProps} />}
-      {isTeamMembersPageSelected && <TeamMembers {...settingPageProps} />}
-      {isIntegrationPageSelected && <Integrations {...settingPageProps} />}
+      {isAccountPageSelected && <Account />}
+      {isTeamMembersPageSelected && <TeamMembers />}
+      {isIntegrationPageSelected && <Integrations />}
     </section>
   );
 }

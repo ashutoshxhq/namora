@@ -7,13 +7,15 @@ export const withPageSessionAuthRequired = withPageAuthRequired({
     ctx: GetServerSidePropsContext<ParsedUrlQuery, PreviewData>
   ) {
     const session = await getSession(ctx.req, ctx.res);
-    const {accessToken} = await getAccessToken(ctx.req, ctx.res, {
+    const { accessToken } = await getAccessToken(ctx.req, ctx.res, {
       refresh: true,
     });
-    
+
     return {
       props: {
-        session: session?JSON.parse(JSON.stringify({...session, accessToken})):{},
+        session: session
+          ? JSON.parse(JSON.stringify({ ...session, accessToken }))
+          : {},
       },
     };
   },

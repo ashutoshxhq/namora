@@ -1,18 +1,15 @@
 export const linkVesselCRMTokenFetcher = async (
   baseURL: string,
-  teamId: string,
-  accessToken: string
+  teamId: string
 ) => {
   try {
-    const linkTokenRes = await fetch(
+    const res = await fetch(
       `${baseURL}/teams/${teamId}/integrations/crm/link-token`,
       {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
       }
-    ).then((res) => res.json());
+    );
+    const linkTokenRes = res.json();
     return linkTokenRes;
   } catch (error) {
     throw error;
@@ -22,7 +19,6 @@ export const linkVesselCRMTokenFetcher = async (
 export const exchangeVesselCRMTokenFetcher = async (
   baseURL: string,
   teamId: string,
-  accessToken: string,
   publicToken: string
 ) => {
   try {
@@ -30,9 +26,6 @@ export const exchangeVesselCRMTokenFetcher = async (
       `${baseURL}/teams/${teamId}/integrations/crm/exchange-token`,
       {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
         body: JSON.stringify({ public_token: publicToken }),
       }
     );
@@ -43,12 +36,17 @@ export const exchangeVesselCRMTokenFetcher = async (
   }
 };
 
-export const vesselCRMConnectionStatusFetcher = async (
-  baseURL: string,
-  teamId: string,
-  connectionId: string,
-  accessToken: string
-) => {
+export const vesselCRMConnectionStatusFetcher = async ({
+  baseURL,
+  teamId,
+  connectionId,
+  init = {},
+}: {
+  baseURL: string;
+  teamId: string;
+  connectionId: string;
+  init?: RequestInit;
+}) => {
   const encodedConnectionId = connectionId
     ? encodeURIComponent(connectionId)
     : "";
@@ -56,11 +54,7 @@ export const vesselCRMConnectionStatusFetcher = async (
   try {
     const res = await fetch(
       `${baseURL}/teams/${teamId}/integrations/crm/connections/${encodedConnectionId}`,
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      }
+      init
     );
     const connectionStatusRes = res?.json();
     return connectionStatusRes;
@@ -72,8 +66,7 @@ export const vesselCRMConnectionStatusFetcher = async (
 export const vesselCRMDisconnectStatusFetcher = async (
   baseURL: string,
   teamId: string,
-  connectionId: string,
-  accessToken: string
+  connectionId: string
 ) => {
   const encodedConnectionId = connectionId
     ? encodeURIComponent(connectionId)
@@ -83,9 +76,6 @@ export const vesselCRMDisconnectStatusFetcher = async (
     const res = await fetch(
       `${baseURL}/teams/${teamId}/integrations/crm/connections/${encodedConnectionId}`,
       {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
         method: "DELETE",
       }
     );

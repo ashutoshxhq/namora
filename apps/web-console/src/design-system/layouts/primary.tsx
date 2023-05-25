@@ -4,7 +4,6 @@ import { useRouter } from "next/router";
 import { Sidebar, SidebarMobile, TopBar } from "@/design-system/molecules";
 import { NotificationStoreProvider } from "@/contexts/notification";
 import { Alert } from "@/design-system/molecules/alert";
-import { useUser } from "@auth0/nextjs-auth0/client";
 
 export default function MainLayout({ children }: { children: JSX.Element }) {
   const router = useRouter();

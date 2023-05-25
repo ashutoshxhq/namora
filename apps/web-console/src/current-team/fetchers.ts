@@ -1,18 +1,14 @@
 export const teamsFetcher = async ({
   baseURL,
   teamId,
-  accessToken,
+  init = {},
 }: {
   baseURL: string;
   teamId: string;
-  accessToken: string;
+  init?: RequestInit;
 }) => {
   try {
-    const res = await fetch(`${baseURL}/teams/${teamId}`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
+    const res = await fetch(`${baseURL}/teams/${teamId}`, init);
     const teams = await res.json();
     return teams;
   } catch (error) {
@@ -23,18 +19,14 @@ export const teamsFetcher = async ({
 export const teamUsersFetcher = async ({
   baseURL,
   teamId,
-  accessToken,
+  init = {},
 }: {
   baseURL: string;
   teamId: string;
-  accessToken: string;
+  init?: RequestInit;
 }) => {
   try {
-    const res = await fetch(`${baseURL}/teams/${teamId}/users`, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    });
+    const res = await fetch(`${baseURL}/teams/${teamId}/users`, init);
     const teamUsers = await res.json();
     return teamUsers;
   } catch (error) {
